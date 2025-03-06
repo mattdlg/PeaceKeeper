@@ -40,7 +40,9 @@ class GeneticAlgorithm():
 
         """
         self.target_photo = target
-        self.dimension = len(target)
+        self.dimension = len(target) # dimension of the vector space = "number of gene of one individual"
+
+        self.population = self.create_random_init_pop() # initial population from which the evolutionary process begins
 
     def create_random_init_pop(self):
         return
@@ -51,7 +53,7 @@ class GeneticAlgorithm():
     def select(self):
         return
     
-    def crossover_and_mutations(self):
+    def crossover_and_mutations(self, crossover_proba, mutation_rate):
         return
     
     def crossover(self, parent1, parent2, method = "single-point"):
@@ -74,6 +76,7 @@ class GeneticAlgorithm():
             Array of dimension n representing the second parent (vector).
         method : string
             Name of the method used for the crossing over. Default is "single-point".
+            Other methods are "two-points" and "uniform".
 
         Returns
         -------
@@ -118,9 +121,65 @@ class GeneticAlgorithm():
 
         return children1, children2
     
-    def mutation(self):
-        return
-    
+    def mutation(self, chr, mutation_rate, sigma_mutation, method = "constant"):
+        """
+        Implementation of a mutational event on a chromosome/individual (vector).
+        Each gene (coordinate) of the chromosome as a probability of mutating depending
+        on the mutation rate given in parameter. 
+
+        Mutations are drawn from a normal distribution distributed around 0. 
+        Modifying the standard deviation sigma allows to have bigger or smaller mutations.
+
+        Two different methods are implemented : 
+            - constant : In this case, there is one single mutation rate given as parameter. 
+            Each chromosome in the population have the same probability of mutation for their genes.
+            - adaptive : In this case, there is two mutation rates given as parameters : the first
+            one is for badly fitted chromosomes, and the second one for well fitted chromosomes. 
+            Indeed, when a chromosome is well fitted, its coordinates are already close from the target, 
+            meaning that mutating a lot of gene increases the chances of moving away from it. On the contrary,
+            a badly fitted chromosome has all interest in having a high mutation probability to change a lot 
+            of its coordinate and move closer to the target. Therefore, it can be useful to have two different 
+            mutation rates, one smaller for the good fits and one higher for the bad fits, to converge more
+            rapidly toward the target.
+
+        Parameters
+        ----------
+        chr : 
+        mutation_rate : float or tuple
+            probability of mutation of a gene (between 0 and 1).
+            If method is "constant", mutation rate is a unique float.
+            If method is "adaptive", mutation rate is a tuple of two floats.
+        sigma_mutation : float
+            Standard deviation of the normal distribution from whcih are drawn mutations.
+        method : str
+            Method use for the mutation rate. Default is "constant". Other method is "adaptive".
+
+        Returns
+        -------
+        None
+            chr is modified directly by the function and thus do not need to be returned.
+
+        """
+        if method == "constant": # in the constant case, there is a unique mutation rate that is the same for every chromosomes
+            proba_mutation = mutation_rate
+            
+        elif method == "adaptive": # in the adaptive case, the mutation rate depends on the fitness of the chromosome
+            fit_avg = np.mean([self.calculate_fitness(indiv) for indiv in self.population]) # average fitness among the population
+            fit_chr = self.calculate_fitness(chr) # fitness of the current individual
+            if fit_chr >= fit_avg : # individual is well fitted compared to the rest of the population 
+                proba_mutation = mutation_rate[1]
+            else : # individual is badly fitted compared to the rest of the population
+                proba_mutation = mutation_rate[0]
+
+        else : 
+            print("Error, unknow method") # if the method is incorrect, do not apply any mutation 
+            return 
+
+        for i in range(self.dimension):
+            if np.random.random_sample() < proba_mutation : 
+                m = np.random.normal(0, sigma_mutation) # mutations are drawn from a normal distribution distributed around 0. Modifying sigma allows to have bigger or smaller mutations
+                chr[i] += m
+
     def visualization(self):
         return
     
@@ -134,8 +193,19 @@ def test_crossing_over(ga, method = "single-point"):
     print("Children: ")
     print(c1)
     print(c2)
+    print("\n")
+
+def test_mutation(ga, method = "constant"):
+    chr = np.array([1,4,10,2,1,0,0,5,22,1,3,16,0,1,7,0], dtype = float)
+    print("Before mutation: ")
+    print(chr) 
+    ga.mutation(chr, 0.5, 1)
+    print("After mutation: ")
+    print(chr)
+    print("\n")
 
 if __name__ == "__main__" :
     target = np.array([1,0,1,1,1,0,0,0,1,1,0,1,0,1,1,0])
     ga = GeneticAlgorithm(target)
     test_crossing_over(ga, "uniform")
+    test_mutation(ga)
