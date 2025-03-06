@@ -55,10 +55,51 @@ class GeneticAlgorithm():
         self.dico_fitness = {} # dictionnary to memorize the fitness values of the population at each generation
 
     def create_random_init_pop(self):
-        return
+        """
+        Creation of a list of ten vectors to start the evolution process.
+
+        Parameters
+        ----------
+        None
+            Use only the dimension of the given target
+
+        Returns
+        -------
+        init_population : list
+            List of the vectors of the initial individuals generated randomly
+
+        """
+
+        init_population = []
+
+        for i in range(10) : 
+            init_population.append(np.random.randint, size = self.dimension) #Generate an individual randomly
+
+        return init_population
     
     def calculate_fitness(self):
-        return
+
+        """
+        Compute and store fitness of each individuals
+
+        Parameters
+        ----------
+        None 
+            We use the euclidien distance to compute fitness (we might add a method parameter to test other metrics)
+
+        Returns
+        -------
+        fitness : list
+            List of the fitness of each individual in the same ordre as given by self.population.
+
+        """
+
+        fitness = []
+
+        for i in range(len(self.population)) :
+            fitness.append(np.sqrt(np.sum(np.square(self.population[i] - self.target_photo)))) #Compute euclidean distance with the formula
+            
+        return fitness
     
     def select(self):
         return
