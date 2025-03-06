@@ -311,6 +311,7 @@ class GeneticAlgorithm():
         Parameters
         ----------
         None
+
         Returns 
         -------
         None 
@@ -331,11 +332,50 @@ class GeneticAlgorithm():
     def stop_condition(self):
         return
     
-    def retrieve_final_population(self):
-        return
+    def retrieve_final_population(self, m):
+        """
+        Retrieve the m more fitted solutions in the population, 
+        which are the m closest vectors to the target.
+
+        Parameters
+        ----------
+        m : int 
+            Number of vectors to retrieve
+
+        Returns
+        -------
+        solutions : list
+            List of the m vectors having the best fitnesses
+
+        """
+        last_fitnesses = list(self.dico_fitness.values())[-1][:]
+        """last_fitnesses.sort()
+        print(last_fitnesses[-m:])""" # only retrieve max fitness but not their index in the list
+
+        list_max_index = []
+        for _ in range(m):
+            next_index = np.argmax(last_fitnesses)
+            list_max_index.append(next_index)
+            last_fitnesses.pop(next_index)
+        # print(list_max_index)
+
+        array_pop = np.array(self.population)
+        solutions = list(array_pop[list_max_index])
+        return solutions
     
     def main_loop(self):
         """
+        Main Loop of the Genetic Algorithm.
+        The loop represent the evolution of the population over generations.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        self.solution : list
+            List of the vectors solution of the Genetic Algorithm
         """
         count_generation = 0
         while count_generation < self.max_iteration :
@@ -347,7 +387,7 @@ class GeneticAlgorithm():
             new_population = self.crossover_and_mutations(crossover_proba=0.7)
             self.population = new_population
 
-        self.solution = self.retrieve_final_population() # to retrieve only the m closest individuals to the target
+        self.solution = self.retrieve_final_population(10) # to retrieve only the m closest individuals to the target
         self.visualization()
         return self.solution
 
