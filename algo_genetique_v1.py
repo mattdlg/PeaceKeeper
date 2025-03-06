@@ -26,7 +26,7 @@ class GeneticAlgorithm():
     representation of the images in the latent space of an autoencoder.
 
     """
-    def __init__(self, target):
+    def __init__(self, target, max_iteration):
         """
         Creation of an instance of the GeneticAlgorithm class.
 
@@ -34,6 +34,8 @@ class GeneticAlgorithm():
         ----------
         target : np.array
             Vector of size n representing the target photo in the latent space of the autoencoder. 
+        max_iteration : int
+            Maximal number of generation to obtain the final population
 
         Returns
         -------
@@ -43,8 +45,11 @@ class GeneticAlgorithm():
         self.target_photo = target
         self.dimension = len(target) # dimension of the vector space = "number of gene of one individual"
 
+        self.max_iteration = max_iteration
+
         self.population = self.create_random_init_pop() # list : initial population from which the evolutionary process begins
         self.generation = None # list : selected population based on fitness at each generation
+         
         # self.count_generation = 1 # to count the number of generations and plot it afterwards. # pas utile si génération en clé du dico
 
         self.dico_fitness = {} # dictionnary to memorize the fitness values of the population at each generation
@@ -240,9 +245,29 @@ class GeneticAlgorithm():
         plt.ylabel('Fitness')
         plt.title('Fitness Over Generations')
         plt.legend()
+
+    def stop_condition(self):
+        return
+    
+    def retrieve_final_population(self):
+        return
     
     def main_loop(self):
-        return
+        """
+        """
+        count_generation = 0
+        while count_generation < self.max_iteration :
+            count_generation += 1 
+            self.dico_fitness[count_generation] = self.calculate_fitness()
+            if self.stop_condition(): # if we have solutions close enough to the target
+                break
+            self.generation = self.select() 
+            new_population = self.crossover_and_mutations(crossover_proba=0.7)
+            self.population = new_population
+
+        self.solution = self.retrieve_final_population() # to retrieve only the m closest individuals to the target
+        self.visualization()
+        return self.solution
 
 
 
