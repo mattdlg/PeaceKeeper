@@ -14,6 +14,7 @@ Version :
     1.0 (06/03/2025)
 """
 import numpy as np
+import matplotlib.pyplot as plt
 
 class GeneticAlgorithm():
     """
@@ -44,6 +45,9 @@ class GeneticAlgorithm():
 
         self.population = self.create_random_init_pop() # list : initial population from which the evolutionary process begins
         self.generation = None # list : selected population based on fitness at each generation
+        # self.count_generation = 1 # to count the number of generations and plot it afterwards. # pas utile si génération en clé du dico
+
+        self.dico_fitness = {} # dictionnary to memorize the fitness values of the population at each generation
 
     def create_random_init_pop(self):
         return
@@ -214,7 +218,28 @@ class GeneticAlgorithm():
                 chr[i] += m
 
     def visualization(self):
-        return
+        """
+        Plot the evolution of the fitness of the population at each generation.
+
+        Parameters
+        ----------
+        None
+        Returns 
+        -------
+        None 
+            Open a new window with the graph.
+        """
+        index_generations = range(1, list(self.dico_fitness.keys)[-1])
+        best_fitness_values = [[max(fitness) for fitness in list_fitness] for list_fitness in self.dico_fitness.values()]
+        worst_fitness_values = [[min(fitness) for fitness in list_fitness] for list_fitness in self.dico_fitness.values()]
+
+        plt.figure()
+        plt.plot(index_generations, best_fitness_values, label='Best Fitness', color='black')
+        plt.fill_between(index_generations, worst_fitness_values, best_fitness_values, color='gray', alpha=0.5, label='Fitness Range')
+        plt.xlabel('Generation')
+        plt.ylabel('Fitness')
+        plt.title('Fitness Over Generations')
+        plt.legend()
     
     def main_loop(self):
         return
