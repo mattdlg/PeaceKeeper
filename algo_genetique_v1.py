@@ -42,7 +42,8 @@ class GeneticAlgorithm():
         self.target_photo = target
         self.dimension = len(target) # dimension of the vector space = "number of gene of one individual"
 
-        self.population = self.create_random_init_pop() # initial population from which the evolutionary process begins
+        self.population = self.create_random_init_pop() # list : initial population from which the evolutionary process begins
+        self.generation = None # list : selected population based on fitness at each generation
 
     def create_random_init_pop(self):
         return
@@ -53,8 +54,40 @@ class GeneticAlgorithm():
     def select(self):
         return
     
-    def crossover_and_mutations(self, crossover_proba, mutation_rate):
-        return
+    def crossover_and_mutations(self, crossover_proba):
+        """
+        Last step of each loop of the genetic algorithm : 
+        - breeding between parents (crossover) too give a child population, 
+        - mutation on these children
+
+        Parameters
+        ----------
+        crossover_proba : float
+            Probability of crossing over between two parents (between 0 and 1)
+
+        Returns
+        -------
+        new_populations : list
+            List of the vectors of the new population composed of the parents 
+            (best individuals from the previous generation) and their children.
+
+        """
+        new_population = self.generation[:] # new population will also contained the selected parents from the previous generation
+        for i in range(0, len(self.generation), 2): # Caution : this imply that the generation contain an even number of parents 
+            parent1 = self.generation[i]
+            parent2 = self.generation[i+1]
+            
+            # Crossovers
+            if np.random.random_sample < crossover_proba :
+                child1, child2 = self.crossover(parent1, parent2, method="single-point")
+            else : # no crossing over : children are equal to parents (before mutation)
+                child1, child2 = parent1, parent2
+            
+            # Mutations
+            new_population.append(self.mutation(child1), 0.1, 0.5, method="constant")
+            new_population.append(self.mutation(child2), 0.1, 0.5, method="constant")
+            
+        return new_population
     
     def crossover(self, parent1, parent2, method = "single-point"):
         """
@@ -164,7 +197,7 @@ class GeneticAlgorithm():
             proba_mutation = mutation_rate
             
         elif method == "adaptive": # in the adaptive case, the mutation rate depends on the fitness of the chromosome
-            fit_avg = np.mean([self.calculate_fitness(indiv) for indiv in self.population]) # average fitness among the population
+            fit_avg = np.mean([self.calculate_fitness(indiv) for indiv in self.generation]) # average fitness among the population
             fit_chr = self.calculate_fitness(chr) # fitness of the current individual
             if fit_chr >= fit_avg : # individual is well fitted compared to the rest of the population 
                 proba_mutation = mutation_rate[1]
@@ -183,6 +216,11 @@ class GeneticAlgorithm():
     def visualization(self):
         return
     
+    def main_loop(self):
+        return
+
+
+
 def test_crossing_over(ga, method = "single-point"):
     p1 = np.array([1,1,0,1,1,0,0,1,0,0,1,1,0,1,1,0])
     p2 = np.array([1,1,0,1,1,1,1,0,0,0,0,1,1,1,1,0])
