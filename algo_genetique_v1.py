@@ -72,16 +72,15 @@ class GeneticAlgorithm():
 
         init_population = []
 
-        for i in range(10) :
-            # Attention la vrai population n'aura pas que des coordonnées enière probablement
-            init_population.append(np.random.randint, size = self.dimension) # Generate an individual randomly
+        for i in range(10) : 
+            init_population.append(np.random.randint(2, size = self.dimension)) #Generate an individual randomly
 
         return init_population
     
     def calculate_fitness(self):
 
         """
-        Compute and store fitness of each individuals
+        Compute and store fitness of each individual
 
         Parameters
         ----------
@@ -98,12 +97,53 @@ class GeneticAlgorithm():
         fitness = []
 
         for i in range(len(self.population)) :
-            fitness.append(np.sqrt(np.sum(np.square(self.population[i] - self.target_photo)))) # Compute euclidean distance with the formula
-            
+            fitness.append(np.sqrt(np.sum(np.square(self.population[i] - self.target_photo)))) #Compute euclidean distance with the formula
+
         return fitness
     
-    def select(self):
-        return
+    def select(self, nb_generation, criteria = "threshold"):
+
+        """
+        Select a pair number of individuals according to their fitness. This set of individuals will then 
+        endure crossover and mutation.
+        
+        Possibly use two different criteria to do so : 
+            - threshold : choose only the individuals that have a fitness greater than the average one.
+            - Roulette_Wheel : include a part of random in the process.
+
+        Parameters
+        ----------
+        nb_generation : int
+            The index of the generation the algorithm is currently in.
+        
+        criteria : string
+            Name of the criteria used for the selection. Default is "threshold".
+            Other criterion is "Roulette_Wheel ".
+
+        Returns
+        -------
+        generation : list
+            List of individuals selected to pursue algorithm.
+
+        """
+        generation = []
+
+        if criteria == "threshold" :
+            fitness_avg = sum(self.dico_fitness[nb_generation])/len(self.dico_fitness[nb_generation]) # Compute average fitness
+            for i in range(len(self.population)) : 
+                if  self.dico_fitness[nb_generation][i] >= fitness_avg : #Selection of the individuals
+                    generation.append(self.population[i])
+            if len(generation)%2 != 0 :       # if we don't have a pair number of individuals
+                generation.append(self.population[0]) # Rajoute le 1er terme, à modifier car si le 1er terme est déjà inclus on a un problème
+
+        elif criteria == "Roulette_Wheel" :
+            # A faire 
+            a=1
+
+        else : 
+            print("Error, unknown method")
+
+        return generation
     
     def crossover_and_mutations(self, crossover_proba):
         """
@@ -374,8 +414,20 @@ def test_mutation(ga, method = "constant"):
     print(chr)
     print("\n")
 
+def test_create_random_init_pop (ga, target) : 
+    print("Target :")
+    print(target)
+    print("Initial population :")
+    print(ga.create_random_init_pop())
+
+def test_calculate_fitness(ga) : 
+    print("Fitness : ")
+    print(ga.calculate_fitness())
+
 if __name__ == "__main__" :
     target = np.array([1,0,1,1,1,0,0,0,1,1,0,1,0,1,1,0])
-    ga = GeneticAlgorithm(target)
+    ga = GeneticAlgorithm(target, 10000)
     test_crossing_over(ga, "uniform")
     test_mutation(ga)
+    test_create_random_init_pop(ga, target)
+    test_calculate_fitness(ga)
