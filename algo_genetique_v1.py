@@ -11,7 +11,7 @@ Auteurs :
     Deléglise Matthieu et Durand Julie
 -------------------------------
 Version : 
-    1.0 (06/03/2025)
+    1.1 (07/03/2025)
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -72,8 +72,9 @@ class GeneticAlgorithm():
 
         init_population = []
 
-        for i in range(10) : 
-            init_population.append(np.random.randint, size = self.dimension) #Generate an individual randomly
+        for i in range(10) :
+            # Attention la vrai population n'aura pas que des coordonnées enière probablement
+            init_population.append(np.random.randint, size = self.dimension) # Generate an individual randomly
 
         return init_population
     
@@ -97,7 +98,7 @@ class GeneticAlgorithm():
         fitness = []
 
         for i in range(len(self.population)) :
-            fitness.append(np.sqrt(np.sum(np.square(self.population[i] - self.target_photo)))) #Compute euclidean distance with the formula
+            fitness.append(np.sqrt(np.sum(np.square(self.population[i] - self.target_photo)))) # Compute euclidean distance with the formula
             
         return fitness
     
