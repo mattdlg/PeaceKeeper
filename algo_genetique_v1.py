@@ -47,21 +47,23 @@ class GeneticAlgorithm():
 
         self.max_iteration = max_iteration
 
-        self.population = self.create_random_init_pop() # list : initial population from which the evolutionary process begins
+        self.population = self.create_random_init_pop(10) # list : initial population from which the evolutionary process begins
         self.generation = None # list : selected population based on fitness at each generation
          
         # self.count_generation = 1 # to count the number of generations and plot it afterwards. # pas utile si génération en clé du dico
 
         self.dico_fitness = {} # dictionnary to memorize the fitness values of the population at each generation
 
-    def create_random_init_pop(self):
+    def create_random_init_pop(self, size_pop):
         """
         Creation of a list of ten vectors to start the evolution process.
 
         Parameters
         ----------
-        None
-            Use only the dimension of the given target
+        size_pop : int 
+            Number of individuals in the initial population
+        
+        Use the dimension of the given target vector (self.dimension)
 
         Returns
         -------
@@ -70,9 +72,10 @@ class GeneticAlgorithm():
 
         """
 
-        init_population = []
+        init_population = [] # normalement pas besoin de init_pop : just faire self.population.append(...)
 
-        for i in range(10) : 
+        for i in range(size_pop) : 
+            # Attention la vrai population ça sera pas juste des entiers et surtout pas que des 0 et des 1
             init_population.append(np.random.randint(2, size = self.dimension)) #Generate an individual randomly
 
         return init_population
@@ -383,7 +386,7 @@ class GeneticAlgorithm():
             self.dico_fitness[count_generation] = self.calculate_fitness()
             if self.stop_condition(): # if we have solutions close enough to the target
                 break
-            self.generation = self.select() 
+            self.generation = self.select(count_generation) 
             new_population = self.crossover_and_mutations(crossover_proba=0.7)
             self.population = new_population
 
@@ -418,7 +421,7 @@ def test_create_random_init_pop (ga, target) :
     print("Target :")
     print(target)
     print("Initial population :")
-    print(ga.create_random_init_pop())
+    print(ga.create_random_init_pop(10))
 
 def test_calculate_fitness(ga) : 
     print("Fitness : ")
