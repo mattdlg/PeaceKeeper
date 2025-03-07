@@ -73,7 +73,7 @@ class GeneticAlgorithm():
         init_population = []
 
         for i in range(10) : 
-            init_population.append(np.random.randint, size = self.dimension) #Generate an individual randomly
+            init_population.append(np.random.randint(2, size = self.dimension)) #Generate an individual randomly
 
         return init_population
     
@@ -414,8 +414,20 @@ def test_mutation(ga, method = "constant"):
     print(chr)
     print("\n")
 
+def test_create_random_init_pop (ga, target) : 
+    print("Target :")
+    print(target)
+    print("Initial population :")
+    print(ga.create_random_init_pop())
+
+def test_calculate_fitness(ga) : 
+    print("Fitness : ")
+    print(ga.calculate_fitness())
+
 if __name__ == "__main__" :
     target = np.array([1,0,1,1,1,0,0,0,1,1,0,1,0,1,1,0])
-    ga = GeneticAlgorithm(target)
+    ga = GeneticAlgorithm(target, 10000)
     test_crossing_over(ga, "uniform")
     test_mutation(ga)
+    test_create_random_init_pop(ga, target)
+    test_calculate_fitness(ga)
