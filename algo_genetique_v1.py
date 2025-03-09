@@ -146,11 +146,9 @@ class GeneticAlgorithm():
                 generation.append(pop) 
 
         elif criteria == "Roulette_Wheel" :
-            # A faire 
+
             proba_individuals = []
             list_proba = []
-            print(self.dico_fitness.values())
-            print((list(self.dico_fitness.values())[-1][:]))
             max_fitness = np.argmax(list(self.dico_fitness.values())[-1][:]) # Retrieve the maximum fitness 
             for i in range(len(self.dico_fitness)): 
                 proba_individuals.append(self.dico_fitness[nb_generation][i]*1 / max_fitness)       # Attribute a probability to each fitness 
