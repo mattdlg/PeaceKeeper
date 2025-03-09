@@ -74,7 +74,7 @@ class GeneticAlgorithm():
 
         init_population = [] # normalement pas besoin de init_pop : just faire self.population.append(...)
 
-        for i in range(size_pop) : 
+        for _ in range(size_pop) : 
             # Attention la vrai population ça sera pas juste des entiers et surtout pas que des 0 et des 1
             init_population.append(np.random.randint(2, size = self.dimension)) #Generate an individual randomly
 
@@ -132,16 +132,25 @@ class GeneticAlgorithm():
         generation = []
 
         if criteria == "threshold" :
+            max_fitness_after_threshold, pop = 0
             fitness_avg = sum(self.dico_fitness[nb_generation])/len(self.dico_fitness[nb_generation]) # Compute average fitness
             for i in range(len(self.population)) : 
                 if  self.dico_fitness[nb_generation][i] >= fitness_avg : #Selection of the individuals
                     generation.append(self.population[i])
+                else : 
+                    if self.dico_fitness[nb_generation][i] > max_fitness_after_threshold :    # Store the individual that is closer to the average fitness in case the number of individuals semected isn't pair.
+                        max_fitness_after_threshold, pop = self.dico_fitness[nb_generation][i], self.population[i]
+
             if len(generation)%2 != 0 :       # if we don't have a pair number of individuals
-                generation.append(self.population[0]) # Rajoute le 1er terme, à modifier car si le 1er terme est déjà inclus on a un problème
+                generation.append(pop) 
 
         elif criteria == "Roulette_Wheel" :
             # A faire 
-            a=1
+            proba_individuals = []
+            max_fitness = np.argmax(list(self.dico_fitness.values())[-1][:])
+            for fitness in list(self.dico_fitness.values())[-1][:] : 
+                proba_individuals.append(fitness*1 / max_fitness)
+            
 
         else : 
             print("Error, unknown method")
