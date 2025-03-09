@@ -15,6 +15,7 @@ Version :
 """
 import numpy as np
 import matplotlib.pyplot as plt
+from random import choices
 
 class GeneticAlgorithm():
     """
@@ -121,7 +122,7 @@ class GeneticAlgorithm():
         
         criteria : string
             Name of the criteria used for the selection. Default is "threshold".
-            Other criterion is "Roulette_Wheel ".
+            Other criterion is "Roulette_Wheel".
 
         Returns
         -------
@@ -147,10 +148,20 @@ class GeneticAlgorithm():
         elif criteria == "Roulette_Wheel" :
             # A faire 
             proba_individuals = []
-            max_fitness = np.argmax(list(self.dico_fitness.values())[-1][:])
-            for fitness in list(self.dico_fitness.values())[-1][:] : 
-                proba_individuals.append(fitness*1 / max_fitness)
+            list_proba = []
+            print(self.dico_fitness.values())
+            print((list(self.dico_fitness.values())[-1][:]))
+            max_fitness = np.argmax(list(self.dico_fitness.values())[-1][:]) # Retrieve the maximum fitness 
+            for i in range(len(self.dico_fitness)): 
+                proba_individuals.append(self.dico_fitness[nb_generation][i]*1 / max_fitness)       # Attribute a probability to each fitness 
+                list_proba.append([self.population[i], self.dico_fitness[nb_generation][i], proba_individuals[i]]) # Création d'une table contenant l'individu, sa fitness et sa probabilité d'être tiré
             
+            if len(self.population)%2 == 0 :          # Test la parité de la population pou générer un nombre pair d'individus
+                nb_tirages = len(self.population)/2
+            else : 
+                nb_tirages = len(self.population)/2 + 1
+            sample = choices(list_proba, weights = proba_individuals, k = nb_tirages)  # Tirage de taille_de_population/2 pair individus selon leur probabilité.
+            generation.append(sample[:][0])
 
         else : 
             print("Error, unknown method")
@@ -443,3 +454,4 @@ if __name__ == "__main__" :
     test_mutation(ga)
     test_create_random_init_pop(ga, target)
     test_calculate_fitness(ga)
+    
