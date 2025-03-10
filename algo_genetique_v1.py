@@ -113,7 +113,7 @@ class GeneticAlgorithm():
         
         Possibly use two different criteria to do so : 
             - threshold : choose only the individuals that have a fitness greater than the average one.
-            - Roulette_Wheel : include a part of random in the process.
+            - Fortune_Wheel : include a part of random in the process.
 
         Parameters
         ----------
@@ -122,7 +122,7 @@ class GeneticAlgorithm():
         
         criteria : string
             Name of the criteria used for the selection. Default is "threshold".
-            Other criterion is "Roulette_Wheel".
+            Other criterion is "Fortune_Wheel".
 
         Returns
         -------
@@ -130,9 +130,9 @@ class GeneticAlgorithm():
             List of individuals selected to pursue algorithm.
 
         """
-        generation = []
 
         if criteria == "threshold" :
+            generation = []
             max_fitness_after_threshold, pop = 0
             fitness_avg = sum(self.dico_fitness[nb_generation])/len(self.dico_fitness[nb_generation]) # Compute average fitness
             for i in range(len(self.population)) : 
@@ -144,27 +144,29 @@ class GeneticAlgorithm():
 
             if len(generation)%2 != 0 :       # if we don't have a pair number of individuals
                 generation.append(pop) 
+            return generation
 
-        elif criteria == "Roulette_Wheel" :
+        elif criteria == "Fortune_Wheel" :
 
             proba_individuals = []
-            list_proba = []
-            max_fitness = np.argmax(list(self.dico_fitness.values())[-1][:]) # Retrieve the maximum fitness 
-            for i in range(len(self.dico_fitness)): 
+            #table_proba = []
+            max_fitness = np.max(list(self.dico_fitness.values())[-1][:]) # Retrieve the maximum fitness 
+            for i in range(len(self.dico_fitness[nb_generation])): 
                 proba_individuals.append(self.dico_fitness[nb_generation][i]*1 / max_fitness)       # Attribute a probability to each fitness 
-                list_proba.append([self.population[i], self.dico_fitness[nb_generation][i], proba_individuals[i]]) # Création d'une table contenant l'individu, sa fitness et sa probabilité d'être tiré
+                #table_proba.append([self.population[i], self.dico_fitness[nb_generation][i], proba_individuals[i]]) # Création d'une table contenant l'individu, sa fitness et sa probabilité d'être tiré
             
-            if len(self.population)%2 == 0 :          # Test la parité de la population pou générer un nombre pair d'individus
+            if len(self.population)%2 == 0 :          # Test la parité de la population pour générer un nombre pair d'individus
                 nb_tirages = len(self.population)/2
             else : 
                 nb_tirages = len(self.population)/2 + 1
-            sample = choices(list_proba, weights = proba_individuals, k = nb_tirages)  # Tirage de taille_de_population/2 pair individus selon leur probabilité.
-            generation.append(sample[:][0])
+            #sample = choices(table_proba, weights = proba_individuals, k = nb_tirages)  # Tirage de taille_de_population/2 pair individus selon leur probabilité. Attention !! ESt-ce qu'il y a des remises ???
+            #generation.append(sample[:][0])
+
+            ## Ou 
+            return np.random.choice(self.population, replace = False, size = nb_tirages, p = proba_individuals) # list of the selected individuals according to their probability
 
         else : 
             print("Error, unknown method")
-
-        return generation
     
     def crossover_and_mutations(self, crossover_proba):
         """
