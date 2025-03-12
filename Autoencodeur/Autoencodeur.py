@@ -1,6 +1,7 @@
 import os
 from PIL import Image
 from torch.utils.data import Dataset
+from torchvision import transforms
 
 
 # ===== 1. Création d'un Dataset personnalisé =====
@@ -75,3 +76,12 @@ class CelebADataset(Dataset):
         # Pour un autoencodeur, la cible est la même image en entrée.
         # Ici, on ne nécessite pas de label réel, donc on retourne un label fictif (0)
         return image, 0
+
+
+# ===== 2. Définir les transformations =====
+image_size = (128, 128)
+transform_ = transforms.Compose([
+    transforms.Resize(image_size),
+    transforms.CenterCrop(image_size),
+    transforms.ToTensor(),  # Convertit l'image en tenseur avec des valeurs dans [0,1]
+])
