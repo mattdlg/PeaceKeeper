@@ -201,3 +201,38 @@ else:
     raise ValueError("loss_type doit être 'MSE' ou 'L1'.")
 
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
+
+# ===== 7. Boucle d'entraînement =====
+num_epochs = 40  # Nombre d'epoch pour les tests
+
+for epoch in range(num_epochs):
+    model.train()  # Met le modèle en mode entraînement
+    running_loss = 0.0  # Stocke la perte totale sur une époque
+
+    for images, _ in train_loader:  # Les labels sont ignorés pour un autoencodeur
+        images = images.to(device)
+        optimizer.zero_grad()  # Réinitialisation du gradient
+        outputs = model(images)  # Passage avant (forward)
+        loss = criterion(outputs, images)  # Calcul de la perte
+        loss.backward()  # Calcul des gradients (backpropagation)
+        optimizer.step()  # Mise à jour des poids du modèle
+        running_loss += loss.item() * images.size(0)  # Accumulation des pertes
+
+    epoch_loss = running_loss / train_size
+    print(f"Epoch [{epoch + 1}/{num_epochs}], Loss Training: {epoch_loss:.4f}")
+
+    # Évaluation sur le set de test
+    model.eval()  # Met le modèle en mode évaluation
+    test_loss = 0.0
+
+    with torch.no_grad():  # Désactive le calcul des gradients
+        for images, _ in test_loader:
+            # Boucle sur les mini-batches de test: Charge les images du test set et effectue une prédiction.
+            images = images.to(device)
+            outputs = model(images)
+            loss = criterion(outputs, images)
+            test_loss += loss.item() * images.size(0)
+    test_loss = test_loss / test_size
+    print(f"Epoch [{epoch + 1}/{num_epochs}], Loss Test: {test_loss:.4f}")
+
+print("Entraînement terminé!")
