@@ -5,6 +5,7 @@ from torchvision import transforms
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import matplotlib.pyplot as plt
 
 
 # ===== 1. Création d'un Dataset personnalisé =====
@@ -240,3 +241,38 @@ print("Entraînement terminé!")
 # ===== 7.1. Sauvegarde du modèle entraîné =====
 torch.save(model.state_dict(), 'conv_autoencoder.pth')
 print("Modèle sauvegardé sous 'conv_autoencoder.pth'")
+
+# ===== 8. Test sur une image externe =====
+# L'image externe ne doit pas faire partie de l'entraînement ni du test
+external_image_path = "Data bases/Celeb A/Images/img_align_celeba/002001.jpg"  # <-- à modifier si nécessaire
+external_img = Image.open(external_image_path).convert("RGB")
+external_img_transformed = transform_(external_img)
+
+# Ajouter une dimension pour former un batch
+external_img_batch = external_img_transformed.unsqueeze(0).to(device)
+# Ajoute une dimension pour créer un batch de taille 1
+# unsqueeze(0) transforme [C, H, W] en [1, C, H, W], car les modèles PyTorch attendent une entrée sous cette forme.
+
+# Passer l'image dans le modèle en mode évaluation
+model.eval()
+with torch.no_grad():
+    reconstructed_batch = model(external_img_batch)
+
+# Retirer la dimension batch et convertir le tenseur en image
+reconstructed_img_tensor = reconstructed_batch.squeeze(0).cpu()
+# Passage de [C, H, W] à [H, W, C]
+reconstructed_img = reconstructed_img_tensor.numpy().transpose(1, 2, 0)
+
+# ===== 9. Affichage de l'image externe et de sa reconstruction =====
+plt.figure(figsize=(10, 5))
+plt.subplot(1, 2, 1)
+plt.title("Image externe originale")
+plt.imshow(external_img)
+plt.axis("off")
+
+plt.subplot(1, 2, 2)
+plt.title("Image reconstruite")
+plt.imshow(reconstructed_img)
+plt.axis("off")
+plt.show()
+
