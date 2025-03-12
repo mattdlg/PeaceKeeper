@@ -2,6 +2,8 @@ import os
 from PIL import Image
 from torch.utils.data import Dataset, random_split, DataLoader
 from torchvision import transforms
+import torch
+import torch.nn as nn
 
 
 # ===== 1. Création d'un Dataset personnalisé =====
@@ -105,3 +107,80 @@ test_loader = DataLoader(test_dataset, batch_size=batchSize, shuffle=False)
 print(f"Dataset d'entraînement : {train_size} images")
 print(f"Dataset de test : {test_size} images")
 
+
+# ===== 5. Définition de l'Autoencodeur Convolutionnel =====
+class ConvAutoencoder(nn.Module):
+    """
+    Un autoencodeur convolutionnel pour la reconstruction d'images.
+
+    L'autoencodeur est constitué de deux parties :
+    - Un encodeur basé sur des couches convolutives qui réduit progressivement la dimension spatiale de l'image
+      tout en apprenant une représentation latente.
+    - Un décodeur basé sur des couches de convolution transposée qui reconstruit l'image originale à partir
+      de la représentation latente.
+
+    Attributs
+    ----------
+    encoder : nn.Sequential
+        Séquence de couches convolutives qui encode l'image d'entrée en un espace latent.
+    decoder : nn.Sequential
+        Séquence de couches de convolution transposée qui reconstruit l'image à partir de l'espace latent.
+
+    Méthodes
+    ---------
+    forward(x)
+        Applique l'encodeur et le décodeur pour obtenir une image reconstruite.
+    """
+
+    def __init__(self):
+        """
+        Initialise l'architecture de l'autoencodeur.
+
+        L'encodeur réduit progressivement la taille de l'image en appliquant des convolutions avec un stride de 2.
+        Le décodeur reconstruit l'image originale en utilisant des convolutions transposées.
+
+        L'image d'entrée est supposée être de taille [3, 128, 128] (RVB).
+        """
+        super(ConvAutoencoder, self).__init__()
+
+        # --- Encoder ---
+        self.encoder = nn.Sequential(
+            nn.Conv2d(3, 16, kernel_size=3, stride=2, padding=1),  # 128x128 -> 16x64x64
+            nn.ReLU(True),
+            nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1),  # 64x64 -> 32x32x32
+            nn.ReLU(True),
+            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),  # 32x32 -> 64x16x16
+            nn.ReLU(True),
+            nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1),  # 16x16 -> 128x8x8
+            nn.ReLU(True),
+        )
+
+        # --- Decoder ---
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose2d(128, 64, kernel_size=3, stride=2, padding=1, output_padding=1),  # 8x8 -> 64x16x16
+            nn.ReLU(True),
+            nn.ConvTranspose2d(64, 32, kernel_size=3, stride=2, padding=1, output_padding=1),  # 16x16 -> 32x32x32
+            nn.ReLU(True),
+            nn.ConvTranspose2d(32, 16, kernel_size=3, stride=2, padding=1, output_padding=1),  # 32x32 -> 16x64x64
+            nn.ReLU(True),
+            nn.ConvTranspose2d(16, 3, kernel_size=3, stride=2, padding=1, output_padding=1),  # 64x64 -> 3x128x128
+            nn.Sigmoid()  # Normalisation entre [0,1]
+        )
+
+    def forward(self, x):
+        """
+        Effectue un passage avant (forward) à travers l'autoencodeur.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Tenseur d'entrée représentant une image de taille [batch_size, 3, 128, 128].
+
+        Returns
+        -------
+        torch.Tensor
+            Image reconstruite de même taille que l'entrée ([batch_size, 3, 128, 128]).
+        """
+        latent = self.encoder(x)
+        reconstructed = self.decoder(latent)
+        return reconstructed
