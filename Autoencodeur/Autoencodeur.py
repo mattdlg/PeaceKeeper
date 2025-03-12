@@ -236,3 +236,7 @@ for epoch in range(num_epochs):
     print(f"Epoch [{epoch + 1}/{num_epochs}], Loss Test: {test_loss:.4f}")
 
 print("Entraînement terminé!")
+
+# ===== 7.1. Sauvegarde du modèle entraîné =====
+torch.save(model.state_dict(), 'conv_autoencoder.pth')
+print("Modèle sauvegardé sous 'conv_autoencoder.pth'")
