@@ -4,6 +4,7 @@ from torch.utils.data import Dataset, random_split, DataLoader
 from torchvision import transforms
 import torch
 import torch.nn as nn
+import torch.optim as optim
 
 
 # ===== 1. Création d'un Dataset personnalisé =====
@@ -184,3 +185,19 @@ class ConvAutoencoder(nn.Module):
         latent = self.encoder(x)
         reconstructed = self.decoder(latent)
         return reconstructed
+
+
+# ===== 6. Initialisation du modèle, de la fonction de coût et de l'optimiseur =====
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = ConvAutoencoder().to(device)
+
+# Choix de la fonction de coût : MSE (norme L2) ou L1
+loss_type = 'MSE'  # ou 'L1'
+if loss_type == 'MSE':
+    criterion = nn.MSELoss()
+elif loss_type == 'L1':
+    criterion = nn.L1Loss()
+else:
+    raise ValueError("loss_type doit être 'MSE' ou 'L1'.")
+
+optimizer = optim.Adam(model.parameters(), lr=1e-3)
