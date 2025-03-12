@@ -73,7 +73,7 @@ class GeneticAlgorithm():
 
         """
 
-        init_population = [] # normalement pas besoin de init_pop : just faire self.population.append(...)
+        init_population = []
 
         for _ in range(size_pop) : 
             # Attention la vrai population ça sera pas juste des entiers et surtout pas que des 0 et des 1
@@ -445,11 +445,20 @@ def test_calculate_fitness(ga) :
     print("Fitness : ")
     print(ga.calculate_fitness())
 
-if __name__ == "__main__" :
+
+def test_unitaire():
     target = np.array([1,0,1,1,1,0,0,0,1,1,0,1,0,1,1,0])
     ga = GeneticAlgorithm(target, 10000)
     test_crossing_over(ga, "uniform")
     test_mutation(ga)
     test_create_random_init_pop(ga, target)
     test_calculate_fitness(ga)
+
+def test_global():
+    target = np.random.rand(8,8,128) * 10
+
+if __name__ == "__main__" :
+    test_unitaire()
+
+
     
