@@ -1,6 +1,6 @@
 import os
 from PIL import Image
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, random_split, DataLoader
 from torchvision import transforms
 
 
@@ -85,3 +85,23 @@ transform_ = transforms.Compose([
     transforms.CenterCrop(image_size),
     transforms.ToTensor(),  # Convertit l'image en tenseur avec des valeurs dans [0,1]
 ])
+
+# ===== 3. Charger le dataset =====
+data_dir = "Data bases/Celeb A/Images/img_align_celeba"  # <-- à modifier en fonction de l'environnement local
+dataset = CelebADataset(folder=data_dir, transform=transform_, max_images=2000)
+
+print(f"Nombre total d'images utilisées : {len(dataset)}")
+
+# ===== 4. Split du dataset en 90% train et 10% test =====
+total_size = len(dataset)
+train_size = int(0.9 * total_size)
+test_size = total_size - train_size
+train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
+
+batchSize = 32
+train_loader = DataLoader(train_dataset, batch_size=batchSize, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batchSize, shuffle=False)
+
+print(f"Dataset d'entraînement : {train_size} images")
+print(f"Dataset de test : {test_size} images")
+
