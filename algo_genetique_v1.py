@@ -48,12 +48,13 @@ class GeneticAlgorithm():
 
         self.max_iteration = max_iteration
 
-        self.population = self.create_random_init_pop(10) # list : initial population from which the evolutionary process begins
+        self.population = self.create_random_init_pop(100) # list : initial population from which the evolutionary process begins
         self.generation = None # list : selected population based on fitness at each generation
          
         # self.count_generation = 1 # to count the number of generations and plot it afterwards. # pas utile si génération en clé du dico
 
         self.dico_fitness = {} # dictionnary to memorize the fitness values of the population at each generation
+        self.solution = [] # list of the best approximation of the target at the end the GA.
 
     def create_random_init_pop(self, size_pop):
         """
@@ -77,7 +78,7 @@ class GeneticAlgorithm():
 
         for _ in range(size_pop) : 
             # Attention la vrai population ça sera pas juste des entiers et surtout pas que des 0 et des 1
-            init_population.append(np.random.randint(2, size = self.dimension)) #Generate an individual randomly
+            init_population.append(np.random.rand(self.dimension)*100) #Generate an individual randomly
 
         return init_population
     
@@ -99,9 +100,9 @@ class GeneticAlgorithm():
         """
 
         fitness = []
-
         for i in range(len(self.population)) :
-            fitness.append(np.sqrt(np.sum(np.square(self.population[i] - self.target_photo)))) #Compute euclidean distance with the formula
+            # print(self.population[i])
+            fitness.append(-np.sqrt(np.sum(np.square(self.population[i] - self.target_photo)))) #Compute euclidean distance with the formula
 
         return fitness
     
@@ -133,37 +134,51 @@ class GeneticAlgorithm():
 
         if criteria == "threshold" :
             generation = []
-            max_fitness_after_threshold, pop = 0
+            max_fitness_after_threshold = 0
+            pop = np.array(0)
             fitness_avg = sum(self.dico_fitness[nb_generation])/len(self.dico_fitness[nb_generation]) # Compute average fitness
             for i in range(len(self.population)) : 
                 if  self.dico_fitness[nb_generation][i] >= fitness_avg : #Selection of the individuals
                     generation.append(self.population[i])
                 else : 
-                    if self.dico_fitness[nb_generation][i] > max_fitness_after_threshold :    # Store the individual that is closer to the average fitness in case the number of individuals semected isn't pair.
+                    if self.dico_fitness[nb_generation][i] > max_fitness_after_threshold :    # Store the individual that is closer to the average fitness in case the number of individuals selected isn't pair.
                         max_fitness_after_threshold, pop = self.dico_fitness[nb_generation][i], self.population[i]
 
             if len(generation)%2 != 0 :       # if we don't have a pair number of individuals
-                generation.append(pop) 
+                generation.append(pop)
+
             return generation
 
         elif criteria == "Fortune_Wheel" :
 
             proba_individuals = []
             #table_proba = []
-            max_fitness = np.max(list(self.dico_fitness.values())[-1][:]) # Retrieve the maximum fitness 
-            for i in range(len(self.dico_fitness[nb_generation])): 
-                proba_individuals.append(self.dico_fitness[nb_generation][i]*1 / max_fitness)       # Attribute a probability to each fitness 
+            # max_fitness = np.max(list(self.dico_fitness.values())[-1][:]) # Retrieve the maximum fitness
+            fitness_values = self.dico_fitness[nb_generation] 
+            min_fitness = min(fitness_values) # compute the most negative fitness -> furtherst away from target
+            transformed_fitness = [abs(f - min_fitness) for f in fitness_values] # translate value so that the closest fitness to 0 has the highest new positive value
+            sum_fitness = sum(transformed_fitness)
+            """for i in range(len(self.dico_fitness[nb_generation])): 
+                proba_individuals.append(self.dico_fitness[nb_generation][i]*1 / max_fitness) """      # Attribute a probability to each fitness 
                 #table_proba.append([self.population[i], self.dico_fitness[nb_generation][i], proba_individuals[i]]) # Création d'une table contenant l'individu, sa fitness et sa probabilité d'être tiré
-            
-            if len(self.population)%2 == 0 :          # Test la parité de la population pour générer un nombre pair d'individus
-                nb_tirages = len(self.population)/2
+
+            if sum_fitness == 0: # avoid dividing by 0 
+                proba_individuals = [1 / len(fitness_values)] * len(fitness_values)  # uniform distribution when they all have nul fitness
+            else:
+                proba_individuals = [f / sum_fitness for f in transformed_fitness] # normalisation of the fitness value by the sum of all fitness
+
+            if len(self.population)%2 == 0 : # Test la parité de la population pour générer un nombre pair d'individus
+                nb_tirages = len(self.population)//2
             else : 
-                nb_tirages = len(self.population)/2 + 1
+                nb_tirages = len(self.population)//2 + 1
             #sample = choices(table_proba, weights = proba_individuals, k = nb_tirages)  # Tirage de taille_de_population/2 pair individus selon leur probabilité. Attention !! ESt-ce qu'il y a des remises ???
             #generation.append(sample[:][0])
 
             ## Ou 
-            return np.random.choice(self.population, replace = False, size = nb_tirages, p = proba_individuals) # list of the selected individuals according to their probability
+            list_index = list(range(len(self.population)))
+            index_choice = np.random.choice(list_index, replace = False, size = nb_tirages, p = proba_individuals) # list of the selected individuals according to their probability
+            generation = [self.population[k] for k in index_choice]
+            return generation
 
         else : 
             print("Error, unknown method")
@@ -192,14 +207,16 @@ class GeneticAlgorithm():
             parent2 = self.generation[i+1]
             
             # Crossovers
-            if np.random.random_sample < crossover_proba :
+            if np.random.random_sample() < crossover_proba :
                 child1, child2 = self.crossover(parent1, parent2, method="single-point")
             else : # no crossing over : children are equal to parents (before mutation)
-                child1, child2 = parent1, parent2
+                child1, child2 = parent1[:], parent2[:]
             
             # Mutations
-            new_population.append(self.mutation(child1), 0.1, 0.5, method="constant")
-            new_population.append(self.mutation(child2), 0.1, 0.5, method="constant")
+            self.mutation(child1, 0.1, 0.5, method="constant")
+            self.mutation(child2, 0.1, 0.5, method="constant")
+            new_population.append(child1)
+            new_population.append(child2)
             
         return new_population
     
@@ -235,7 +252,7 @@ class GeneticAlgorithm():
         """
         if method == "single-point" : # exchange every coordinates after a random index, including this index.
             crossing_point = np.random.randint(1, self.dimension) # self.dimension = size of the vectors = dimension of the vector space
-            print(crossing_point)
+            # print(crossing_point)
             children1 = np.concatenate((parent1[:crossing_point], parent2[crossing_point:]))
             children2 = np.concatenate((parent2[:crossing_point], parent1[crossing_point:]))
 
@@ -243,7 +260,7 @@ class GeneticAlgorithm():
             low_crossing_point = np.random.randint(0, self.dimension) # lower bound can be any index in the range of the size of the vectors
             upper_bound = min(low_crossing_point + (self.dimension-1), self.dimension) # to be sure that not every coordinates are exchanged (meaning that children = parents), we ensure that at least one stay the same
             high_crossing_point = np.random.randint(low_crossing_point, upper_bound) # upper bound cannot be inferior to the lower one
-            print(low_crossing_point, high_crossing_point)
+            # print(low_crossing_point, high_crossing_point)
             children1 = np.concatenate((parent1[:low_crossing_point], parent2[low_crossing_point:high_crossing_point+1], parent1[high_crossing_point+1:]))
             children2 = np.concatenate((parent2[:low_crossing_point], parent1[low_crossing_point:high_crossing_point+1], parent2[high_crossing_point+1:]))
 
@@ -340,9 +357,10 @@ class GeneticAlgorithm():
         None 
             Open a new window with the graph.
         """
-        index_generations = range(1, list(self.dico_fitness.keys)[-1])
-        best_fitness_values = [[max(fitness) for fitness in list_fitness] for list_fitness in self.dico_fitness.values()]
-        worst_fitness_values = [[min(fitness) for fitness in list_fitness] for list_fitness in self.dico_fitness.values()]
+        index_generations = list(range(1, list(self.dico_fitness.keys())[-1]+1))
+        # print(list(self.dico_fitness.values())[-1])
+        best_fitness_values = [np.max(list_fitness) for list_fitness in self.dico_fitness.values()]
+        worst_fitness_values = [np.min(list_fitness) for list_fitness in self.dico_fitness.values()]
 
         plt.figure()
         plt.plot(index_generations, best_fitness_values, label='Best Fitness', color='black')
@@ -351,11 +369,39 @@ class GeneticAlgorithm():
         plt.ylabel('Fitness')
         plt.title('Fitness Over Generations')
         plt.legend()
+        plt.show()
 
-    def stop_condition(self):
-        return
+    def stop_condition(self, m, threshold):
+        """
+        Stopping condition of the GA : 
+        If the m individuals of the population with the highest fitness values 
+        all have a fitness inferior to an arbitrary threshold, stop the algorithms :
+        we consider that we are close enough from the target.
+
+        Parameters 
+        ----------
+        m : int
+            Number of vectors to retrieve
+        threshold : float
+            Max distance until when we consider that we are close from the target
+
+        Returns
+        -------
+        stop : bool
+            True or false, depending on if we need to stop the GA or not.
+
+        """
+        self.solution, max_fitness = self.retrieve_max_fitness_population(10) #  to retrieve only the m closest individuals to the target
+
+        stop = True
+        for val in max_fitness :
+            if val < threshold :
+                stop = False
+                break
     
-    def retrieve_final_population(self, m):
+        return stop
+    
+    def retrieve_max_fitness_population(self, m):
         """
         Retrieve the m more fitted solutions in the population, 
         which are the m closest vectors to the target.
@@ -367,24 +413,20 @@ class GeneticAlgorithm():
 
         Returns
         -------
-        solutions : list
+        population_max : list
             List of the m vectors having the best fitnesses
+        fitness_max : np.array
+            Array of the m highest fitness values
 
         """
         last_fitnesses = list(self.dico_fitness.values())[-1][:]
         """last_fitnesses.sort()
         print(last_fitnesses[-m:])""" # only retrieve max fitness but not their index in the list
 
-        list_max_index = []
-        for _ in range(m):
-            next_index = np.argmax(last_fitnesses)
-            list_max_index.append(next_index)
-            last_fitnesses.pop(next_index)
-        # print(list_max_index)
-
-        array_pop = np.array(self.population)
-        solutions = list(array_pop[list_max_index])
-        return solutions
+        indices_max = np.argsort(last_fitnesses)[-m:][::-1] # finding the indices corresponding to the m highest values, in decreasing order
+        fitness_max = np.sort(last_fitnesses)[-m:][::-1] # m highest values of fitness (used in the stop condition)
+        population_max = [self.population[i] for i in indices_max]
+        return population_max, fitness_max
     
     def main_loop(self):
         """
@@ -404,13 +446,14 @@ class GeneticAlgorithm():
         while count_generation < self.max_iteration :
             count_generation += 1 
             self.dico_fitness[count_generation] = self.calculate_fitness()
-            if self.stop_condition(): # if we have solutions close enough to the target
+            if self.stop_condition(10, -1): # if we have solutions close enough to the target
                 break
-            self.generation = self.select(count_generation) 
+            self.generation = self.select(count_generation, criteria="Fortune_Wheel") 
             new_population = self.crossover_and_mutations(crossover_proba=0.7)
             self.population = new_population
+           
 
-        self.solution = self.retrieve_final_population(10) # to retrieve only the m closest individuals to the target
+        # self.solution = self.retrieve_final_population(10) # already done in self.stop_condition()
         self.visualization()
         return self.solution
 
@@ -457,10 +500,18 @@ def test_unitaire():
     test_calculate_fitness(ga)
 
 def test_global():
-    target = np.random.rand(8,8,128) * 10
+    target = np.random.rand(3,3) * 10
+    target = target.flatten(order = "C")
+    print(f"target : {target}")
+    ga = GeneticAlgorithm(target, 1000)
+    solutions = ga.main_loop()
+    print(len(solutions))
+    for v in solutions :
+        print(v)
 
 if __name__ == "__main__" :
-    test_unitaire()
+    # test_unitaire()
+    test_global()
 
 
     
