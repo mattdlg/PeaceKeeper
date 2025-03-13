@@ -88,7 +88,7 @@ class GeneticAlgorithm():
 
         for _ in range(size_pop) : 
             # Attention la vrai population ça sera pas juste des entiers et surtout pas que des 0 et des 1
-            init_population.append(np.random.rand(self.dimension)*10) #Generate an individual randomly
+            init_population.append(np.random.rand(self.dimension)*100) #Generate an individual randomly
         init_population = np.array(init_population)
         return init_population
     
@@ -187,17 +187,22 @@ class GeneticAlgorithm():
             #table_proba = []
             # max_fitness = np.max(list(self.dico_fitness.values())[-1][:]) # Retrieve the maximum fitness
             fitness_values = self.dico_fitness[nb_generation] 
-            min_fitness = min(fitness_values) # compute the most negative fitness -> furtherst away from target
-            transformed_fitness = [abs(f - min_fitness) for f in fitness_values] # translate value so that the closest fitness to 0 has the highest new positive value
-            sum_fitness = sum(transformed_fitness)
+            """min_fitness = min(fitness_values) # compute the most negative fitness -> furtherst away from target
+            transformed_fitness = [abs(f - min_fitness) for f in fitness_values] # translate value so that the closest fitness to 0 has the highest new positive value"""
+            
+            transformed_fitness = np.abs(np.array(fitness_values) - np.min(fitness_values))
+            
+            # sum_fitness = sum(transformed_fitness)
             """for i in range(len(self.dico_fitness[nb_generation])): 
                 proba_individuals.append(self.dico_fitness[nb_generation][i]*1 / max_fitness) """      # Attribute a probability to each fitness 
                 #table_proba.append([self.population[i], self.dico_fitness[nb_generation][i], proba_individuals[i]]) # Création d'une table contenant l'individu, sa fitness et sa probabilité d'être tiré
 
-            if sum_fitness == 0: # avoid dividing by 0 
+            """if sum_fitness == 0: # avoid dividing by 0 
                 proba_individuals = [1 / len(fitness_values)] * len(fitness_values)  # uniform distribution when they all have nul fitness
             else:
-                proba_individuals = [f / sum_fitness for f in transformed_fitness] # normalisation of the fitness value by the sum of all fitness
+                proba_individuals = [f / sum_fitness for f in transformed_fitness] # normalisation of the fitness value by the sum of all fitness"""
+
+            proba_individuals = transformed_fitness / np.sum(transformed_fitness) if np.sum(transformed_fitness) != 0 else np.ones_like(transformed_fitness) / len(transformed_fitness)
 
             if len(self.population)%2 == 0 : # Test la parité de la population pour générer un nombre pair d'individus
                 nb_tirages = len(self.population)//2
