@@ -84,13 +84,14 @@ class GeneticAlgorithm():
 
         """
 
-        init_population = np.random.rand(size_pop, self.dimension) * 10
+        init_population = np.random.uniform(0, 10, (size_pop, self.dimension))
+        # init_population = np.random.normal(0, 2, (size_pop,self.dimension)) 
 
         """for _ in range(size_pop) : 
             # Attention la vrai population ça sera pas juste des entiers et surtout pas que des 0 et des 1
             init_population.append(np.random.rand(self.dimension)*10) #Generate an individual randomly
         init_population = np.array(init_population)"""
-        
+
         return init_population
     
     def calculate_fitness(self):
@@ -164,12 +165,14 @@ class GeneticAlgorithm():
             List of individuals selected to pursue algorithm.
 
         """
+        fitness_values = self.dico_fitness[nb_generation] 
 
         if criteria == "threshold" :
             generation = []
             max_fitness_after_threshold = 0
             pop = None
-            fitness_avg = sum(self.dico_fitness[nb_generation])/len(self.dico_fitness[nb_generation]) # Compute average fitness
+            
+            fitness_avg = np.mean(fitness_values) # Compute average fitness
             for i in range(len(self.population)) : 
                 if  self.dico_fitness[nb_generation][i] >= fitness_avg : #Selection of the individuals
                     generation.append(self.population[i])
@@ -187,11 +190,11 @@ class GeneticAlgorithm():
             proba_individuals = []
             #table_proba = []
             # max_fitness = np.max(list(self.dico_fitness.values())[-1][:]) # Retrieve the maximum fitness
-            fitness_values = self.dico_fitness[nb_generation] 
-            """min_fitness = min(fitness_values) # compute the most negative fitness -> furtherst away from target
+            
+            min_fitness = np.min(fitness_values) # compute the most negative fitness -> furtherst away from target
             transformed_fitness = [abs(f - min_fitness) for f in fitness_values] # translate value so that the closest fitness to 0 has the highest new positive value"""
             
-            transformed_fitness = np.abs(np.array(fitness_values) - np.min(fitness_values))
+            transformed_fitness = np.abs(np.array(fitness_values) - min_fitness)
             
             # sum_fitness = sum(transformed_fitness)
             """for i in range(len(self.dico_fitness[nb_generation])): 
@@ -217,6 +220,22 @@ class GeneticAlgorithm():
             generation = [self.population[k] for k in index_choice]
             return generation
 
+        elif criteria == "tournament":
+            fitness_array = np.array(fitness_values)
+            tournament_size = 4
+            
+            if len(self.population)%2 == 0 : # Test la parité de la population pour générer un nombre pair d'individus
+                nb_tirages = len(self.population)//2
+            else : 
+                nb_tirages = len(self.population)//2 + 1
+
+            selected = []
+            for _ in range(nb_tirages):  # Pair number of individuals
+                indices = np.random.choice(len(self.population), tournament_size, replace=False)
+                best_idx = indices[np.argmax(fitness_array[indices])]
+                selected.append(self.population[best_idx])
+
+            return selected
         else : 
             print("Error, unknown method")
     
@@ -372,10 +391,11 @@ class GeneticAlgorithm():
             fit_chr = self.calculate_individual_fitness(chr) # fitness of the current individual
             if fit_chr >= fit_avg : # individual is well fitted compared to the rest of the population 
                 proba_mutation = self.mutation_rate[1]
-                if fit_chr >= -30 :
-                    sigma_mutation /= 5 # smaller mutation when closer to target
+                """if fit_chr >= -30 :
+                    sigma_mutation /= 5 # smaller mutation when closer to target"""
             else : # individual is badly fitted compared to the rest of the population
                 proba_mutation = self.mutation_rate[0]
+                # sigma_mutation *= 1.2 # higher size of mutation for individuals with a bad fitness
 
         else : 
             print("Error, unknow method") # if the method is incorrect, do not apply any mutation 
@@ -496,6 +516,8 @@ class GeneticAlgorithm():
             self.generation = self.select(count_generation, criteria=self.selection_method) 
             new_population = self.crossover_and_mutations()
             self.population = new_population
+
+            # self.sigma_mutation *= 0.98 # decrease the size of mutations at each generation because closer to the target, smaller mutations are more beneficial
            
         print(np.max(self.dico_fitness[count_generation]))
         # self.solution = self.retrieve_final_population(10) # already done in self.stop_condition()
@@ -548,7 +570,7 @@ def test_global():
     target = np.random.rand(8,8,128) * 10
     target = target.flatten(order = "C")
     print(f"target : {target}")
-    ga = GeneticAlgorithm(target, max_iteration=1000, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
+    ga = GeneticAlgorithm(target, max_iteration=1000, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="tournament",
                           crossover_proba=0.7, crossover_method="uniform", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
     solutions = ga.main_loop()
     print(len(solutions))
