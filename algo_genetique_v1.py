@@ -88,7 +88,7 @@ class GeneticAlgorithm():
 
         for _ in range(size_pop) : 
             # Attention la vrai population ça sera pas juste des entiers et surtout pas que des 0 et des 1
-            init_population.append(np.random.rand(self.dimension)*100) #Generate an individual randomly
+            init_population.append(np.random.rand(self.dimension)*10) #Generate an individual randomly
         init_population = np.array(init_population)
         return init_population
     
@@ -167,7 +167,7 @@ class GeneticAlgorithm():
         if criteria == "threshold" :
             generation = []
             max_fitness_after_threshold = 0
-            pop = np.array(0)
+            pop = None
             fitness_avg = sum(self.dico_fitness[nb_generation])/len(self.dico_fitness[nb_generation]) # Compute average fitness
             for i in range(len(self.population)) : 
                 if  self.dico_fitness[nb_generation][i] >= fitness_avg : #Selection of the individuals
@@ -212,8 +212,7 @@ class GeneticAlgorithm():
             #generation.append(sample[:][0])
 
             ## Ou 
-            list_index = list(range(len(self.population)))
-            index_choice = np.random.choice(list_index, replace = False, size = nb_tirages, p = proba_individuals) # list of the selected individuals according to their probability
+            index_choice = np.random.choice(len(self.population), size = nb_tirages, replace = False, p = proba_individuals) # list of the selected individuals according to their probability
             generation = [self.population[k] for k in index_choice]
             return generation
 
@@ -247,7 +246,7 @@ class GeneticAlgorithm():
             if np.random.random_sample() < self.crossover_proba :
                 child1, child2 = self.crossover(parent1, parent2, method=self.crossover_method)
             else : # no crossing over : children are equal to parents (before mutation)
-                child1, child2 = parent1[:], parent2[:]
+                child1, child2 = np.copy(parent1), np.copy(parent2)
             
             # Mutations
             self.mutation(child1, self.sigma_mutation, method=self.mutation_method)
@@ -545,11 +544,11 @@ def test_unitaire():
     test_calculate_fitness(ga)
 
 def test_global():
-    target = np.random.rand(8,8) * 10
+    target = np.random.rand(8,8,128) * 10
     target = target.flatten(order = "C")
     print(f"target : {target}")
     ga = GeneticAlgorithm(target, max_iteration=1000, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
-                          crossover_proba=0.7, crossover_method="uniform", mutation_rate=(0.3, 0.05), sigma_mutation=1.5, mutation_method="adaptive")
+                          crossover_proba=0.7, crossover_method="uniform", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
     solutions = ga.main_loop()
     print(len(solutions))
     for v in solutions :
