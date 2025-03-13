@@ -282,46 +282,48 @@ class GeneticAlgorithm():
 
         Returns
         -------
-        children1 : np.array
+        child1 : np.array
             Array of dimension n representing the first child (vector).
-        children2 : np.array
+        child2 : np.array
             Array of dimension n representing the second child (vector).
 
         """
         if method == "single-point" : # exchange every coordinates after a random index, including this index.
             crossing_point = np.random.randint(1, self.dimension) # self.dimension = size of the vectors = dimension of the vector space
             # print(crossing_point)
-            children1 = np.concatenate((parent1[:crossing_point], parent2[crossing_point:]))
-            children2 = np.concatenate((parent2[:crossing_point], parent1[crossing_point:]))
+            child1 = np.concatenate((parent1[:crossing_point], parent2[crossing_point:]))
+            child2 = np.concatenate((parent2[:crossing_point], parent1[crossing_point:]))
 
         elif method == "two-points" : # exchange every coordinates between two indexes, including them
             low_crossing_point = np.random.randint(0, self.dimension) # lower bound can be any index in the range of the size of the vectors
             upper_bound = min(low_crossing_point + (self.dimension-1), self.dimension) # to be sure that not every coordinates are exchanged (meaning that children = parents), we ensure that at least one stay the same
             high_crossing_point = np.random.randint(low_crossing_point, upper_bound) # upper bound cannot be inferior to the lower one
             # print(low_crossing_point, high_crossing_point)
-            children1 = np.concatenate((parent1[:low_crossing_point], parent2[low_crossing_point:high_crossing_point+1], parent1[high_crossing_point+1:]))
-            children2 = np.concatenate((parent2[:low_crossing_point], parent1[low_crossing_point:high_crossing_point+1], parent2[high_crossing_point+1:]))
+            child1 = np.concatenate((parent1[:low_crossing_point], parent2[low_crossing_point:high_crossing_point+1], parent1[high_crossing_point+1:]))
+            child2 = np.concatenate((parent2[:low_crossing_point], parent1[low_crossing_point:high_crossing_point+1], parent2[high_crossing_point+1:]))
 
         elif method == "uniform" : # randomly choose from which parents a coordinate will be 
-            children1, children2 = np.array([0.0 for _ in range(self.dimension)]), np.array([0.0 for _ in range(self.dimension)])
-            for i in range(self.dimension):
+            child1, child2 = np.array([0.0 for _ in range(self.dimension)]), np.array([0.0 for _ in range(self.dimension)])
+            """for i in range(self.dimension):
                 p = np.random.randint(0,2) # tossing a coin : result = 0 or 1
                 if p == 0 : # coordinate of child i come from parent i
                     children1[i] = parent1[i]
                     children2[i] = parent2[i]
                 else : # coordinate of child i come from the other parent
                     children1[i] = parent2[i]
-                    children2[i] = parent1[i]
+                    children2[i] = parent1[i]"""
+            mask = np.random.randint(0, 2, size=self.dimension, dtype=bool)
+            child1, child2 = np.where(mask, parent1, parent2), np.where(mask, parent2, parent1)
 
-            if np.array_equal(children1, parent1) : # if no exchange were made, while we want at least one when there is a crossover:
+            if np.array_equal(child1, parent1) : # if no exchange were made, while we want at least one when there is a crossover:
                 random_index = np.random.randint(self.dimension) # randomly choose a coordinate to exchange to ensure that children differ from parents
-                children1[random_index] = parent2[random_index]
-                children2[random_index] = parent1[random_index]
+                child1[random_index] = parent2[random_index]
+                child2[random_index] = parent1[random_index]
         else : 
             print("Error, unknown method")
-            children1, children2 = parent1, parent2 # keep children equal to parents if a wrong method is called
+            child1, child2 = parent1, parent2 # keep children equal to parents if a wrong method is called
 
-        return children1, children2
+        return child1, child2
     
     def mutation(self, chr, sigma_mutation, method = "constant"):
         """
