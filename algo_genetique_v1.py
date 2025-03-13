@@ -379,10 +379,13 @@ class GeneticAlgorithm():
             print("Error, unknow method") # if the method is incorrect, do not apply any mutation 
             return 
 
-        for i in range(self.dimension):
+        """for i in range(self.dimension):
             if np.random.random_sample() < proba_mutation : 
                 m = np.random.normal(0, sigma_mutation) # mutations are drawn from a normal distribution distributed around 0. Modifying sigma allows to have bigger or smaller mutations
-                chr[i] += m
+                chr[i] += m"""
+        mask = np.random.rand(self.dimension) < proba_mutation
+        mutations = np.random.normal(0, sigma_mutation, self.dimension)
+        chr[mask] += mutations[mask]
 
     def visualization(self):
         """
