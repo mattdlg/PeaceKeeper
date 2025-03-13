@@ -11,11 +11,17 @@ Auteurs :
     Deléglise Matthieu et Durand Julie
 -------------------------------
 Version : 
-    1.6 (13/03/2025)
+    1.7 (13/03/2025)
 """
 import numpy as np
 import matplotlib.pyplot as plt
 from random import choices
+
+from numba import njit
+
+@njit(fastmath=True)
+def fast_norm(x):
+    return -np.sqrt(np.sum(x ** 2, axis=1))
 
 class GeneticAlgorithm():
     """
@@ -118,8 +124,9 @@ class GeneticAlgorithm():
             # fitness.append(-np.sqrt(np.sum(np.square(self.population[i] - self.target_photo)))) #Compute euclidean distance with the formula"""
         
         # fitness = -np.sqrt(np.sum(np.square(self.population - self.target_photo), axis=1))
-        fitness = -np.linalg.norm(self.population - self.target_photo, axis=1)
-        return fitness.tolist()
+        """fitness = -np.linalg.norm(self.population - self.target_photo, axis=1)
+        return fitness.tolist()"""
+        return fast_norm(self.population - self.target_photo).tolist()
     
     def calculate_individual_fitness(self, indiv):
         """
@@ -571,7 +578,7 @@ def test_global():
     target = np.random.rand(8,8,128) * 10
     target = target.flatten(order = "C")
     print(f"target : {target}")
-    ga = GeneticAlgorithm(target, max_iteration=1000, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
+    ga = GeneticAlgorithm(target, max_iteration=500, size_pop=300, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
                           crossover_proba=0.7, crossover_method="uniform", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
     solutions = ga.main_loop()
     print(len(solutions))
