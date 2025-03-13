@@ -11,7 +11,7 @@ Auteurs :
     Deléglise Matthieu et Durand Julie
 -------------------------------
 Version : 
-    1.1 (07/03/2025)
+    1.6 (13/03/2025)
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -27,7 +27,8 @@ class GeneticAlgorithm():
     representation of the images in the latent space of an autoencoder.
 
     """
-    def __init__(self, target, max_iteration):
+    def __init__(self, target, max_iteration, size_pop, nb_to_retrieve, stop_threshold, selection_method,
+                 crossover_proba, crossover_method, mutation_rate, sigma_mutation, mutation_method):
         """
         Creation of an instance of the GeneticAlgorithm class.
 
@@ -48,13 +49,22 @@ class GeneticAlgorithm():
 
         self.max_iteration = max_iteration
 
-        self.population = self.create_random_init_pop(100) # list : initial population from which the evolutionary process begins
+        self.population = self.create_random_init_pop(size_pop) # list : initial population from which the evolutionary process begins
         self.generation = None # list : selected population based on fitness at each generation
          
+        self.m = nb_to_retrieve # nb of solutions we want to have at the end of the GA
+        self.threshold = stop_threshold
         # self.count_generation = 1 # to count the number of generations and plot it afterwards. # pas utile si génération en clé du dico
 
         self.dico_fitness = {} # dictionnary to memorize the fitness values of the population at each generation
         self.solution = [] # list of the best approximation of the target at the end the GA.
+
+        self.selection_method = selection_method
+        self.crossover_proba = crossover_proba
+        self.crossover_method = crossover_method
+        self.mutation_rate = mutation_rate
+        self.sigma_mutation = sigma_mutation
+        self.mutation_method = mutation_method
 
     def create_random_init_pop(self, size_pop):
         """
@@ -78,7 +88,7 @@ class GeneticAlgorithm():
 
         for _ in range(size_pop) : 
             # Attention la vrai population ça sera pas juste des entiers et surtout pas que des 0 et des 1
-            init_population.append(np.random.rand(self.dimension)*100) #Generate an individual randomly
+            init_population.append(np.random.rand(self.dimension)*10) #Generate an individual randomly
 
         return init_population
     
@@ -102,9 +112,28 @@ class GeneticAlgorithm():
         fitness = []
         for i in range(len(self.population)) :
             # print(self.population[i])
-            fitness.append(-np.sqrt(np.sum(np.square(self.population[i] - self.target_photo)))) #Compute euclidean distance with the formula
+            fitness.append(self.calculate_individual_fitness(self.population[i]))
+            # fitness.append(-np.sqrt(np.sum(np.square(self.population[i] - self.target_photo)))) #Compute euclidean distance with the formula
 
         return fitness
+    
+    def calculate_individual_fitness(self, indiv):
+        """
+        Function to calculate the fitness of a single individual given as paramter.
+
+        Parameters 
+        ----------
+        indiv : np.array
+            Vector of a given indiviual of the population
+        
+        Returns 
+        -------
+        fitness_val : float
+            Euclidian distance between the parameter and the target vector
+
+        """ 
+        fitness_val = -np.sqrt(np.sum(np.square(indiv - self.target_photo)))
+        return fitness_val
     
     def select(self, nb_generation, criteria = "threshold"):
 
@@ -183,7 +212,7 @@ class GeneticAlgorithm():
         else : 
             print("Error, unknown method")
     
-    def crossover_and_mutations(self, crossover_proba):
+    def crossover_and_mutations(self):
         """
         Last step of each loop of the genetic algorithm : 
         - breeding between parents (crossover) too give a child population, 
@@ -207,14 +236,14 @@ class GeneticAlgorithm():
             parent2 = self.generation[i+1]
             
             # Crossovers
-            if np.random.random_sample() < crossover_proba :
-                child1, child2 = self.crossover(parent1, parent2, method="single-point")
+            if np.random.random_sample() < self.crossover_proba :
+                child1, child2 = self.crossover(parent1, parent2, method=self.crossover_method)
             else : # no crossing over : children are equal to parents (before mutation)
                 child1, child2 = parent1[:], parent2[:]
             
             # Mutations
-            self.mutation(child1, 0.1, 0.5, method="constant")
-            self.mutation(child2, 0.1, 0.5, method="constant")
+            self.mutation(child1, self.sigma_mutation, method=self.mutation_method)
+            self.mutation(child2, self.sigma_mutation, method=self.mutation_method)
             new_population.append(child1)
             new_population.append(child2)
             
@@ -265,7 +294,7 @@ class GeneticAlgorithm():
             children2 = np.concatenate((parent2[:low_crossing_point], parent1[low_crossing_point:high_crossing_point+1], parent2[high_crossing_point+1:]))
 
         elif method == "uniform" : # randomly choose from which parents a coordinate will be 
-            children1, children2 = np.array([0 for _ in range(self.dimension)]), np.array([0 for _ in range(self.dimension)])
+            children1, children2 = np.array([0.0 for _ in range(self.dimension)]), np.array([0.0 for _ in range(self.dimension)])
             for i in range(self.dimension):
                 p = np.random.randint(0,2) # tossing a coin : result = 0 or 1
                 if p == 0 : # coordinate of child i come from parent i
@@ -285,7 +314,7 @@ class GeneticAlgorithm():
 
         return children1, children2
     
-    def mutation(self, chr, mutation_rate, sigma_mutation, method = "constant"):
+    def mutation(self, chr, sigma_mutation, method = "constant"):
         """
         Implementation of a mutational event on a chromosome/individual (vector).
         Each gene (coordinate) of the chromosome as a probability of mutating depending
@@ -312,7 +341,7 @@ class GeneticAlgorithm():
         mutation_rate : float or tuple
             probability of mutation of a gene (between 0 and 1).
             If method is "constant", mutation rate is a unique float.
-            If method is "adaptive", mutation rate is a tuple of two floats.
+            If method is "adaptive", mutation rate is a tuple of two floats : (rate_for_low_fitness, rate_for_high_fitness)
         sigma_mutation : float
             Standard deviation of the normal distribution from whcih are drawn mutations.
         method : str
@@ -325,15 +354,17 @@ class GeneticAlgorithm():
 
         """
         if method == "constant": # in the constant case, there is a unique mutation rate that is the same for every chromosomes
-            proba_mutation = mutation_rate
+            proba_mutation = self.mutation_rate
             
         elif method == "adaptive": # in the adaptive case, the mutation rate depends on the fitness of the chromosome
-            fit_avg = np.mean([self.calculate_fitness(indiv) for indiv in self.generation]) # average fitness among the population
-            fit_chr = self.calculate_fitness(chr) # fitness of the current individual
+            fit_avg = np.mean([self.calculate_individual_fitness(indiv) for indiv in self.generation]) # average fitness among the curent generation
+            fit_chr = self.calculate_individual_fitness(chr) # fitness of the current individual
             if fit_chr >= fit_avg : # individual is well fitted compared to the rest of the population 
-                proba_mutation = mutation_rate[1]
+                proba_mutation = self.mutation_rate[1]
+                if fit_chr >= -30 :
+                    sigma_mutation /= 5 # smaller mutation when closer to target
             else : # individual is badly fitted compared to the rest of the population
-                proba_mutation = mutation_rate[0]
+                proba_mutation = self.mutation_rate[0]
 
         else : 
             print("Error, unknow method") # if the method is incorrect, do not apply any mutation 
@@ -371,7 +402,7 @@ class GeneticAlgorithm():
         plt.legend()
         plt.show()
 
-    def stop_condition(self, m, threshold):
+    def stop_condition(self):
         """
         Stopping condition of the GA : 
         If the m individuals of the population with the highest fitness values 
@@ -391,17 +422,17 @@ class GeneticAlgorithm():
             True or false, depending on if we need to stop the GA or not.
 
         """
-        self.solution, max_fitness = self.retrieve_max_fitness_population(10) #  to retrieve only the m closest individuals to the target
+        self.solution, max_fitness = self.retrieve_max_fitness_population() #  to retrieve only the m closest individuals to the target
 
         stop = True
         for val in max_fitness :
-            if val < threshold :
+            if val < self.threshold :
                 stop = False
                 break
     
         return stop
     
-    def retrieve_max_fitness_population(self, m):
+    def retrieve_max_fitness_population(self):
         """
         Retrieve the m more fitted solutions in the population, 
         which are the m closest vectors to the target.
@@ -423,8 +454,8 @@ class GeneticAlgorithm():
         """last_fitnesses.sort()
         print(last_fitnesses[-m:])""" # only retrieve max fitness but not their index in the list
 
-        indices_max = np.argsort(last_fitnesses)[-m:][::-1] # finding the indices corresponding to the m highest values, in decreasing order
-        fitness_max = np.sort(last_fitnesses)[-m:][::-1] # m highest values of fitness (used in the stop condition)
+        indices_max = np.argsort(last_fitnesses)[-self.m:][::-1] # finding the indices corresponding to the m highest values, in decreasing order
+        fitness_max = np.sort(last_fitnesses)[-self.m:][::-1] # m highest values of fitness (used in the stop condition)
         population_max = [self.population[i] for i in indices_max]
         return population_max, fitness_max
     
@@ -446,13 +477,13 @@ class GeneticAlgorithm():
         while count_generation < self.max_iteration :
             count_generation += 1 
             self.dico_fitness[count_generation] = self.calculate_fitness()
-            if self.stop_condition(10, -1): # if we have solutions close enough to the target
+            if self.stop_condition(): # if we have solutions close enough to the target
                 break
-            self.generation = self.select(count_generation, criteria="Fortune_Wheel") 
-            new_population = self.crossover_and_mutations(crossover_proba=0.7)
+            self.generation = self.select(count_generation, criteria=self.selection_method) 
+            new_population = self.crossover_and_mutations()
             self.population = new_population
            
-
+        print(np.max(self.dico_fitness[count_generation]))
         # self.solution = self.retrieve_final_population(10) # already done in self.stop_condition()
         self.visualization()
         return self.solution
@@ -475,12 +506,12 @@ def test_mutation(ga, method = "constant"):
     chr = np.array([1,4,10,2,1,0,0,5,22,1,3,16,0,1,7,0], dtype = float)
     print("Before mutation: ")
     print(chr) 
-    ga.mutation(chr, 0.5, 1)
+    ga.mutation(chr, 0.5, 1, method)
     print("After mutation: ")
     print(chr)
     print("\n")
 
-def test_create_random_init_pop (ga, target) : 
+def test_create_random_init_pop(ga, target) : 
     print("Target :")
     print(target)
     print("Initial population :")
@@ -500,10 +531,11 @@ def test_unitaire():
     test_calculate_fitness(ga)
 
 def test_global():
-    target = np.random.rand(3,3) * 10
+    target = np.random.rand(8,8,128) * 10
     target = target.flatten(order = "C")
     print(f"target : {target}")
-    ga = GeneticAlgorithm(target, 1000)
+    ga = GeneticAlgorithm(target, max_iteration=1000, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
+                          crossover_proba=0.7, crossover_method="uniform", mutation_rate=(0.3, 0.05), sigma_mutation=1.5, mutation_method="adaptive")
     solutions = ga.main_loop()
     print(len(solutions))
     for v in solutions :
