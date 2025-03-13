@@ -115,7 +115,8 @@ class GeneticAlgorithm():
             fitness.append(self.calculate_individual_fitness(self.population[i]))
             # fitness.append(-np.sqrt(np.sum(np.square(self.population[i] - self.target_photo)))) #Compute euclidean distance with the formula"""
         
-        fitness = -np.sqrt(np.sum(np.square(self.population - self.target_photo), axis=1))
+        # fitness = -np.sqrt(np.sum(np.square(self.population - self.target_photo), axis=1))
+        fitness = -np.linalg.norm(self.population - self.target_photo, axis=1)
         return fitness.tolist()
     
     def calculate_individual_fitness(self, indiv):
@@ -133,7 +134,8 @@ class GeneticAlgorithm():
             Euclidian distance between the parameter and the target vector
 
         """ 
-        fitness_val = -np.sqrt(np.sum(np.square(indiv - self.target_photo)))
+        # fitness_val = -np.sqrt(np.sum(np.square(indiv - self.target_photo)))
+        fitness_val = -np.linalg.norm(indiv - self.target_photo)
         return fitness_val
     
     def select(self, nb_generation, criteria = "threshold"):
