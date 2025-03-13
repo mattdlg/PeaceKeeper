@@ -84,12 +84,13 @@ class GeneticAlgorithm():
 
         """
 
-        init_population = []
+        init_population = np.random.rand(size_pop, self.dimension) * 10
 
-        for _ in range(size_pop) : 
+        """for _ in range(size_pop) : 
             # Attention la vrai population ça sera pas juste des entiers et surtout pas que des 0 et des 1
             init_population.append(np.random.rand(self.dimension)*10) #Generate an individual randomly
-        init_population = np.array(init_population)
+        init_population = np.array(init_population)"""
+        
         return init_population
     
     def calculate_fitness(self):
