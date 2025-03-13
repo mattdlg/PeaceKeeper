@@ -79,8 +79,8 @@ class GeneticAlgorithm():
 
         Returns
         -------
-        init_population : list
-            List of the vectors of the initial individuals generated randomly
+        init_population : np.array
+            Array of the vectors of the initial individuals generated randomly
 
         """
 
@@ -89,7 +89,7 @@ class GeneticAlgorithm():
         for _ in range(size_pop) : 
             # Attention la vrai population ça sera pas juste des entiers et surtout pas que des 0 et des 1
             init_population.append(np.random.rand(self.dimension)*10) #Generate an individual randomly
-
+        init_population = np.array(init_population)
         return init_population
     
     def calculate_fitness(self):
@@ -109,13 +109,14 @@ class GeneticAlgorithm():
 
         """
 
-        fitness = []
+        """fitness = []
         for i in range(len(self.population)) :
             # print(self.population[i])
             fitness.append(self.calculate_individual_fitness(self.population[i]))
-            # fitness.append(-np.sqrt(np.sum(np.square(self.population[i] - self.target_photo)))) #Compute euclidean distance with the formula
-
-        return fitness
+            # fitness.append(-np.sqrt(np.sum(np.square(self.population[i] - self.target_photo)))) #Compute euclidean distance with the formula"""
+        
+        fitness = -np.sqrt(np.sum(np.square(self.population - self.target_photo), axis=1))
+        return fitness.tolist()
     
     def calculate_individual_fitness(self, indiv):
         """
@@ -247,6 +248,7 @@ class GeneticAlgorithm():
             new_population.append(child1)
             new_population.append(child2)
             
+        new_population = np.array(new_population)
         return new_population
     
     def crossover(self, parent1, parent2, method = "single-point"):
@@ -531,7 +533,7 @@ def test_unitaire():
     test_calculate_fitness(ga)
 
 def test_global():
-    target = np.random.rand(8,8,128) * 10
+    target = np.random.rand(8,8) * 10
     target = target.flatten(order = "C")
     print(f"target : {target}")
     ga = GeneticAlgorithm(target, max_iteration=1000, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
