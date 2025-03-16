@@ -92,7 +92,7 @@ class GeneticAlgorithm():
 
         """
 
-        init_population = np.random.uniform(0, 10, (size_pop, self.dimension))
+        init_population = np.random.uniform(-10, 10, (size_pop, self.dimension))
         # init_population = np.random.normal(0, 2, (size_pop,self.dimension)) 
 
         """for _ in range(size_pop) : 
@@ -194,7 +194,7 @@ class GeneticAlgorithm():
                     if self.dico_fitness[nb_generation][i] > max_fitness_after_threshold :    # Store the individual that is closer to the average fitness in case the number of individuals selected isn't pair.
                         max_fitness_after_threshold, pop = self.dico_fitness[nb_generation][i], self.population[i]
 
-            if len(generation)%2 != 0 :       # if we don't have a pair number of individuals
+            if len(generation)%2 != 0 : # if we don't have a pair number of individuals
                 generation.append(pop)
 
             return generation
@@ -212,7 +212,7 @@ class GeneticAlgorithm():
             fitness_array = fitness_array[sorted_indices[elite_size:]]"""
 
             min_fitness = np.min(fitness_values) # compute the most negative fitness -> furtherst away from target
-            transformed_fitness = [abs(f - min_fitness) for f in fitness_values] # translate value so that the closest fitness to 0 has the highest new positive value"""
+            # transformed_fitness = [abs(f - min_fitness) for f in fitness_values] # translate value so that the closest fitness to 0 has the highest new positive value
             
             transformed_fitness = np.abs(np.array(fitness_values) - min_fitness)
             
@@ -226,7 +226,7 @@ class GeneticAlgorithm():
             else:
                 proba_individuals = [f / sum_fitness for f in transformed_fitness] # normalisation of the fitness value by the sum of all fitness"""
 
-            proba_individuals = transformed_fitness / np.sum(transformed_fitness) if np.sum(transformed_fitness) != 0 else np.ones_like(transformed_fitness) / len(transformed_fitness)
+            proba_individuals = transformed_fitness ** 0.5 / np.sum(transformed_fitness ** 0.5) if np.sum(transformed_fitness) != 0 else np.ones_like(transformed_fitness) / len(transformed_fitness)
 
             if len(self.population)%2 == 0 : # Test la parité de la population pour générer un nombre pair d'individus
                 nb_tirages = len(self.population)//2
@@ -241,7 +241,12 @@ class GeneticAlgorithm():
             index_choice = np.random.choice(len(self.population), size = nb_tirages, replace = False, p = proba_individuals) # list of the selected individuals according to their probability
             # index_choice = np.random.choice(sorted_indices[elite_size:], size = nb_tirages, replace = False, p = proba_individuals)
             generation = [self.population[k] for k in index_choice]
-            generation = generation # + elite
+            # generation = generation + elite
+
+            """max_indice = np.argsort(fitness_values)[-1]
+            elite = self.population[max_indice] 
+            generation[-1] = elite"""
+
             return generation
 
         elif criteria == "tournament":
@@ -370,6 +375,13 @@ class GeneticAlgorithm():
             child1 = np.random.uniform(lower, upper)
             child2 = np.random.uniform(lower, upper)
 
+        elif method == "max_diversity": 
+            alpha = np.random.uniform(0.3, 0.7)  # Varie aléatoirement l’intensité du mélange
+            child1 = alpha * parent1 + (1 - alpha) * parent2
+            child2 = (1 - alpha) * parent1 + alpha * parent2
+            # T = max(0.2, 1 - self.count_generation / self.max_iteration)
+            return child1 + np.random.normal(0, 0.2, size=parent1.shape), child2 + np.random.normal(0, 0.2, size=parent2.shape)
+
         else : 
             print("Error, unknown method")
             child1, child2 = parent1, parent2 # keep children equal to parents if a wrong method is called
@@ -439,6 +451,8 @@ class GeneticAlgorithm():
                 chr[i] += m"""
         
         T = max(0.01, 1 - self.count_generation / self.max_iteration)
+        """if np.std(self.population, axis=0).mean() < 0.1:  # Seuil de diversité
+            self.sigma_mutation *= 1.2  # Réaugmente la mutation temporairement"""
         mask = np.random.rand(self.dimension) < proba_mutation
         mutations = np.random.normal(0, sigma_mutation*T, self.dimension)
         chr[mask] += mutations[mask]
@@ -554,10 +568,14 @@ class GeneticAlgorithm():
 
             """if self.count_generation % 50 == 0:
                 self.refine_best_individual()"""
+            """if self.count_generation % 50 == 0:  # Toutes les 50 générations
+                n_migrants = max(1, len(self.population) // 10)  # Remplace 10% de la pop
+                self.population[:n_migrants] = np.random.uniform(-10, 10, (n_migrants, self.dimension))"""
 
             # self.sigma_mutation *= 0.98 # decrease the size of mutations at each generation because closer to the target, smaller mutations are more beneficial
            
         print(np.max(self.dico_fitness[self.count_generation]))
+        print("Écart-type des coordonnées finales :", np.std(self.solution, axis=0).mean())
         # self.solution = self.retrieve_final_population(10) # already done in self.stop_condition()
         self.visualization()
         return self.solution
@@ -589,7 +607,8 @@ def test_mutation(ga, method = "constant"):
     chr = np.array([1,4,10,2,1,0,0,5,22,1,3,16,0,1,7,0], dtype = float)
     print("Before mutation: ")
     print(chr) 
-    ga.mutation(chr, 0.5, 1, method)
+    ga.dico_fitness[ga.count_generation] = ga.calculate_fitness()
+    ga.mutation(chr, 1, method)
     print("After mutation: ")
     print(chr)
     print("\n")
@@ -607,9 +626,10 @@ def test_calculate_fitness(ga) :
 
 def test_unitaire():
     target = np.array([1,0,1,1,1,0,0,0,1,1,0,1,0,1,1,0])
-    ga = GeneticAlgorithm(target, 10000)
+    ga = GeneticAlgorithm(target, max_iteration=1000, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
+                          crossover_proba=0.7, crossover_method="uniform", mutation_rate=(0.5, 0.05), sigma_mutation=1.5, mutation_method="adaptive")
     test_crossing_over(ga, "uniform")
-    test_mutation(ga)
+    test_mutation(ga, "adaptive")
     test_create_random_init_pop(ga, target)
     test_calculate_fitness(ga)
 
@@ -617,8 +637,8 @@ def test_global():
     target = np.random.rand(8,8,128) * 10
     target = target.flatten(order = "C")
     print(f"target : {target}")
-    ga = GeneticAlgorithm(target, max_iteration=500, size_pop=300, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
-                          crossover_proba=0.7, crossover_method="uniform", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
+    ga = GeneticAlgorithm(target, max_iteration=500, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
+                          crossover_proba=0.9, crossover_method="max_diversity", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
     solutions = ga.main_loop()
     print(len(solutions))
     for v in solutions :
