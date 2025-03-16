@@ -437,8 +437,10 @@ class GeneticAlgorithm():
             if np.random.random_sample() < proba_mutation : 
                 m = np.random.normal(0, sigma_mutation) # mutations are drawn from a normal distribution distributed around 0. Modifying sigma allows to have bigger or smaller mutations
                 chr[i] += m"""
+        
+        T = max(0.01, 1 - self.count_generation / self.max_iteration)
         mask = np.random.rand(self.dimension) < proba_mutation
-        mutations = np.random.normal(0, sigma_mutation, self.dimension)
+        mutations = np.random.normal(0, sigma_mutation*T, self.dimension)
         chr[mask] += mutations[mask]
 
     def visualization(self):
@@ -550,8 +552,8 @@ class GeneticAlgorithm():
             new_population = self.crossover_and_mutations()
             self.population = new_population
 
-            if self.count_generation % 50 == 0:
-                self.refine_best_individual()
+            """if self.count_generation % 50 == 0:
+                self.refine_best_individual()"""
 
             # self.sigma_mutation *= 0.98 # decrease the size of mutations at each generation because closer to the target, smaller mutations are more beneficial
            
