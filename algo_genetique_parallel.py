@@ -11,13 +11,14 @@ Auteurs :
     Deléglise Matthieu et Durand Julie
 -------------------------------
 Version : 
-    1.7 (13/03/2025)
+    1.8 (16/03/2025)
 """
 import numpy as np
 import matplotlib.pyplot as plt
 from random import choices
 
 from numba import njit
+from joblib import Parallel, delayed
 
 @njit(fastmath=True)
 def fast_norm(x):
@@ -128,6 +129,10 @@ class GeneticAlgorithm():
         return fitness.tolist()"""
         return fast_norm(self.population - self.target_photo).tolist()
     
+    def parallel_calculate_fitness(self):
+        fitness = Parallel(n_jobs=-1)(delayed(np.linalg.norm)(indiv - self.target_photo) for indiv in self.population)
+        return (-np.array(fitness)).tolist()
+    
     def calculate_individual_fitness(self, indiv):
         """
         Function to calculate the fitness of a single individual given as paramter.
@@ -199,6 +204,12 @@ class GeneticAlgorithm():
             #table_proba = []
             # max_fitness = np.max(list(self.dico_fitness.values())[-1][:]) # Retrieve the maximum fitness
             
+            """elite_size = int(len(self.population) * 0.1)  # Garde les 10 % meilleurs
+            sorted_indices = np.argsort(fitness_values)[::-1]
+            elite = [self.population[i] for i in sorted_indices[:elite_size]]
+            fitness_array = np.array(fitness_values)
+            fitness_array = fitness_array[sorted_indices[elite_size:]]"""
+
             min_fitness = np.min(fitness_values) # compute the most negative fitness -> furtherst away from target
             transformed_fitness = [abs(f - min_fitness) for f in fitness_values] # translate value so that the closest fitness to 0 has the highest new positive value"""
             
@@ -223,9 +234,13 @@ class GeneticAlgorithm():
             #sample = choices(table_proba, weights = proba_individuals, k = nb_tirages)  # Tirage de taille_de_population/2 pair individus selon leur probabilité. Attention !! ESt-ce qu'il y a des remises ???
             #generation.append(sample[:][0])
 
+            # nb_tirages -= elite_size  
+
             ## Ou 
             index_choice = np.random.choice(len(self.population), size = nb_tirages, replace = False, p = proba_individuals) # list of the selected individuals according to their probability
+            # index_choice = np.random.choice(sorted_indices[elite_size:], size = nb_tirages, replace = False, p = proba_individuals)
             generation = [self.population[k] for k in index_choice]
+            generation = generation # + elite
             return generation
 
         elif criteria == "tournament":
@@ -346,6 +361,14 @@ class GeneticAlgorithm():
                 random_index = np.random.randint(self.dimension) # randomly choose a coordinate to exchange to ensure that children differ from parents
                 child1[random_index] = parent2[random_index]
                 child2[random_index] = parent1[random_index]
+        
+        elif method == "BLX-alpha":
+            alpha = 0.5
+            lower = np.minimum(parent1, parent2) - alpha * np.abs(parent1 - parent2)
+            upper = np.maximum(parent1, parent2) + alpha * np.abs(parent1 - parent2)
+            child1 = np.random.uniform(lower, upper)
+            child2 = np.random.uniform(lower, upper)
+
         else : 
             print("Error, unknown method")
             child1, child2 = parent1, parent2 # keep children equal to parents if a wrong method is called
@@ -579,7 +602,7 @@ def test_global():
     target = target.flatten(order = "C")
     print(f"target : {target}")
     ga = GeneticAlgorithm(target, max_iteration=500, size_pop=300, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
-                          crossover_proba=0.7, crossover_method="uniform", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
+                          crossover_proba=0.7, crossover_method="BLX-alpha", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
     solutions = ga.main_loop()
     print(len(solutions))
     for v in solutions :
