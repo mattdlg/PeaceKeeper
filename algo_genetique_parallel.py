@@ -19,6 +19,7 @@ from random import choices
 
 from numba import njit
 from joblib import Parallel, delayed
+from scipy.optimize import minimize
 
 @njit(fastmath=True)
 def fast_norm(x):
@@ -541,6 +542,7 @@ class GeneticAlgorithm():
         
         while self.count_generation < self.max_iteration :
             self.count_generation += 1 
+            print(self.count_generation)
             self.dico_fitness[self.count_generation] = self.calculate_fitness()
             if self.stop_condition(): # if we have solutions close enough to the target
                 break
@@ -548,12 +550,24 @@ class GeneticAlgorithm():
             new_population = self.crossover_and_mutations()
             self.population = new_population
 
+            if self.count_generation % 50 == 0:
+                self.refine_best_individual()
+
             # self.sigma_mutation *= 0.98 # decrease the size of mutations at each generation because closer to the target, smaller mutations are more beneficial
            
         print(np.max(self.dico_fitness[self.count_generation]))
         # self.solution = self.retrieve_final_population(10) # already done in self.stop_condition()
         self.visualization()
         return self.solution
+    
+    def refine_best_individual(self):
+        best_idx = np.argmax(self.dico_fitness[self.count_generation])
+        best_individual = self.population[best_idx]
+
+        result = minimize(lambda x: np.linalg.norm(x - self.target_photo), best_individual, method="BFGS")
+        
+        if result.success:
+            self.population[best_idx] = result.x  # Remplace par la version optimisée
 
 
 
@@ -602,7 +616,7 @@ def test_global():
     target = target.flatten(order = "C")
     print(f"target : {target}")
     ga = GeneticAlgorithm(target, max_iteration=500, size_pop=300, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
-                          crossover_proba=0.7, crossover_method="BLX-alpha", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
+                          crossover_proba=0.7, crossover_method="uniform", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
     solutions = ga.main_loop()
     print(len(solutions))
     for v in solutions :
