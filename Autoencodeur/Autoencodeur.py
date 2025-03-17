@@ -30,6 +30,7 @@ class CelebADataset(Dataset):
 
     Custom dataset class for loading and preprocessing images.
     """
+
     def __init__(self, folder, transform=None, max_images=None):
         """
         Creation of an instance of the GeneticAlgorithm class.
@@ -57,7 +58,8 @@ class CelebADataset(Dataset):
         self.image_files = sorted([os.path.join(folder, f) for f in os.listdir(folder)
                                    if f.lower().endswith(('.jpg', '.jpeg', '.png'))])
 
-        self.image_files = self.image_files[:max_images] # If max_images is set, the list is limited to the first 'max_images' files
+        self.image_files = self.image_files[
+                           :max_images]  # If max_images is set, the list is limited to the first 'max_images' files
 
     def __len__(self):
         """
@@ -88,11 +90,11 @@ class CelebADataset(Dataset):
         """
         image_path = self.image_files[index]
 
-        image = Image.open(image_path).convert("RGB") # Ensure 3-channel color format
+        image = Image.open(image_path).convert("RGB")  # Ensure 3-channel color format
         if self.transform:
             image = self.transform(image)
 
-        return image, 0 # The label is not relevant for autoencoders
+        return image, 0  # The label is not relevant for autoencoders
 
 
 # ===== 2. Define Image Transformations =====
@@ -104,7 +106,7 @@ transform_ = transforms.Compose([
 ])
 
 # ===== 3. Load Dataset =====
-data_dir = "/content/img_align_celeba"  # <-- Update this path to match your local environment
+data_dir = "/Data bases/Celeb A/Images/img_align_celeba"  # <-- Path à update en fonction de là où sont stockés les img
 dataset = CelebADataset(folder=data_dir, transform=transform_, max_images=2000)
 
 print(f"Total number of images used : {len(dataset)}")
@@ -119,8 +121,9 @@ batchSize = 32
 train_loader = DataLoader(train_dataset, batch_size=batchSize, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batchSize, shuffle=False)
 
-#print(f"Dataset d'entraînement : {train_size} images")
-#print(f"Dataset de test : {test_size} images")
+
+print(f"Dataset d'entraînement : {train_size} images")
+print(f"Dataset de test : {test_size} images")
 
 
 # ===== 5. Define the Convolutional Autoencoder =====
@@ -160,11 +163,11 @@ class ConvAutoencoder(nn.Module):
 
         # --- Encoder ---
         self.encoder = nn.Sequential(
-            nn.Conv2d(3, 16, kernel_size=3, stride=2, padding=1),  # 128x128 -> 16x64x64
+            nn.Conv2d(3, 16, kernel_size=3, stride=2, padding=1),  # 3x128x128 -> 16x64x64
             nn.ReLU(True),
-            nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1),  # 64x64 -> 32x32x32
+            nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1),  # 16x64x64 -> 32x32x32
             nn.ReLU(True),
-            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),  # 32x32 -> 64x16x16
+            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),  # 32x32x32 -> 64x16x16
             nn.ReLU(True),
             nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1),  # 16x16 -> 128x8x8
             nn.ReLU(True),
@@ -172,7 +175,7 @@ class ConvAutoencoder(nn.Module):
 
         # --- Decoder ---
         self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(128, 64, kernel_size=3, stride=2, padding=1, output_padding=1),  # 8x8 -> 64x16x16
+            nn.ConvTranspose2d(128, 64, kernel_size=3, stride=2, padding=1, output_padding=1),  # 128x8x8 -> 64x16x16
             nn.ReLU(True),
             nn.ConvTranspose2d(64, 32, kernel_size=3, stride=2, padding=1, output_padding=1),  # 16x16 -> 32x32x32
             nn.ReLU(True),
@@ -313,48 +316,9 @@ print("Training completed successfully")
 torch.save(model.state_dict(), 'conv_autoencoder.pth')
 print("Model saved as 'conv_autoencoder.pth'")
 
-
-# ===== 8. Testing on an External Image =====
+# ===== 8. Test on an external image by getting first latent vector then reconstruction =====
 # Specify the path to the external image (ensure it is not in the training or test set)
-external_image_path = "/content/img_align_celeba/002001.jpg"  # <-- Modify if necessary
-
-# Load and preprocess the external image
-external_img = Image.open(external_image_path).convert("RGB")
-external_img_transformed = transform_(external_img)
-
-# Add a batch dimension to match PyTorch model input requirements
-external_img_batch = external_img_transformed.unsqueeze(0).to(device)
-
-# Run the model in evaluation mode
-model.eval()
-with torch.no_grad():
-    reconstructed_batch = model(external_img_batch)
-
-# Remove batch dimension and convert tensor to image format
-reconstructed_img_tensor = reconstructed_batch.squeeze(0).cpu() # Convert from [C, H, W] to [H, W, C]
-reconstructed_img = reconstructed_img_tensor.numpy().transpose(1, 2, 0)
-
-# ===== 9. Visualization of the Original and Reconstructed Image =====
-plt.figure(figsize=(10, 5))
-
-# Display the original external image
-plt.subplot(1, 2, 1)
-plt.title("Original external image")
-plt.imshow(external_img)
-plt.axis("off")
-
-# Display the reconstructed image
-plt.subplot(1, 2, 2)
-plt.title("Reconstructed image")
-plt.imshow(reconstructed_img)
-plt.axis("off")
-
-plt.show()
-
-
-# ===== 10. Test on an external image by getting first latent vector then reconstruction =====
-# Specify the path to the external image (ensure it is not in the training or test set)
-external_image_path = "/content/img_align_celeba/002001.jpg"  # <-- Modify if necessary
+external_image_path = "/content/img_align_celeba/200001.jpg"  # <-- Modify if necessary
 
 # Load and preprocess the external image
 external_img = Image.open(external_image_path).convert("RGB")
@@ -377,10 +341,10 @@ with torch.no_grad():
     reconstructed_batch = model.decode(latent_vector)
 
 # Remove batch dimension and convert tensor to image format
-reconstructed_img_tensor = reconstructed_batch.squeeze(0).cpu() # Convert from [C, H, W] to [H, W, C]
+reconstructed_img_tensor = reconstructed_batch.squeeze(0).cpu()  # Convert from [C, H, W] to [H, W, C]
 reconstructed_img = reconstructed_img_tensor.numpy().transpose(1, 2, 0)
 
-# ===== 11. Visualization of the Original and Reconstructed Image =====
+# ===== 9. Visualization of the Original and Reconstructed Image =====
 plt.figure(figsize=(10, 5))
 
 # Display the original external image
@@ -396,5 +360,3 @@ plt.imshow(reconstructed_img)
 plt.axis("off")
 
 plt.show()
-
-
