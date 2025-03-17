@@ -100,6 +100,12 @@ class ImageApp:
                     torch.nn.Sigmoid()
                 )
 
+            def encode(self, x):
+                return self.encoder(x)
+
+            def decode(self, z):
+                return self.decoder(z)
+
             def forward(self, x):
                 return self.decoder(self.encoder(x))
 
@@ -170,7 +176,15 @@ class ImageApp:
         tensor_img = self.transform(img).unsqueeze(0).to(self.device)
 
         with torch.no_grad():
-            reconstructed = self.model(tensor_img).cpu().numpy()[0].transpose(1, 2, 0)
+            # Étape 1: Encodage vers l'espace latent
+            latent_vector = self.model.encode(tensor_img)
+
+            # [SECTION POUR ALGORITHME GÉNÉTIQUE]
+            # Ici on pourrait modifier le latent_vector avant décodage
+            # Ex: latent_vector = genetic_algorithm(latent_vector)
+
+            # Étape 2: Décodage à partir de l'espace latent
+            reconstructed = self.model.decode(latent_vector).cpu().numpy()[0].transpose(1, 2, 0)
 
         return img, Image.fromarray((reconstructed * 255).astype(np.uint8))
 
