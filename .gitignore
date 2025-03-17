@@ -1,0 +1,4 @@
+# ignore sphinx docs
+**/docs
+**/test.py
+
