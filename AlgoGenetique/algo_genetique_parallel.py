@@ -574,7 +574,7 @@ class GeneticAlgorithm():
 
             # self.sigma_mutation *= 0.98 # decrease the size of mutations at each generation because closer to the target, smaller mutations are more beneficial
            
-        print(np.max(self.dico_fitness[self.count_generation]))
+        # print(np.max(self.dico_fitness[self.count_generation]))
         # print("Écart-type des coordonnées finales :", np.std(self.solution, axis=0).mean())
         # self.solution = self.retrieve_final_population(10) # already done in self.stop_condition()
         return self.solution
