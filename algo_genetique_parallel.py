@@ -678,26 +678,20 @@ def test_separation():
     for s in reconstructed_solutions: 
         print(f" norm : {-np.linalg.norm(s-target)}")
 
+
+def run_ga(i, target):
+    partial_target = target[i, :, :].flatten(order="C")
+    ga = GeneticAlgorithm(partial_target, max_iteration=500, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, 
+                            selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="max_diversity", 
+                            mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
+    return ga.main_loop()
+
 def real_separation():
     target = np.random.rand(128,8,8) * 10
     dimensions = target.shape
-    solutions = []
-    for i in range(dimensions[0]): # separation of the different canal of the vector
-        partial_target = target[i,:,:].flatten(order = "C")
-        ga = GeneticAlgorithm(partial_target, max_iteration=500, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
-                          crossover_proba=0.9, crossover_method="max_diversity", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
-        partial_solutions = ga.main_loop()
-        # ga.visualization()
-        solutions.append(partial_solutions)
+    solutions = Parallel(n_jobs=-1)(delayed(run_ga)(i, target) for i in range(dimensions[0]))
 
-    # reconstruction of vectors of the good size
-    reconstructed_solutions = []
-    for j in range(len(solutions[0])):
-        reconstruction = np.concatenate([solutions[k][j] for k in range(len(solutions))])
-        reconstruction = np.reshape(reconstruction, target.shape, order = "C")
-        
-        # print(reconstruction.shape)
-        reconstructed_solutions.append(reconstruction)
+    reconstructed_solutions = np.stack(solutions, axis=1).reshape((-1, *target.shape), order="C")
         
     print(f"target : {target}")
     print(f"solutions :")
