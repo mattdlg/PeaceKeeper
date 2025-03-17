@@ -1,0 +1,278 @@
+import os
+from PIL import Image
+from torch.utils.data import Dataset, random_split, DataLoader
+from torchvision import transforms
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import matplotlib.pyplot as plt
+
+
+# ===== 1. Création d'un Dataset personnalisé =====
+class CelebADataset(Dataset):
+    def __init__(self, folder, transform=None, max_images=None):
+        """
+        Crée un dataset personnalisé pour charger et prétraiter des images.
+
+        Parameters
+        ----------
+        folder : str
+            Chemin vers le dossier contenant toutes les images.
+        transform : torchvision.transforms.Compose, optional
+            Transformations à appliquer sur chaque image (redimensionnement, recadrage, conversion en tenseur, etc.).
+        max_images : int, optional
+            Nombre maximum d'images à utiliser. Si None, toutes les images du dossier sont utilisées.
+
+        Attributes
+        ----------
+        folder : str
+            Chemin du dossier contenant les images.
+        transform : torchvision.transforms.Compose or None
+            Transformations appliquées sur les images.
+        image_files : list of str
+            Liste des chemins des fichiers image, triés et potentiellement limités à `max_images`.
+
+        """
+        self.folder = folder
+        self.transform = transform
+        # Lister les fichiers image (extension .jpg, .png, .jpeg)
+        self.image_files = sorted([os.path.join(folder, f) for f in os.listdir(folder)
+                                   if f.lower().endswith(('.jpg', '.jpeg', '.png'))])
+
+        # Si max_images est défini, on limite la liste aux premiers 'max_images' fichiers
+        self.image_files = self.image_files[:max_images]
+
+    def __len__(self):
+        """
+        Retourne le nombre total d'images dans le dataset.
+
+        Returns
+        -------
+        int
+            Nombre d'images disponibles dans le dataset.
+        """
+        return len(self.image_files)
+
+    def __getitem__(self, index):
+        """
+        Récupère une image à l'indice spécifié.
+
+        Parameters
+        ----------
+        index : int
+            Index de l'image à récupérer.
+
+        Returns
+        -------
+        torch.Tensor
+            Image transformée sous forme de tenseur.
+        int
+            Label fictif (0), utilisé uniquement pour la compatibilité avec PyTorch.
+        """
+        # Récupère le chemin de l'image à l'indice donné
+        image_path = self.image_files[index]
+
+        # Ouvre l'image et convertit en format RGB pour s'assurer d'avoir trois canaux de couleur
+        image = Image.open(image_path).convert("RGB")
+        if self.transform:
+            image = self.transform(image)
+
+        # Pour un autoencodeur, la cible est la même image en entrée.
+        # Ici, on ne nécessite pas de label réel, donc on retourne un label fictif (0)
+        return image, 0
+
+
+# ===== 2. Définir les transformations =====
+image_size = (128, 128)
+transform_ = transforms.Compose([
+    transforms.Resize(image_size),
+    transforms.CenterCrop(image_size),
+    transforms.ToTensor(),  # Convertit l'image en tenseur avec des valeurs dans [0,1]
+])
+
+# ===== 3. Charger le dataset =====
+data_dir = "Data bases/Celeb A/Images/img_align_celeba"  # <-- à modifier en fonction de l'environnement local
+dataset = CelebADataset(folder=data_dir, transform=transform_, max_images=2000)
+
+print(f"Nombre total d'images utilisées : {len(dataset)}")
+
+# ===== 4. Split du dataset en 90% train et 10% test =====
+total_size = len(dataset)
+train_size = int(0.9 * total_size)
+test_size = total_size - train_size
+train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
+
+batchSize = 32
+train_loader = DataLoader(train_dataset, batch_size=batchSize, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batchSize, shuffle=False)
+
+print(f"Dataset d'entraînement : {train_size} images")
+print(f"Dataset de test : {test_size} images")
+
+
+# ===== 5. Définition de l'Autoencodeur Convolutionnel =====
+class ConvAutoencoder(nn.Module):
+    """
+    Un autoencodeur convolutionnel pour la reconstruction d'images.
+
+    L'autoencodeur est constitué de deux parties :
+    - Un encodeur basé sur des couches convolutives qui réduit progressivement la dimension spatiale de l'image
+      tout en apprenant une représentation latente.
+    - Un décodeur basé sur des couches de convolution transposée qui reconstruit l'image originale à partir
+      de la représentation latente.
+
+    Attributs
+    ----------
+    encoder : nn.Sequential
+        Séquence de couches convolutives qui encode l'image d'entrée en un espace latent.
+    decoder : nn.Sequential
+        Séquence de couches de convolution transposée qui reconstruit l'image à partir de l'espace latent.
+
+    Méthodes
+    ---------
+    forward(x)
+        Applique l'encodeur et le décodeur pour obtenir une image reconstruite.
+    """
+
+    def __init__(self):
+        """
+        Initialise l'architecture de l'autoencodeur.
+
+        L'encodeur réduit progressivement la taille de l'image en appliquant des convolutions avec un stride de 2.
+        Le décodeur reconstruit l'image originale en utilisant des convolutions transposées.
+
+        L'image d'entrée est supposée être de taille [3, 128, 128] (RVB).
+        """
+        super(ConvAutoencoder, self).__init__()
+
+        # --- Encoder ---
+        self.encoder = nn.Sequential(
+            nn.Conv2d(3, 16, kernel_size=3, stride=2, padding=1),  # 128x128 -> 16x64x64
+            nn.ReLU(True),
+            nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1),  # 64x64 -> 32x32x32
+            nn.ReLU(True),
+            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),  # 32x32 -> 64x16x16
+            nn.ReLU(True),
+            nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1),  # 16x16 -> 128x8x8
+            nn.ReLU(True),
+        )
+
+        # --- Decoder ---
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose2d(128, 64, kernel_size=3, stride=2, padding=1, output_padding=1),  # 8x8 -> 64x16x16
+            nn.ReLU(True),
+            nn.ConvTranspose2d(64, 32, kernel_size=3, stride=2, padding=1, output_padding=1),  # 16x16 -> 32x32x32
+            nn.ReLU(True),
+            nn.ConvTranspose2d(32, 16, kernel_size=3, stride=2, padding=1, output_padding=1),  # 32x32 -> 16x64x64
+            nn.ReLU(True),
+            nn.ConvTranspose2d(16, 3, kernel_size=3, stride=2, padding=1, output_padding=1),  # 64x64 -> 3x128x128
+            nn.Sigmoid()  # Normalisation entre [0,1]
+        )
+
+    def forward(self, x):
+        """
+        Effectue un passage avant (forward) à travers l'autoencodeur.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Tenseur d'entrée représentant une image de taille [batch_size, 3, 128, 128].
+
+        Returns
+        -------
+        torch.Tensor
+            Image reconstruite de même taille que l'entrée ([batch_size, 3, 128, 128]).
+        """
+        latent = self.encoder(x)
+        reconstructed = self.decoder(latent)
+        return reconstructed
+
+
+# ===== 6. Initialisation du modèle, de la fonction de coût et de l'optimiseur =====
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = ConvAutoencoder().to(device)
+
+# Choix de la fonction de coût : MSE (norme L2) ou L1
+loss_type = 'MSE'  # ou 'L1'
+if loss_type == 'MSE':
+    criterion = nn.MSELoss()
+elif loss_type == 'L1':
+    criterion = nn.L1Loss()
+else:
+    raise ValueError("loss_type doit être 'MSE' ou 'L1'.")
+
+optimizer = optim.Adam(model.parameters(), lr=1e-3)
+
+# ===== 7. Boucle d'entraînement =====
+num_epochs = 40  # Nombre d'epoch pour les tests
+
+for epoch in range(num_epochs):
+    model.train()  # Met le modèle en mode entraînement
+    running_loss = 0.0  # Stocke la perte totale sur une époque
+
+    for images, _ in train_loader:  # Les labels sont ignorés pour un autoencodeur
+        images = images.to(device)
+        optimizer.zero_grad()  # Réinitialisation du gradient
+        outputs = model(images)  # Passage avant (forward)
+        loss = criterion(outputs, images)  # Calcul de la perte
+        loss.backward()  # Calcul des gradients (backpropagation)
+        optimizer.step()  # Mise à jour des poids du modèle
+        running_loss += loss.item() * images.size(0)  # Accumulation des pertes
+
+    epoch_loss = running_loss / train_size
+    print(f"Epoch [{epoch + 1}/{num_epochs}], Loss Training: {epoch_loss:.4f}")
+
+    # Évaluation sur le set de test
+    model.eval()  # Met le modèle en mode évaluation
+    test_loss = 0.0
+
+    with torch.no_grad():  # Désactive le calcul des gradients
+        for images, _ in test_loader:
+            # Boucle sur les mini-batches de test: Charge les images du test set et effectue une prédiction.
+            images = images.to(device)
+            outputs = model(images)
+            loss = criterion(outputs, images)
+            test_loss += loss.item() * images.size(0)
+    test_loss = test_loss / test_size
+    print(f"Epoch [{epoch + 1}/{num_epochs}], Loss Test: {test_loss:.4f}")
+
+print("Entraînement terminé!")
+
+# ===== 7.1. Sauvegarde du modèle entraîné =====
+torch.save(model.state_dict(), 'conv_autoencoder.pth')
+print("Modèle sauvegardé sous 'conv_autoencoder.pth'")
+
+# ===== 8. Test sur une image externe =====
+# L'image externe ne doit pas faire partie de l'entraînement ni du test
+external_image_path = "Data bases/Celeb A/Images/img_align_celeba/002001.jpg"  # <-- à modifier si nécessaire
+external_img = Image.open(external_image_path).convert("RGB")
+external_img_transformed = transform_(external_img)
+
+# Ajouter une dimension pour former un batch
+external_img_batch = external_img_transformed.unsqueeze(0).to(device)
+# Ajoute une dimension pour créer un batch de taille 1
+# unsqueeze(0) transforme [C, H, W] en [1, C, H, W], car les modèles PyTorch attendent une entrée sous cette forme.
+
+# Passer l'image dans le modèle en mode évaluation
+model.eval()
+with torch.no_grad():
+    reconstructed_batch = model(external_img_batch)
+
+# Retirer la dimension batch et convertir le tenseur en image
+reconstructed_img_tensor = reconstructed_batch.squeeze(0).cpu()
+# Passage de [C, H, W] à [H, W, C]
+reconstructed_img = reconstructed_img_tensor.numpy().transpose(1, 2, 0)
+
+# ===== 9. Affichage de l'image externe et de sa reconstruction =====
+plt.figure(figsize=(10, 5))
+plt.subplot(1, 2, 1)
+plt.title("Image externe originale")
+plt.imshow(external_img)
+plt.axis("off")
+
+plt.subplot(1, 2, 2)
+plt.title("Image reconstruite")
+plt.imshow(reconstructed_img)
+plt.axis("off")
+plt.show()
+
