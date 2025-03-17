@@ -11,7 +11,7 @@ Auteurs :
     Deléglise Matthieu et Durand Julie
 -------------------------------
 Version : 
-    1.8 (16/03/2025)
+    1.9 (17/03/2025)
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -577,7 +577,6 @@ class GeneticAlgorithm():
         print(np.max(self.dico_fitness[self.count_generation]))
         print("Écart-type des coordonnées finales :", np.std(self.solution, axis=0).mean())
         # self.solution = self.retrieve_final_population(10) # already done in self.stop_condition()
-        self.visualization()
         return self.solution
     
     def refine_best_individual(self):
@@ -640,13 +639,51 @@ def test_global():
     ga = GeneticAlgorithm(target, max_iteration=500, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
                           crossover_proba=0.9, crossover_method="max_diversity", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
     solutions = ga.main_loop()
+    ga.visualization()
     print(len(solutions))
     for v in solutions :
         print(v)
 
+def test_separation():
+    target = np.random.rand(8,8,4) * 10
+    dimensions = target.shape
+    solutions = []
+    for i in range(dimensions[2]): # separation of the different canal of the vector
+        partial_target = target[:,:,i].flatten(order = "C")
+        ga = GeneticAlgorithm(partial_target, max_iteration=500, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
+                          crossover_proba=0.9, crossover_method="max_diversity", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
+        partial_solutions = ga.main_loop()
+        ga.visualization()
+        solutions.append(partial_solutions)
+    
+
+    # reconstruction of vectors of the good size
+    reconstructed_solutions = []
+    
+    for j in range(len(solutions[0])):
+        reconstruction = np.concatenate([solutions[k][j] for k in range(len(solutions))])
+        reconstruction = np.reshape(reconstruction, target.shape, order = "C")
+        
+        # print(reconstruction.shape)
+        reconstructed_solutions.append(reconstruction)
+        
+
+    print(f"target : {target}")
+    print(f"solutions :")
+    for s in reconstructed_solutions:
+        print(s)
+
+    print("Écart-type des coordonnées finales :", np.std(reconstructed_solutions).mean())
+
+    for s in reconstructed_solutions: 
+        print(f" norm : {-np.linalg.norm(s-target)}")
+
+
+
 if __name__ == "__main__" :
     # test_unitaire()
-    test_global()
+    # test_global()
+    test_separation()
 
 
     
