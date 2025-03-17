@@ -681,9 +681,9 @@ def test_separation():
 
 def run_ga(i, target):
     partial_target = target[i, :, :].flatten(order="C")
-    ga = GeneticAlgorithm(partial_target, max_iteration=500, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, 
+    ga = GeneticAlgorithm(partial_target, max_iteration=1000, size_pop=100, nb_to_retrieve=10, stop_threshold=-5, 
                             selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="max_diversity", 
-                            mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
+                            mutation_rate=(0.5, 0.05), sigma_mutation=0.8, mutation_method="adaptive")
     return ga.main_loop()
 
 def real_separation():
