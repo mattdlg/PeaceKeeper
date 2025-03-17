@@ -686,14 +686,17 @@ def run_ga(i, target):
                             mutation_rate=(0.5, 0.05), sigma_mutation=0.8, mutation_method="adaptive")
     return ga.main_loop()
 
-def real_separation():
-    target = np.random.rand(128,8,8) * 10
+def real_separation(target):
+    """
+    target : numpy array
+    reconstructed_solutions : numpy array
+    """
     dimensions = target.shape
     solutions = Parallel(n_jobs=-1)(delayed(run_ga)(i, target) for i in range(dimensions[0]))
 
     reconstructed_solutions = np.stack(solutions, axis=1).reshape((-1, *target.shape), order="C")
         
-    print(f"target : {target}")
+    """print(f"target : {target}")
     print(f"solutions :")
     for s in reconstructed_solutions:
         print(s)
@@ -701,13 +704,16 @@ def real_separation():
     print("Écart-type des coordonnées finales :", np.std(reconstructed_solutions).mean())
 
     for s in reconstructed_solutions: 
-        print(f" norm : {-np.linalg.norm(s-target)}")
+        print(f" norm : {-np.linalg.norm(s-target)}")"""
+    
+    return reconstructed_solutions
 
 if __name__ == "__main__" :
     # test_unitaire()
     # test_global()
     # test_separation()
-    real_separation()
+    target = np.random.rand(128,8,8) * 10
+    real_separation(target)
 
 
     
