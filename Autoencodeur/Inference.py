@@ -98,6 +98,9 @@ class ImageApp:
                     torch.nn.ReLU(True),
                     torch.nn.ConvTranspose2d(16, 3, 3, stride=2, padding=1, output_padding=1),
                     torch.nn.Sigmoid()
+                    # L'activation sigmoide permet de normaliser les sorties du décodeur pour qu'elles puissent
+                    # être interprétées comme des intensités de pixels (normalisées entre 0 et 1),
+                    # facilitant ainsi la conversion en image avec PIL
                 )
 
             def encode(self, x):
@@ -173,17 +176,32 @@ class ImageApp:
     def process_image(self, img_path):
         """Traite une image via l'autoencodeur"""
         img = Image.open(img_path).convert("RGB")
+
+        # La méthode unsqueeze(0) ajoute une dimension supplémentaire au tenseur, transformant ainsi une image de dimensions
+        # (C,H,W) en un tenseur de dimensions. (1,C,H,W). C'est essentiel pour le modèle qui attend une entrée
+        # sous forme de batch, même s'il n'y a qu'une seule image
         tensor_img = self.transform(img).unsqueeze(0).to(self.device)
 
         with torch.no_grad():
             # Étape 1: Encodage vers l'espace latent
             latent_vector = self.model.encode(tensor_img)
 
+            # print(latent_vector)
+            print(torch.Tensor.size(latent_vector))
+
             # [SECTION POUR ALGORITHME GÉNÉTIQUE]
             # Ici on pourrait modifier le latent_vector avant décodage
             # Ex: latent_vector = genetic_algorithm(latent_vector)
 
-            # Étape 2: Décodage à partir de l'espace latent
+            # Étape 2: Décodage à partir de l'espace latent:
+
+            # .cpu() assure que le tenseur est transféré sur le CPU
+            # .numpy() convertit le tenseur PyTorch en un tableau numpy, ce qui facilite la manipulation ultérieure
+            # en dehors de PyTorch
+            # [0] récupère la première (et ici unique) image du batch
+            # .transpose(1, 2, 0) réarrange les dimensions du tableau. Par défaut, PyTorch utilise l'ordre
+            # (channels, height, width) tandis que PIL et la plupart des bibliothèques d'affichage d'image attendent
+            # l'ordre (height, width, channels)
             reconstructed = self.model.decode(latent_vector).cpu().numpy()[0].transpose(1, 2, 0)
 
         return img, Image.fromarray((reconstructed * 255).astype(np.uint8))
