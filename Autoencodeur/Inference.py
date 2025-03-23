@@ -5,6 +5,7 @@ import random
 import os
 import torch
 import numpy as np
+from AlgoGenetique import algo_genetique_parallel
 from torchvision import transforms
 
 import sys
@@ -204,31 +205,22 @@ class ImageApp:
         with torch.no_grad():
             # Étape 1: Encodage vers l'espace latent
             latent_vector = self.model.encode(tensor_img)
-
-            # print(latent_vector)
-            print(torch.Tensor.size(latent_vector))
+            latent_vector = latent_vector.numpy()    # Convertit en np array
 
             # [SECTION POUR ALGORITHME GÉNÉTIQUE]
             # Ici on pourrait modifier le latent_vector avant décodage
             # Ex: latent_vector = genetic_algorithm(latent_vector)
-            target = np.array(latent_vector[0, :, :, :])
-            new_images = GA.real_separation(target)
-            print(new_images.shape)
-            print(new_images.dtype)
-            # Étape 2: Décodage à partir de l'espace latent:
-            print(new_images[0].shape)
-            test_img = torch.from_numpy(new_images[0]).unsqueeze(0)
-            reconstructed = self.model.decode(test_img).cpu().numpy().transpose(1,2,0)
+            
+            solutions = algo_genetique_parallel.real_separation(latent_vector[0])
 
-            # .cpu() assure que le tenseur est transféré sur le CPU
-            # .numpy() convertit le tenseur PyTorch en un tableau numpy, ce qui facilite la manipulation ultérieure
-            # en dehors de PyTorch
-            # [0] récupère la première (et ici unique) image du batch
-            # .transpose(1, 2, 0) réarrange les dimensions du tableau. Par défaut, PyTorch utilise l'ordre
-            # (channels, height, width) tandis que PIL et la plupart des bibliothèques d'affichage d'image attendent
-            # l'ordre (height, width, channels)
+            # Convertir en tenseur PyTorch
+            sol = torch.tensor(solutions[0], dtype=torch.float32) # Ne prendre que l'image en position 0, il faudra faire une boucle et afficher les 10 images après
 
-            # reconstructed = self.model.decode(latent_vector).cpu().numpy()[0].transpose(1, 2, 0)
+            # Changer la forme en [1, 128, 8, 8]
+            sol = sol.view(1, 128, 8, 8)
+
+            # Étape 2: Décodage à partir de l'espace latent
+            reconstructed = self.model.decode(sol).cpu().numpy()[0].transpose(1, 2, 0)
 
         return img, Image.fromarray((reconstructed * 255).astype(np.uint8))
 
