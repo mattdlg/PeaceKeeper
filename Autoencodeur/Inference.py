@@ -218,8 +218,17 @@ class ImageApp:
 
             # Changer la forme en [1, 128, 8, 8]
             sol = sol.view(1, 128, 8, 8)
- 
-            # Étape 2: Décodage à partir de l'espace latent
+
+            # Étape 2: Décodage à partir de l'espace latent:
+
+            # .cpu() assure que le tenseur est transféré sur le CPU
+            # .numpy() convertit le tenseur PyTorch en un tableau numpy, ce qui facilite la manipulation ultérieure
+            # en dehors de PyTorch
+            # [0] récupère la première (et ici unique) image du batch
+            # .transpose(1, 2, 0) réarrange les dimensions du tableau. Par défaut, PyTorch utilise l'ordre
+            # (channels, height, width) tandis que PIL et la plupart des bibliothèques d'affichage d'image attendent
+            # l'ordre (height, width, channels)
+            
             reconstructed = self.model.decode(sol).cpu().numpy()[0].transpose(1, 2, 0)
 
         return img, Image.fromarray((reconstructed * 255).astype(np.uint8))
