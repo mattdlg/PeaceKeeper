@@ -91,8 +91,8 @@ class GeneticAlgorithm():
             Array of the vectors of the initial individuals generated randomly
 
         """
-
-        init_population = np.random.uniform(-10, 10, (size_pop, self.dimension))
+        limit = np.max(self.target_photo)
+        init_population = np.random.uniform(-limit, limit, (size_pop, self.dimension))
         # init_population = np.random.normal(0, 2, (size_pop,self.dimension)) 
 
         """for _ in range(size_pop) : 
@@ -650,7 +650,7 @@ def test_separation():
     solutions = []
     for i in range(dimensions[2]): # separation of the different canal of the vector
         partial_target = target[:,:,i].flatten(order = "C")
-        ga = GeneticAlgorithm(partial_target, max_iteration=500, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
+        ga = GeneticAlgorithm(partial_target, max_iteration=500, size_pop=100, nb_to_retrieve=6, stop_threshold=-10, selection_method="Fortune_Wheel",
                           crossover_proba=0.9, crossover_method="max_diversity", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
         partial_solutions = ga.main_loop()
         ga.visualization()
@@ -702,11 +702,23 @@ def real_separation(target):
         print(s)
 
     print("Écart-type des coordonnées finales :", np.std(reconstructed_solutions).mean())
-
+    """
     for s in reconstructed_solutions: 
-        print(f" norm : {-np.linalg.norm(s-target)}")"""
+        print(f" norm : {-np.linalg.norm(s-target)}")
     
     return reconstructed_solutions
+
+def real_global(target):
+    target = target.flatten(order = "C")
+    # print(f"target : {target}")
+    ga = GeneticAlgorithm(target, max_iteration=500, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
+                          crossover_proba=0.9, crossover_method="max_diversity", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
+    solutions = ga.main_loop()
+    # ga.visualization()
+    # print(len(solutions))
+    """for v in solutions :
+        print(v)"""
+    return solutions
 
 if __name__ == "__main__" :
     # test_unitaire()

@@ -5,7 +5,6 @@ import random
 import os
 import torch
 import numpy as np
-from AlgoGenetique import algo_genetique_parallel
 from torchvision import transforms
 
 import sys
@@ -211,14 +210,15 @@ class ImageApp:
             # Ici on pourrait modifier le latent_vector avant décodage
             # Ex: latent_vector = genetic_algorithm(latent_vector)
             
-            solutions = algo_genetique_parallel.real_separation(latent_vector[0])
+            solutions = GA.real_separation(latent_vector[0])
+            # solutions = GA.real_global(latent_vector[0])
 
             # Convertir en tenseur PyTorch
             sol = torch.tensor(solutions[0], dtype=torch.float32) # Ne prendre que l'image en position 0, il faudra faire une boucle et afficher les 10 images après
 
             # Changer la forme en [1, 128, 8, 8]
             sol = sol.view(1, 128, 8, 8)
-
+ 
             # Étape 2: Décodage à partir de l'espace latent
             reconstructed = self.model.decode(sol).cpu().numpy()[0].transpose(1, 2, 0)
 
