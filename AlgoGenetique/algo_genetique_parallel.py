@@ -650,7 +650,7 @@ def test_separation():
     solutions = []
     for i in range(dimensions[2]): # separation of the different canal of the vector
         partial_target = target[:,:,i].flatten(order = "C")
-        ga = GeneticAlgorithm(partial_target, max_iteration=500, size_pop=100, nb_to_retrieve=6, stop_threshold=-10, selection_method="Fortune_Wheel",
+        ga = GeneticAlgorithm(partial_target, max_iteration=500, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
                           crossover_proba=0.9, crossover_method="max_diversity", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
         partial_solutions = ga.main_loop()
         ga.visualization()
@@ -681,7 +681,7 @@ def test_separation():
 
 def run_ga(i, target):
     partial_target = target[i, :, :].flatten(order="C")
-    ga = GeneticAlgorithm(partial_target, max_iteration=1000, size_pop=100, nb_to_retrieve=10, stop_threshold=-5, 
+    ga = GeneticAlgorithm(partial_target, max_iteration=2000, size_pop=100, nb_to_retrieve=6, stop_threshold=-1, 
                             selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="max_diversity", 
                             mutation_rate=(0.5, 0.05), sigma_mutation=0.8, mutation_method="adaptive")
     return ga.main_loop()
@@ -711,7 +711,7 @@ def real_separation(target):
 def real_global(target):
     target = target.flatten(order = "C")
     # print(f"target : {target}")
-    ga = GeneticAlgorithm(target, max_iteration=500, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
+    ga = GeneticAlgorithm(target, max_iteration=500, size_pop=100, nb_to_retrieve=6, stop_threshold=-10, selection_method="Fortune_Wheel",
                           crossover_proba=0.9, crossover_method="max_diversity", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
     solutions = ga.main_loop()
     # ga.visualization()

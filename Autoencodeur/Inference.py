@@ -166,7 +166,8 @@ class ImageApp:
     def process_selection(self, img_path):
         """Gère la sélection d'image"""
         if messagebox.askyesno("Confirmation", "L'algorithme sera appliqué sur cette image.\nVoulez-vous continuer ?"):
-            self.show_reconstruction(img_path)
+            # self.show_reconstruction(img_path)
+            self.show_whole_reconstruction(img_path)
 
     def show_reconstruction(self, img_path):
         """Affiche les résultats de reconstruction"""
@@ -191,6 +192,30 @@ class ImageApp:
         ttk.Button(self.image_frame,
                    text="Retour au menu",
                    command=self.load_new_images).pack(pady=20)
+        
+    def show_whole_reconstruction(self, img_path):
+        original, reconstructed = self.process_image(img_path)
+
+        self.clear_interface()
+
+        result_frame = ttk.Frame(self.image_frame)
+        result_frame.pack(expand=True, pady=20)
+
+        original_img_frame = ttk.Frame(result_frame)
+        original_img_frame.grid(row = 0, column = 1, padx=10, pady=5)
+        ttk.Label(original_img_frame, text="Image originale", font=self.title_font).pack(side="top", pady=10)
+        self.display_image(original, original_img_frame, "left")
+
+        for k in range(len(reconstructed)):
+            reconstructed_img_frame = ttk.Frame(result_frame)
+            reconstructed_img_frame.grid(row = 1 + k // 3, column = k % 3, padx=5, pady=5)
+            # ttk.Label(reconstructed_img_frame, text= f"Image reconstruite {k}", font=self.title_font).pack(side="top", pady=20)
+            self.display_image(reconstructed[k], reconstructed_img_frame, "right")
+
+        # Bouton de retour
+        ttk.Button(self.image_frame,
+                   text="Retour au menu",
+                   command=self.load_new_images).pack(pady=10)
 
     def process_image(self, img_path):
         """Traite une image via l'autoencodeur"""
@@ -212,12 +237,14 @@ class ImageApp:
             
             solutions = GA.real_separation(latent_vector[0])
             # solutions = GA.real_global(latent_vector[0])
+            # print(solutions.shape)
 
             # Convertir en tenseur PyTorch
-            sol = torch.tensor(solutions[0], dtype=torch.float32) # Ne prendre que l'image en position 0, il faudra faire une boucle et afficher les 10 images après
+            # sol = torch.tensor(solutions[0], dtype=torch.float32) # Ne prendre que l'image en position 0, il faudra faire une boucle et afficher les 10 images après
+            sol = torch.tensor(solutions, dtype=torch.float32)
 
             # Changer la forme en [1, 128, 8, 8]
-            sol = sol.view(1, 128, 8, 8)
+            sol = sol.view(solutions.shape[0], 128, 8, 8) # 6 images reconstructes
 
             # Étape 2: Décodage à partir de l'espace latent:
 
@@ -229,17 +256,25 @@ class ImageApp:
             # (channels, height, width) tandis que PIL et la plupart des bibliothèques d'affichage d'image attendent
             # l'ordre (height, width, channels)
             
-            reconstructed = self.model.decode(sol).cpu().numpy()[0].transpose(1, 2, 0)
+            # reconstructed = self.model.decode(sol).cpu().numpy()[0].transpose(1, 2, 0)
+            # print(self.model.decode(sol).cpu().numpy().shape)
+            reconstructed = self.model.decode(sol).cpu().numpy().transpose(0, 2, 3, 1)
 
-        return img, Image.fromarray((reconstructed * 255).astype(np.uint8))
+        img_reconstructed = []
+        for k in range(reconstructed.shape[0]):
+            img_reconstructed.append(Image.fromarray((reconstructed[k] * 255).astype(np.uint8)))
+
+        # return img, Image.fromarray((reconstructed * 255).astype(np.uint8))
+        return img, img_reconstructed
 
     # ---------- Utilitaires ----------
     def display_image(self, img, frame, side):
         """Affiche une image dans l'interface"""
-        disp_img = ImageTk.PhotoImage(img.resize((400, 400)))
+        disp_img = ImageTk.PhotoImage(img.resize((200, 200)))
         label = ttk.Label(frame, image=disp_img)
         label.image = disp_img
         label.pack(side=side, padx=20)
+        # pour relancer ensuite il faudra que ce soit des boutons comme au début
 
     def clear_interface(self):
         """Nettoie l'interface"""
