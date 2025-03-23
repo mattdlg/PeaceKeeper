@@ -24,7 +24,9 @@ class ImageApp:
         self.secondary_color = '#3498db'
 
         # Chemin des images
-        self.image_folder = "Data bases/Celeb A/Images/img_align_celeba/" # phi : "/Users/phifr/Documents/4A-S1/S2/DvptWeb/img_from_celeba"
+        # self.image_folder = "Data bases/Celeb A/Images/img_align_celeba/" # phi : "/Users/phifr/Documents/4A-S1/S2/DvptWeb/img_from_celeba"
+        # chemin d'accès dans le git : 
+        self.image_folder = "Data Base/selected_images/selected_images"
         self.all_images = self.load_image_list()
         self.used_images = set()
 
@@ -114,7 +116,9 @@ class ImageApp:
                 return self.decoder(self.encoder(x))
 
         model = ConvAutoencoder().to(self.device)
-        model.load_state_dict(torch.load('conv_autoencoder.pth', map_location=self.device))
+        # model.load_state_dict(torch.load('conv_autoencoder.pth', map_location=self.device))
+        # git
+        model.load_state_dict(torch.load('Autoencodeur/conv_autoencoder.pth', map_location=self.device))
         model.eval()
         return model
 
