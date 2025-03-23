@@ -10,6 +10,7 @@ from torchvision import transforms
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from AlgoGenetique import algo_genetique_parallel as GA
+from AlgoGenetique import algo_genetique_multiple_target as GAm
 
 
 # ---------- Classe Principale ----------
@@ -235,8 +236,11 @@ class ImageApp:
             # Ici on pourrait modifier le latent_vector avant décodage
             # Ex: latent_vector = genetic_algorithm(latent_vector)
             
-            solutions = GA.real_separation(latent_vector[0])
+            # solutions = GA.real_separation(latent_vector[0])
             # solutions = GA.real_global(latent_vector[0])
+            # solutions = GA.varying_target(latent_vector[0], 6)
+            targets_list = GAm.varying_target(latent_vector[0], 6)
+            solutions = GAm.ga_multiple_targets_separated(targets_list)
             # print(solutions.shape)
 
             # Convertir en tenseur PyTorch

@@ -21,9 +21,11 @@ from numba import njit
 from joblib import Parallel, delayed
 from scipy.optimize import minimize
 
+import time
+
 @njit(fastmath=True)
 def fast_norm(x):
-    return -np.sqrt(np.sum(x ** 2, axis=1))
+    return -np.sqrt(np.sum(x ** 2, axis=2))
 
 class GeneticAlgorithm():
     """
@@ -35,7 +37,7 @@ class GeneticAlgorithm():
     representation of the images in the latent space of an autoencoder.
 
     """
-    def __init__(self, target, max_iteration, size_pop, nb_to_retrieve, stop_threshold, selection_method,
+    def __init__(self, target_list, max_iteration, size_pop, nb_to_retrieve, stop_threshold, selection_method,
                  crossover_proba, crossover_method, mutation_rate, sigma_mutation, mutation_method):
         """
         Creation of an instance of the GeneticAlgorithm class.
@@ -52,8 +54,8 @@ class GeneticAlgorithm():
         None
 
         """
-        self.target_photo = target
-        self.dimension = len(target) # dimension of the vector space = "number of gene of one individual"
+        self.target_photos = np.asarray(target_list)
+        self.dimension = len(self.target_photos[0]) # dimension of the vector space = "number of gene of one individual"
 
         self.max_iteration = max_iteration
 
@@ -91,7 +93,8 @@ class GeneticAlgorithm():
             Array of the vectors of the initial individuals generated randomly
 
         """
-        limit = np.max(self.target_photo)
+        limit = np.max(self.target_photos)
+        # print(limit)
         init_population = np.random.uniform(-limit, limit, (size_pop, self.dimension))
         # init_population = np.random.normal(0, 2, (size_pop,self.dimension)) 
 
@@ -99,10 +102,13 @@ class GeneticAlgorithm():
             # Attention la vrai population ça sera pas juste des entiers et surtout pas que des 0 et des 1
             init_population.append(np.random.rand(self.dimension)*10) #Generate an individual randomly
         init_population = np.array(init_population)"""
+        # for indiv in init_population :
+           # print(f" norm : {np.min(-np.linalg.norm(indiv-np.asarray(self.target_photos), axis=1))}")
+           # print(f" norm : {np.max(-np.linalg.norm(indiv-np.asarray(self.target_photos), axis=1))}")
 
         return init_population
     
-    def calculate_fitness(self):
+    def calculate_fitness_without_numba(self):
 
         """
         Compute and store fitness of each individual
@@ -128,7 +134,15 @@ class GeneticAlgorithm():
         # fitness = -np.sqrt(np.sum(np.square(self.population - self.target_photo), axis=1))
         """fitness = -np.linalg.norm(self.population - self.target_photo, axis=1)
         return fitness.tolist()"""
-        return fast_norm(self.population - self.target_photo).tolist()
+        # return fast_norm(self.population - self.target_photo).tolist()
+
+        # With more than one target
+        distances = -np.linalg.norm(self.population[:, np.newaxis, :] - self.target_photos, axis=2)
+        return np.max(distances, axis=1).tolist()
+    
+    def calculate_fitness_with_numba(self):
+        distances = fast_norm(self.population[:, np.newaxis, :] - self.target_photos)
+        return np.max(distances, axis=1).tolist()
     
     def parallel_calculate_fitness(self):
         fitness = Parallel(n_jobs=-1)(delayed(np.linalg.norm)(indiv - self.target_photo) for indiv in self.population)
@@ -150,8 +164,8 @@ class GeneticAlgorithm():
 
         """ 
         # fitness_val = -np.sqrt(np.sum(np.square(indiv - self.target_photo)))
-        fitness_val = -np.linalg.norm(indiv - self.target_photo)
-        return fitness_val
+        fitness_values = -np.linalg.norm(indiv - self.target_photos, axis=1)
+        return np.max(fitness_values)
     
     def select(self, nb_generation, criteria = "threshold"):
 
@@ -559,7 +573,7 @@ class GeneticAlgorithm():
         while self.count_generation < self.max_iteration :
             self.count_generation += 1 
             # print(self.count_generation)
-            self.dico_fitness[self.count_generation] = self.calculate_fitness()
+            self.dico_fitness[self.count_generation] = self.calculate_fitness_without_numba()
             if self.stop_condition(): # if we have solutions close enough to the target
                 break
             self.generation = self.select(self.count_generation, criteria=self.selection_method) 
@@ -589,182 +603,83 @@ class GeneticAlgorithm():
             self.population[best_idx] = result.x  # Remplace par la version optimisée
 
 
-
-def test_crossing_over(ga, method = "single-point"):
-    p1 = np.array([1,1,0,1,1,0,0,1,0,0,1,1,0,1,1,0])
-    p2 = np.array([1,1,0,1,1,1,1,0,0,0,0,1,1,1,1,0])
-    c1, c2 = ga.crossover(p1,p2, method)
-    print("Parents: ")
-    print(p1)
-    print(p2)
-    print("Children: ")
-    print(c1)
-    print(c2)
-    print("\n")
-
-def test_mutation(ga, method = "constant"):
-    chr = np.array([1,4,10,2,1,0,0,5,22,1,3,16,0,1,7,0], dtype = float)
-    print("Before mutation: ")
-    print(chr) 
-    ga.dico_fitness[ga.count_generation] = ga.calculate_fitness()
-    ga.mutation(chr, 1, method)
-    print("After mutation: ")
-    print(chr)
-    print("\n")
-
-def test_create_random_init_pop(ga, target) : 
-    print("Target :")
-    print(target)
-    print("Initial population :")
-    print(ga.create_random_init_pop(10))
-
-def test_calculate_fitness(ga) : 
-    print("Fitness : ")
-    print(ga.calculate_fitness())
-
-
-def test_unitaire():
-    target = np.array([1,0,1,1,1,0,0,0,1,1,0,1,0,1,1,0])
-    ga = GeneticAlgorithm(target, max_iteration=1000, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
-                          crossover_proba=0.7, crossover_method="uniform", mutation_rate=(0.5, 0.05), sigma_mutation=1.5, mutation_method="adaptive")
-    test_crossing_over(ga, "uniform")
-    test_mutation(ga, "adaptive")
-    test_create_random_init_pop(ga, target)
-    test_calculate_fitness(ga)
-
-def test_global():
-    target = np.random.rand(8,8,128) * 10
-    target = target.flatten(order = "C")
-    print(f"target : {target}")
-    ga = GeneticAlgorithm(target, max_iteration=500, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
-                          crossover_proba=0.9, crossover_method="max_diversity", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
-    solutions = ga.main_loop()
-    ga.visualization()
-    print(len(solutions))
-    for v in solutions :
-        print(v)
-
-def test_separation():
-    target = np.random.rand(8,8,4) * 10
-    dimensions = target.shape
-    solutions = []
-    for i in range(dimensions[2]): # separation of the different canal of the vector
-        partial_target = target[:,:,i].flatten(order = "C")
-        ga = GeneticAlgorithm(partial_target, max_iteration=500, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
-                          crossover_proba=0.9, crossover_method="max_diversity", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
-        partial_solutions = ga.main_loop()
-        ga.visualization()
-        solutions.append(partial_solutions)
-    
-
-    # reconstruction of vectors of the good size
-    reconstructed_solutions = []
-    
-    for j in range(len(solutions[0])):
-        reconstruction = np.concatenate([solutions[k][j] for k in range(len(solutions))])
-        reconstruction = np.reshape(reconstruction, target.shape, order = "C")
-        
-        # print(reconstruction.shape)
-        reconstructed_solutions.append(reconstruction)
-        
-
-    print(f"target : {target}")
-    print(f"solutions :")
-    for s in reconstructed_solutions:
-        print(s)
-
-    print("Écart-type des coordonnées finales :", np.std(reconstructed_solutions).mean())
-
-    for s in reconstructed_solutions: 
-        print(f" norm : {-np.linalg.norm(s-target)}")
-
-
-def run_ga(i, target, nb_solutions):
-    partial_target = target[i, :, :].flatten(order="C")
-    ga = GeneticAlgorithm(partial_target, max_iteration=2000, size_pop=100, nb_to_retrieve=nb_solutions, stop_threshold=-1, 
-                            selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="max_diversity", 
-                            mutation_rate=(0.5, 0.05), sigma_mutation=0.8, mutation_method="adaptive")
-    print(i)
-    return ga.main_loop()
-
-def real_separation(target):
-    """
-    target : numpy array
-    reconstructed_solutions : numpy array
-    """
-    dimensions = target.shape
-    solutions = Parallel(n_jobs=-1)(delayed(run_ga)(i, target, 6) for i in range(dimensions[0]))
-
-    reconstructed_solutions = np.stack(solutions, axis=1).reshape((-1, *target.shape), order="C")
-        
-    """print(f"target : {target}")
-    print(f"solutions :")
-    for s in reconstructed_solutions:
-        print(s)
-
-    print("Écart-type des coordonnées finales :", np.std(reconstructed_solutions).mean())
-    """
-    for s in reconstructed_solutions: 
-        print(f" norm : {-np.linalg.norm(s-target)}")
-    
-    return reconstructed_solutions
-
-def real_global(target):
-    target = target.flatten(order = "C")
-    # print(f"target : {target}")
-    ga = GeneticAlgorithm(target, max_iteration=500, size_pop=100, nb_to_retrieve=6, stop_threshold=-10, selection_method="Fortune_Wheel",
-                          crossover_proba=0.9, crossover_method="max_diversity", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
-    solutions = ga.main_loop()
-    # ga.visualization()
-    # print(len(solutions))
-    """for v in solutions :
-        print(v)"""
-    return solutions
-        
-def run_mutate_target(target):
-    new_target = np.copy(target)
-    dimensions = new_target.shape
-
-    mask = np.random.rand(dimensions[0], dimensions[1], dimensions[2]) < 0.1
-    mutations = np.random.normal(0, 0.5, dimensions)
-    new_target[mask] += mutations[mask]
-
-    solution = Parallel(n_jobs=-1)(delayed(run_ga)(j, new_target, 1) for j in range(dimensions[0]))
-    reconstructed_solution = np.stack(solution, axis=1).reshape((-1, *target.shape), order="C")
-
-    return reconstructed_solution
-
 def varying_target(target, nb_solutions):
     dimensions = target.shape
 
-    list_solutions = []
+    list_target = []
     for _ in range(nb_solutions):
-        mask = np.random.rand(dimensions[0], dimensions[1], dimensions[2]) < 0.1
-        mutations = np.random.normal(0, 0.5, dimensions)
+        mask = np.random.rand(dimensions[0], dimensions[1], dimensions[2]) < 0.5
+        mutations = np.random.normal(0, 1, dimensions)
         new_target = np.copy(target)
         new_target[mask] += mutations[mask]
 
-        solution = Parallel(n_jobs=4)(delayed(run_ga)(j, new_target, 1) for j in range(dimensions[0]))
-        reconstructed_solution = np.stack(solution, axis=1).reshape((-1, *target.shape), order="C")
+        list_target.append(new_target)
 
-        print(-np.linalg.norm(reconstructed_solution - target))
-        print(-np.linalg.norm(reconstructed_solution - new_target))
+    print("Écart-type des coordonnées des targets :", np.std(list_target, axis=0).mean())
+    return list_target
+        
+def test_fitness(targets):
 
-        list_solutions.append(reconstructed_solution)
+    targets = [t.flatten(order = "C") for t in targets]
+    ga = GeneticAlgorithm(targets, max_iteration=2000, size_pop=100, nb_to_retrieve=len(targets), stop_threshold=-1, 
+                            selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="max_diversity", 
+                            mutation_rate=(0.5, 0.05), sigma_mutation=0.8, mutation_method="adaptive")
 
-    # list_solutions = Parallel(n_jobs=2)(delayed(run_mutate_target)(target) for _ in range(nb_solutions))
-    array_solutions = np.asarray(list_solutions)
-    return array_solutions
+    start = time.time()
+    fitness1 = ga.calculate_fitness_without_numba()  # Version NumPy seule
+    end = time.time()
+    print(f"Temps sans numba: {end - start:.4f} sec")
+
+    start = time.time()
+    fitness2 = ga.calculate_fitness_with_numba()  # Version avec numba
+    end = time.time()
+    print(f"Temps avec numba: {end - start:.4f} sec")
+
+def ga_with_multiple_targets(targets):
+
+    targets = [t.flatten(order = "C") for t in targets]
+    ga = GeneticAlgorithm(targets, max_iteration=2000, size_pop=100, nb_to_retrieve=len(targets), stop_threshold=-1, 
+                            selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="max_diversity", 
+                            mutation_rate=(0.5, 0.05), sigma_mutation=0.8, mutation_method="adaptive")
+    
+    solutions = ga.main_loop()
+    ga.visualization()
+    
+    print("Écart-type des coordonnées finales :", np.std(solutions, axis=0).mean())
+    for s in solutions: 
+        print(f" norm : {np.max(-np.linalg.norm(s-np.asarray(targets), axis=1))}")
+
+    return solutions
+
+def run_ga(i, targets, nb_solutions):
+    partial_targets = [t[i, :, :].flatten(order="C") for t in targets]
+    ga = GeneticAlgorithm(partial_targets, max_iteration=2000, size_pop=60, nb_to_retrieve=nb_solutions, stop_threshold=-1, 
+                            selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="max_diversity", 
+                            mutation_rate=(0.5, 0.05), sigma_mutation=0.8, mutation_method="adaptive")
+    # print(i)
+    return ga.main_loop()
+
+def ga_multiple_targets_separated(targets):
+    dimensions = targets[0].shape
+    solutions = Parallel(n_jobs=-1)(delayed(run_ga)(i, targets, len(targets)) for i in range(dimensions[0]))
+
+    reconstructed_solutions = np.stack(solutions, axis=1).reshape((-1, *dimensions), order="C")
+
+    print("Écart-type des coordonnées finales :", np.std(solutions, axis=0).mean())
+    for s in reconstructed_solutions: 
+         print(f" norm : {np.max(-np.linalg.norm(s-np.asarray(targets), axis=1))}")
+    
+    return reconstructed_solutions
 
 if __name__ == "__main__" :
-    # test_unitaire()
-    # test_global()
-    # test_separation()
+    print(__name__)
     target = np.random.rand(128,8,8) * 10
-    # real_separation(target)
-    solut = varying_target(target, 6)
-    for s in solut:
-        print(s)
+    list_targets = varying_target(target, 6)
+    # test_fitness(list_targets)
+    # ga_with_multiple_targets(list_targets)
+    ga_multiple_targets_separated(list_targets)
+
+
 
 
     
