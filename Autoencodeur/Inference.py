@@ -7,6 +7,10 @@ import torch
 import numpy as np
 from torchvision import transforms
 
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from AlgoGenetique import algo_genetique_parallel as GA
+
 
 # ---------- Classe Principale ----------
 class ImageApp:
@@ -207,8 +211,14 @@ class ImageApp:
             # [SECTION POUR ALGORITHME GÉNÉTIQUE]
             # Ici on pourrait modifier le latent_vector avant décodage
             # Ex: latent_vector = genetic_algorithm(latent_vector)
-
+            target = np.array(latent_vector[0, :, :, :])
+            new_images = GA.real_separation(target)
+            print(new_images.shape)
+            print(new_images.dtype)
             # Étape 2: Décodage à partir de l'espace latent:
+            print(new_images[0].shape)
+            test_img = torch.from_numpy(new_images[0]).unsqueeze(0)
+            reconstructed = self.model.decode(test_img).cpu().numpy().transpose(1,2,0)
 
             # .cpu() assure que le tenseur est transféré sur le CPU
             # .numpy() convertit le tenseur PyTorch en un tableau numpy, ce qui facilite la manipulation ultérieure
@@ -217,7 +227,8 @@ class ImageApp:
             # .transpose(1, 2, 0) réarrange les dimensions du tableau. Par défaut, PyTorch utilise l'ordre
             # (channels, height, width) tandis que PIL et la plupart des bibliothèques d'affichage d'image attendent
             # l'ordre (height, width, channels)
-            reconstructed = self.model.decode(latent_vector).cpu().numpy()[0].transpose(1, 2, 0)
+
+            # reconstructed = self.model.decode(latent_vector).cpu().numpy()[0].transpose(1, 2, 0)
 
         return img, Image.fromarray((reconstructed * 255).astype(np.uint8))
 
