@@ -13,8 +13,9 @@ from torchvision import transforms
 class ImageApp:
     def __init__(self, master):
         self.master = master
+        self.master.attributes("-fullscreen", True) # Ecran plein
+        # self.master.geometry("1200x800") l'un ou l'autre
         self.master.title("Reconnaissance Faciale - Police Scientifique")
-        self.master.geometry("1200x800")
         self.master.configure(bg='#f0f0f0')
 
         # Configuration initiale
@@ -24,7 +25,9 @@ class ImageApp:
         self.secondary_color = '#3498db'
 
         # Chemin des images
-        self.image_folder = "Data bases/Celeb A/Images/img_align_celeba/"
+        # self.image_folder = "Data bases/Celeb A/Images/img_align_celeba/" # phi : "/Users/phifr/Documents/4A-S1/S2/DvptWeb/img_from_celeba"
+        # chemin d'accès dans le git : 
+        self.image_folder = "Data Base/selected_images/selected_images"
         self.all_images = self.load_image_list()
         self.used_images = set()
 
@@ -41,7 +44,7 @@ class ImageApp:
         """Charge la liste des images valides"""
         return [f for f in os.listdir(self.image_folder)
                 if f.endswith('.jpg') and f.split('.')[0].isdigit()
-                and int(f.split('.')[0]) >= 200001]
+                and int(f.split('.')[0]) >= 200001] # phi <= 100
 
     def create_widgets(self):
         """Crée les éléments de l'interface"""
@@ -49,19 +52,19 @@ class ImageApp:
         main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
 
         # Titre
-        title_label = ttk.Label(main_frame,
+        self.title_label = ttk.Label(main_frame,
                                 text="Veuillez sélectionner une image pour la reconstruction",
                                 font=self.title_font,
                                 foreground=self.primary_color)
-        title_label.pack(pady=10)
+        self.title_label.pack(side = "top", pady=30)
 
         # Frame des images
         self.image_frame = ttk.Frame(main_frame)
-        self.image_frame.pack(fill=tk.BOTH, expand=True)
+        self.image_frame.pack()
 
         # Boutons de contrôle
         control_frame = ttk.Frame(main_frame)
-        control_frame.pack(pady=20)
+        control_frame.pack(side="bottom",pady=20)
 
         ttk.Button(control_frame,
                    text="Nouvelles Images",
@@ -114,7 +117,9 @@ class ImageApp:
                 return self.decoder(self.encoder(x))
 
         model = ConvAutoencoder().to(self.device)
-        model.load_state_dict(torch.load('conv_autoencoder.pth', map_location=self.device))
+        # model.load_state_dict(torch.load('conv_autoencoder.pth', map_location=self.device))
+        # git
+        model.load_state_dict(torch.load('Autoencodeur/conv_autoencoder.pth', map_location=self.device))
         model.eval()
         return model
 
@@ -129,6 +134,10 @@ class ImageApp:
     # ---------- Logique Métier ----------
     def load_new_images(self):
         """Charge 6 nouvelles images"""
+        # Si "Veuillez sélectionner un portrait" n'est pas visible, le réafficher (après avoir appuyer sur Retour au menu)
+        if not self.title_label.winfo_viewable():
+            self.title_label.pack(side="top", pady=30, before=self.image_frame) # before=self.image_frame pour forcer le positionnement au top
+
         for widget in self.image_frame.winfo_children():
             widget.destroy()
 
@@ -165,9 +174,15 @@ class ImageApp:
         result_frame = ttk.Frame(self.image_frame)
         result_frame.pack(expand=True, pady=20)
 
-        # Affichage des images
-        self.display_image(original, result_frame, "left")
-        self.display_image(reconstructed, result_frame, "right")
+        original_img_frame = ttk.Frame(result_frame)
+        original_img_frame.pack(side="left", padx=20)
+        ttk.Label(original_img_frame, text="Image originale", font=self.title_font).pack(side="top", pady=30)
+        self.display_image(original, original_img_frame, "left")
+
+        reconstructed_img_frame = ttk.Frame(result_frame)
+        reconstructed_img_frame.pack(side="right", padx=20)
+        ttk.Label(reconstructed_img_frame, text="Image reconstruite", font=self.title_font).pack(side="top", pady=30)
+        self.display_image(reconstructed, reconstructed_img_frame, "right")
 
         # Bouton de retour
         ttk.Button(self.image_frame,
@@ -217,6 +232,8 @@ class ImageApp:
         """Nettoie l'interface"""
         for widget in self.image_frame.winfo_children():
             widget.destroy()
+        # Suppression aussi de la phrase veuillez choisir un portrait à ajouter
+        self.title_label.pack_forget()
 
     def confirm_new_images(self):
         """Confirmation de rechargement"""
