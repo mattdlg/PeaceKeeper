@@ -8,6 +8,10 @@ import numpy as np
 from AlgoGenetique import algo_genetique_parallel
 from torchvision import transforms
 
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from AlgoGenetique import algo_genetique_parallel as GA
+
 
 # ---------- Classe Principale ----------
 class ImageApp:
