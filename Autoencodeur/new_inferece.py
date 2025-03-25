@@ -586,6 +586,25 @@ class HomePage(QtWidgets.QWidget):
 
         menu_layout.addStretch(2)  # Espace flexible supplémentaire
 
+        # Nouveau bouton Quitter
+        self.quit_btn = QtWidgets.QPushButton("Quitter")
+        self.quit_btn.setStyleSheet("""
+            QPushButton {
+                border: 2px solid #f55;
+                border-radius: 5px;
+                padding: 10px;
+                font-size: 16px;
+                color: white;
+                background-color: #944;
+            }
+            QPushButton:hover {
+                background-color: #a55;
+            }
+        """)
+
+        self.quit_btn.clicked.connect(self.show_quit_confirmation)
+        menu_layout.addWidget(self.quit_btn)
+
         overlay_layout.addWidget(self.menu_widget, 0)  # Menu à gauche
 
         # --- Zone de titre central ---
@@ -623,6 +642,77 @@ class HomePage(QtWidgets.QWidget):
         container = QtWidgets.QWidget()
         container.setLayout(stacked)
         self.main_layout.addWidget(container)  # Ajoute au layout principal
+
+    def show_quit_confirmation(self):
+        """Affiche la boîte de dialogue de confirmation de sortie"""
+        dialog = QuitConfirmationDialog(self)
+        if dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
+            # Ferme proprement l'application
+            QtCore.QCoreApplication.quit()
+
+
+##############################################################################
+# 5a) Gestion de la sortie de l'application
+##############################################################################
+class QuitConfirmationDialog(QtWidgets.QDialog):
+    """Boîte de dialogue de confirmation pour quitter l'application"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowFlags(QtCore.Qt.WindowType.FramelessWindowHint | QtCore.Qt.WindowType.Dialog)
+        self.setModal(True)
+        self.setFixedSize(600, 300)
+        self.setStyleSheet("background-color: #000000; border: 5px solid #f55;")
+        self.setAutoFillBackground(True)
+
+        # Layout principal
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(20, 20, 20, 20)
+
+        # Message de confirmation
+        self.text_label = QtWidgets.QLabel("Voulez-vous vraiment quitter ?")
+        self.text_label.setStyleSheet("color: white; font-size: 24px;")
+        self.text_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.text_label)
+
+        # Boutons
+        btn_layout = QtWidgets.QHBoxLayout()
+
+        # Bouton Non
+        no_btn = QtWidgets.QPushButton("Non")
+        no_btn.setStyleSheet("""
+            QPushButton {
+                border: 2px solid #fff;
+                padding: 10px;
+                font-size: 16px;
+                color: white;
+                background-color: #444;
+            }
+            QPushButton:hover {
+                background-color: #666;
+            }
+        """)
+        no_btn.clicked.connect(self.reject)
+        btn_layout.addWidget(no_btn)
+
+        # Bouton Oui
+        yes_btn = QtWidgets.QPushButton("Oui")
+        yes_btn.setStyleSheet("""
+            QPushButton {
+                border: 2px solid #f55;
+                padding: 10px;
+                font-size: 16px;
+                color: white;
+                background-color: #944;
+            }
+            QPushButton:hover {
+                background-color: #a55;
+            }
+        """)
+        yes_btn.clicked.connect(self.accept)  # Important: connecté à accept()
+        btn_layout.addWidget(yes_btn)
+
+        layout.addLayout(btn_layout)
 
 
 ##############################################################################
@@ -840,7 +930,12 @@ def main():
     CursorManager.apply_to_hierarchy(window, default_cursor)
 
     window.show()
-    sys.exit(app.exec())
+
+    # Exécute l'application et récupère le code de retour
+    ret = app.exec()
+
+    # Nettoyage éventuel ici si nécessaire
+    sys.exit(ret)  # Quitte proprement avec le code de retour
 
 
 if __name__ == "__main__":
