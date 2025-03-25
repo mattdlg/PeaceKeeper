@@ -545,8 +545,35 @@ class HomePage(QtWidgets.QWidget):
 
         # Titre du menu
         menu_label = QtWidgets.QLabel("Menu")
-        menu_label.setStyleSheet("color: white; font-size: 24px;")
-        menu_layout.addWidget(menu_label)
+        menu_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+
+        # Style avec dégradé latéral
+        menu_label.setStyleSheet("""
+            QLabel {
+                color: white;
+                font-size: 24px;
+                font-weight: bold;
+                background: qlineargradient(
+                    spread:pad, 
+                    x1:0, y1:0, x2:1, y2:0,
+                    stop:0 rgba(0, 0, 0, 0),
+                    stop:0.2 rgba(30, 30, 30, 80),
+                    stop:0.5 rgba(255, 255, 255, 120),
+                    stop:0.8 rgba(30, 30, 30, 80),
+                    stop:1 rgba(0, 0, 0, 0)
+                );
+                padding: 8px 0;
+                border-radius: 2px;
+            }
+        """)
+
+        # Pour un centrage parfait dans le menu
+        menu_label.setMinimumWidth(180)  # Largeur légèrement inférieure au menu
+        menu_label.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Fixed
+        )
+        menu_layout.addWidget(menu_label, alignment=QtCore.Qt.AlignmentFlag.AlignHCenter)
 
         menu_layout.addStretch(1)  # Espace flexible
 
