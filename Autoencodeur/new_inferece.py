@@ -465,7 +465,7 @@ class SplashPage(QtWidgets.QWidget):
 
         # Configuration du texte
         text = "Agency studio"
-        font = QtGui.QFont("Arial", 72, QtGui.QFont.Weight.Bold)  # Police gras 72pt
+        font = QtGui.QFont("Courier New", 72, QtGui.QFont.Weight.Bold)  # Police gras 72pt
 
         # Calcul positionnement précis
         fm = QtGui.QFontMetrics(font)
@@ -657,11 +657,13 @@ class HomePage(QtWidgets.QWidget):
         self.title_label.setGraphicsEffect(shadow)
 
         # Positionnement vertical centré
-        content_layout.addStretch(1)  # Espace avant
+
+        content_layout.addStretch(0)  # Espace avant
         content_layout.addWidget(self.title_label)
         content_layout.addStretch(2)  # Plus d'espace après
 
         overlay_layout.addWidget(self.content_widget, 1)  # Titre au centre
+
 
         stacked.addWidget(overlay)  # Ajoute l'overlay
 
