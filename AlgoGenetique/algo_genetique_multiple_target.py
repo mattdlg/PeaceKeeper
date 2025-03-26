@@ -656,11 +656,12 @@ def run_ga(i, targets, nb_solutions):
     ga = GeneticAlgorithm(partial_targets, max_iteration=2000, size_pop=60, nb_to_retrieve=nb_solutions, stop_threshold=-1, 
                             selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="max_diversity", 
                             mutation_rate=(0.5, 0.05), sigma_mutation=0.8, mutation_method="adaptive")
-    # print(i)
+    print(i)
     return ga.main_loop()
 
 def ga_multiple_targets_separated(targets):
     dimensions = targets[0].shape
+    print(dimensions)
     solutions = Parallel(n_jobs=-1)(delayed(run_ga)(i, targets, len(targets)) for i in range(dimensions[0]))
 
     reconstructed_solutions = np.stack(solutions, axis=1).reshape((-1, *dimensions), order="C")
@@ -671,13 +672,43 @@ def ga_multiple_targets_separated(targets):
     
     return reconstructed_solutions
 
+
+def create_multiple_target_from_pictures(photos, nb_solutions):
+    alphas = np.linspace(0.1, 0.9, nb_solutions)
+    targets = []
+    for a in alphas :
+        new_target = a * photos[0] + (1 - a) * photos[1]
+        targets.append(new_target)
+
+    return targets
+
+def run_multiple_ga(targets):
+    dimensions = targets[0].shape
+    list_solutions = []
+    for picture in targets :
+        solution = Parallel(n_jobs=-1)(delayed(run_ga)(i, [picture], 1) for i in range(dimensions[0]))
+        reconstructed_solution = np.stack(solution, axis=1).reshape((-1, *dimensions), order="C")
+
+        print(-np.linalg.norm(reconstructed_solution - picture))
+
+        list_solutions.append(reconstructed_solution)
+        
+    array_solutions = np.asarray(list_solutions)
+    return array_solutions
+
 if __name__ == "__main__" :
     print(__name__)
-    target = np.random.rand(128,8,8) * 10
-    list_targets = varying_target(target, 6)
+    target = np.random.rand(128,8,8) * 20
+    # list_targets = varying_target(target, 6)
+    target2 = np.random.rand(128,8,8) * 20
+    photos = [target, target2]
+    list_targets = create_multiple_target_from_pictures(photos, 6)
+
     # test_fitness(list_targets)
     # ga_with_multiple_targets(list_targets)
+
     ga_multiple_targets_separated(list_targets)
+    # run_multiple_ga(list_targets)
 
 
 

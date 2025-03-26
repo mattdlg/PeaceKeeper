@@ -42,7 +42,8 @@ class ImageApp:
 
         # Interface utilisateur
         self.create_widgets()
-        self.load_new_images()
+        # self.load_new_images()
+        self.load_new_images_with_multiple_selection()
 
     def load_image_list(self):
         """Charge la liste des images valides"""
@@ -73,7 +74,11 @@ class ImageApp:
         ttk.Button(control_frame,
                    text="Nouvelles Images",
                    command=self.confirm_new_images).pack(side=tk.LEFT, padx=10)
-
+        
+        ttk.Button(control_frame, 
+                   text="Valider", 
+                   command=self.process_multiple_selection).pack(side=tk.LEFT, padx=10)
+        
         ttk.Button(control_frame,
                    text="Quitter",
                    command=self.confirm_exit).pack(side=tk.RIGHT, padx=10)
@@ -164,11 +169,47 @@ class ImageApp:
             except Exception as e:
                 print(f"Erreur chargement image {img_name}: {e}")
 
+    def load_new_images_with_multiple_selection(self):
+        # Si "Veuillez sélectionner un portrait" n'est pas visible, le réafficher (après avoir appuyer sur Retour au menu)
+        if not self.title_label.winfo_viewable():
+            self.title_label.pack(side="top", pady=30, before=self.image_frame) # before=self.image_frame pour forcer le positionnement au top
+
+        for widget in self.image_frame.winfo_children():
+            widget.destroy()
+
+        available_images = [img for img in self.all_images if img not in self.used_images]
+        selected_images = random.sample(available_images, min(6, len(available_images)))
+        self.used_images.update(selected_images)
+
+        self.image_vars = []
+
+        for i, img_name in enumerate(selected_images):
+            img_path = os.path.join(self.image_folder, img_name)
+            try:
+                img = Image.open(img_path)
+                img.thumbnail((200, 200))
+                photo = ImageTk.PhotoImage(img)
+
+                var = tk.BooleanVar()
+                chk = ttk.Checkbutton(self.image_frame, image=photo, variable=var)
+                chk.image = photo
+                chk.grid(row=i // 3, column=i % 3, padx=10, pady=10)
+
+                self.image_vars.append((var, img_path))
+            except Exception as e:
+                print(f"Erreur chargement image {img_name}: {e}")   
+
     def process_selection(self, img_path):
         """Gère la sélection d'image"""
         if messagebox.askyesno("Confirmation", "L'algorithme sera appliqué sur cette image.\nVoulez-vous continuer ?"):
             # self.show_reconstruction(img_path)
             self.show_whole_reconstruction(img_path)
+
+    def process_multiple_selection(self):
+        if messagebox.askyesno("Confirmation", "L'algorithme sera appliqué sur cette image.\nVoulez-vous continuer ?"):
+            self.selected_images = [img_path for var, img_path in self.image_vars if var.get()]
+            # print(len(self.selected_images))
+            self.show_whole_reconstruction(self.selected_images)
 
     def show_reconstruction(self, img_path):
         """Affiche les résultats de reconstruction"""
@@ -195,17 +236,23 @@ class ImageApp:
                    command=self.load_new_images).pack(pady=20)
         
     def show_whole_reconstruction(self, img_path):
-        original, reconstructed = self.process_image(img_path)
+        # original, reconstructed = self.process_image(img_path)
+        originals, reconstructed = self.process_multiple_images(img_path)
 
         self.clear_interface()
 
         result_frame = ttk.Frame(self.image_frame)
         result_frame.pack(expand=True, pady=20)
 
-        original_img_frame = ttk.Frame(result_frame)
-        original_img_frame.grid(row = 0, column = 1, padx=10, pady=5)
-        ttk.Label(original_img_frame, text="Image originale", font=self.title_font).pack(side="top", pady=10)
-        self.display_image(original, original_img_frame, "left")
+        original_img1_frame = ttk.Frame(result_frame)
+        original_img1_frame.grid(row = 0, column = 0, padx=10, pady=5)
+        ttk.Label(original_img1_frame, text="Image originale", font=self.title_font).pack(side="top", pady=10)
+        self.display_image(originals[0], original_img1_frame, "left")
+
+        original_img2_frame = ttk.Frame(result_frame)
+        original_img2_frame.grid(row = 0, column = 2, padx=10, pady=5)
+        ttk.Label(original_img2_frame, text="Image originale", font=self.title_font).pack(side="top", pady=10)
+        self.display_image(originals[1], original_img2_frame, "left")
 
         for k in range(len(reconstructed)):
             reconstructed_img_frame = ttk.Frame(result_frame)
@@ -239,8 +286,10 @@ class ImageApp:
             # solutions = GA.real_separation(latent_vector[0])
             # solutions = GA.real_global(latent_vector[0])
             # solutions = GA.varying_target(latent_vector[0], 6)
+
             targets_list = GAm.varying_target(latent_vector[0], 6)
             solutions = GAm.ga_multiple_targets_separated(targets_list)
+
             # print(solutions.shape)
 
             # Convertir en tenseur PyTorch
@@ -271,6 +320,67 @@ class ImageApp:
         # return img, Image.fromarray((reconstructed * 255).astype(np.uint8))
         return img, img_reconstructed
 
+    def process_multiple_images(self, img_paths):
+        """Traite une image via l'autoencodeur"""
+        list_vectors = []
+        list_originals = []
+        for path in img_paths :
+            img = Image.open(path).convert("RGB")
+            list_originals.append(img)
+
+        # La méthode unsqueeze(0) ajoute une dimension supplémentaire au tenseur, transformant ainsi une image de dimensions
+        # (C,H,W) en un tenseur de dimensions. (1,C,H,W). C'est essentiel pour le modèle qui attend une entrée
+        # sous forme de batch, même s'il n'y a qu'une seule image
+            tensor_img = self.transform(img).unsqueeze(0).to(self.device)
+            list_vectors.append(tensor_img)
+
+        with torch.no_grad():
+            # Étape 1: Encodage vers l'espace latent
+            for i in range(len(list_vectors)) :
+                list_vectors[i] = self.model.encode(list_vectors[i])
+                list_vectors[i] = list_vectors[i].numpy()    # Convertit en np array
+
+            # [SECTION POUR ALGORITHME GÉNÉTIQUE]
+            # Ici on pourrait modifier le latent_vector avant décodage
+            # Ex: latent_vector = genetic_algorithm(latent_vector)
+
+            targets_list = GAm.create_multiple_target_from_pictures([v[0] for v in list_vectors], 6)
+            # print(len(targets_list))
+            # print(targets_list[0].shape)
+            print(np.max(list_vectors[0]), np.max(list_vectors[1]))
+            print(np.max(targets_list[0]))
+            solutions = GAm.run_multiple_ga(targets_list)
+
+            # print(solutions.shape)
+
+            # Convertir en tenseur PyTorch
+            # sol = torch.tensor(solutions[0], dtype=torch.float32) # Ne prendre que l'image en position 0, il faudra faire une boucle et afficher les 10 images après
+            sol = torch.tensor(solutions, dtype=torch.float32)
+
+            # Changer la forme en [1, 128, 8, 8]
+            sol = sol.view(solutions.shape[0], 128, 8, 8) # 6 images reconstructes
+
+            # Étape 2: Décodage à partir de l'espace latent:
+
+            # .cpu() assure que le tenseur est transféré sur le CPU
+            # .numpy() convertit le tenseur PyTorch en un tableau numpy, ce qui facilite la manipulation ultérieure
+            # en dehors de PyTorch
+            # [0] récupère la première (et ici unique) image du batch
+            # .transpose(1, 2, 0) réarrange les dimensions du tableau. Par défaut, PyTorch utilise l'ordre
+            # (channels, height, width) tandis que PIL et la plupart des bibliothèques d'affichage d'image attendent
+            # l'ordre (height, width, channels)
+            
+            # reconstructed = self.model.decode(sol).cpu().numpy()[0].transpose(1, 2, 0)
+            # print(self.model.decode(sol).cpu().numpy().shape)
+            reconstructed = self.model.decode(sol).cpu().numpy().transpose(0, 2, 3, 1)
+
+        img_reconstructed = []
+        for k in range(reconstructed.shape[0]):
+            img_reconstructed.append(Image.fromarray((reconstructed[k] * 255).astype(np.uint8)))
+
+        # return img, Image.fromarray((reconstructed * 255).astype(np.uint8))
+        return list_originals, img_reconstructed
+
     # ---------- Utilitaires ----------
     def display_image(self, img, frame, side):
         """Affiche une image dans l'interface"""
@@ -290,7 +400,8 @@ class ImageApp:
     def confirm_new_images(self):
         """Confirmation de rechargement"""
         if messagebox.askyesno("Nouvelles Images", "Cela va charger 6 nouvelles images non visionnées.\nContinuer ?"):
-            self.load_new_images()
+            # self.load_new_images()
+            self.load_new_images_with_multiple_selection()
 
     def confirm_exit(self):
         """Confirmation de sortie"""
