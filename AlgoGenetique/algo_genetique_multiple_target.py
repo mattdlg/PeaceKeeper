@@ -696,12 +696,22 @@ def run_multiple_ga(targets):
     array_solutions = np.asarray(list_solutions)
     return array_solutions
 
+def normalization(v):
+    """
+    get a vector in [0,1] space
+    """
+    norm_vector = (v - np.min(v)) / (np.max(v)-np.min(v))
+    return norm_vector
+
 if __name__ == "__main__" :
     print(__name__)
     target = np.random.rand(128,8,8) * 20
+    norm_target = normalization(target)
     # list_targets = varying_target(target, 6)
     target2 = np.random.rand(128,8,8) * 20
-    photos = [target, target2]
+    norm_target2 = normalization(target2)
+    # photos = [target, target2]
+    photos = [norm_target, norm_target2]
     list_targets = create_multiple_target_from_pictures(photos, 6)
 
     # test_fitness(list_targets)

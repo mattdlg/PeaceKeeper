@@ -681,9 +681,9 @@ def test_separation():
 
 def run_ga(i, target, nb_solutions):
     partial_target = target[i, :, :].flatten(order="C")
-    ga = GeneticAlgorithm(partial_target, max_iteration=2000, size_pop=100, nb_to_retrieve=nb_solutions, stop_threshold=-1, 
-                            selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="max_diversity", 
-                            mutation_rate=(0.5, 0.05), sigma_mutation=0.8, mutation_method="adaptive")
+    ga = GeneticAlgorithm(partial_target, max_iteration=2000, size_pop=60, nb_to_retrieve=nb_solutions, stop_threshold=-1, 
+                            selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="BLX-alpha", 
+                            mutation_rate=(0.5, 0.05), sigma_mutation=0.1, mutation_method="adaptive")
     print(i)
     return ga.main_loop()
 
@@ -701,9 +701,9 @@ def real_separation(target):
     print(f"solutions :")
     for s in reconstructed_solutions:
         print(s)
-
-    print("Écart-type des coordonnées finales :", np.std(reconstructed_solutions).mean())
     """
+    print("Écart-type des coordonnées finales :", np.std(reconstructed_solutions).mean())
+    
     for s in reconstructed_solutions: 
         print(f" norm : {-np.linalg.norm(s-target)}")
     
@@ -756,15 +756,25 @@ def varying_target(target, nb_solutions):
     array_solutions = np.asarray(list_solutions)
     return array_solutions
 
+def normalization(v):
+    """
+    get a vector in [0,1] space
+    """
+    norm_vector = (v - np.min(v)) / (np.max(v)-np.min(v))
+    return norm_vector
+
 if __name__ == "__main__" :
-    # test_unitaire()
-    # test_global()
-    # test_separation()
     target = np.random.rand(128,8,8) * 10
-    # real_separation(target)
+    norm_target = normalization(target)
+    # test_unitaire()
+    # solut = real_global(target)
+    # test_separation()
+    # solut = real_separation(target)
     solut = varying_target(target, 6)
+    print("Écart-type des coordonnées finales :", np.std(solut).mean())
     for s in solut:
         print(s)
+        # print(-np.linalg.norm(s - norm_target.flatten(order = "C")))
 
 
     

@@ -84,7 +84,7 @@ class GeneticAlgorithm():
 
         """
 
-        init_population = np.random.uniform(0, 10, (size_pop, self.dimension))
+        init_population = np.random.uniform(-1, 1, (size_pop, self.dimension))
         # init_population = np.random.normal(0, 2, (size_pop,self.dimension)) 
 
         """for _ in range(size_pop) : 
@@ -570,13 +570,21 @@ def test_unitaire():
 def test_global():
     target = np.random.rand(8,8,128) * 10
     target = target.flatten(order = "C")
+    target = normalization(target)
     print(f"target : {target}")
     ga = GeneticAlgorithm(target, max_iteration=1000, size_pop=100, nb_to_retrieve=10, stop_threshold=-10, selection_method="Fortune_Wheel",
-                          crossover_proba=0.7, crossover_method="uniform", mutation_rate=(0.5, 0.05), sigma_mutation=0.5, mutation_method="adaptive")
+                          crossover_proba=0.9, crossover_method="uniform", mutation_rate=(0.7, 0.05), sigma_mutation=0.1, mutation_method="adaptive")
     solutions = ga.main_loop()
     print(len(solutions))
     for v in solutions :
         print(v)
+
+def normalization(v):
+    """
+    get a vector in [0,1] space
+    """
+    norm_vector = (v - np.min(v)) / (np.max(v)-np.min(v))
+    return norm_vector
 
 if __name__ == "__main__" :
     # test_unitaire()
