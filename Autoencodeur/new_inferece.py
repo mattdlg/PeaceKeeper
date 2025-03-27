@@ -1,6 +1,7 @@
 import glob
 import os
 import sys
+import random
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 
@@ -245,126 +246,92 @@ class GenerationDialog(QtWidgets.QDialog):
 
 
 ##############################################################################
-# 3) Fond défilant infini
+# 3) Nouveau Background Cyberpunk (Cycle d'images avec fade in/fade out)
 ##############################################################################
-class InfiniteScrollingBackground(QtWidgets.QWidget):
-    """Widget affichant un fond défilant infini
-
-    Points clés :
-    Mécanisme de défilement : Utilisation d'un offset et modulo pour l'effet infini
-
-    Gestion des images :
-        Chargement sécurisé avec vérification isNull()
-        Fallback sur placeholder si dossier vide
-
-    Performance :
-        Timer à ~33 FPS pour un défilement fluide
-        Calcul optimisé de la largeur totale
-
-    Rendu :
-        Algorithme de dessin intelligent qui répète les images
-        Centrage vertical automatique
+class CyberpunkBackgroundWidget(QtWidgets.QWidget):
     """
-
+    Widget qui affiche cycliquement n images cyberpunk, chacune pendant 10 secondes,
+    avec un effet fade in/fade out. Les images sont redimensionnées pour remplir le widget.
+    """
     def __init__(self, folder, parent=None):
-        """
-        Initialise le fond défilant.
-
-        Args :
-            folder (str) : Chemin du dossier contenant les images du fond
-            parent (QWidget, optional) : Widget parent. Par défaut None.
-
-        Configuration :
-        - Charge les images dès l'initialisation
-        - Met en place un timer pour l'animation
-        - Fond noir par défaut
-        """
         super().__init__(parent)
-        self.folder = folder  # Dossier source des images
-        self.images = []  # Liste des images chargées
-        self.total_width = 0  # Largeur totale de toutes les images combinées
-        self.offset = 0  # Position actuelle du défilement
-        self.speed = 2  # Vitesse de défilement en pixels par tick
-
-        self.load_images()  # Charge les images au démarrage
-
-        # Configuration du timer pour l'animation
-        self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.update_offset)  # Callback régulier
-        self.timer.start(30)  # Environ 33 FPS (1000ms/30 ≈ 33.33 FPS)
-
-        # Style visuel de base
-        self.setStyleSheet("background-color: #000000;")
-        self.setAutoFillBackground(True)  # Pour s'assurer que le fond est bien noir
-
-    def load_images(self):
-        """
-        Charge les images depuis le dossier spécifié.
-
-        Gère les cas :
-        - Dossier vide → crée un placeholder gris
-        - Images invalides → ignore les fichiers corrompus
-        - Calcule la largeur totale du fond
-        """
-        image_paths = glob.glob(os.path.join(self.folder, "*"))  # Liste tous les fichiers
-
-        for path in image_paths:
-            pix = QtGui.QPixmap(path)
-            if not pix.isNull():  # Vérifie que l'image est valide
-                self.images.append(pix)
-
-        # Fallback si aucune image trouvée
+        self.folder = folder
+        self.images = []
+        # Charge les images
+        # Récupère tous les fichiers jpg du dossier
+        all_paths = glob.glob(os.path.join(folder, "*.jpg"))
+        if all_paths:
+            # Mélange la liste pour un ordre aléatoire
+            random.shuffle(all_paths)
+            for path in all_paths:
+                pix = QtGui.QPixmap(path)
+                if not pix.isNull():
+                    self.images.append(pix)
         if not self.images:
-            dummy = QtGui.QPixmap(200, 200)  # Crée un placeholder
-            dummy.fill(QtGui.QColor("gray"))  # Remplissage gris
+            # Fallback si aucune image n'est chargée
+            dummy = QtGui.QPixmap(2000, 2000)
+            dummy.fill(QtGui.QColor("black"))
             self.images.append(dummy)
+        self.current_index = 0
 
-        # Calcule la largeur totale pour le défilement infini
-        self.total_width = sum(p.width() for p in self.images)
+        # QLabel pour afficher l'image
+        self.label = QtWidgets.QLabel(self)
+        self.label.setScaledContents(True)
+        self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.set_current_image()
 
-    def update_offset(self):
-        """
-        Met à jour la position de défilement.
+        # Effet d'opacité sur le label
+        self.opacity_effect = QtWidgets.QGraphicsOpacityEffect(self.label)
+        self.label.setGraphicsEffect(self.opacity_effect)
+        self.opacity_effect.setOpacity(0)
 
-        Logique :
-        - Incrémente l'offset selon la vitesse
-        - Boucle lorsque la fin est atteinte (modulo)
-        - Déclenche un repaint
-        """
-        self.offset = (self.offset + self.speed) % self.total_width  # Boucle infinie
-        self.update()  # Demande un nouveau rendu
+        # Animation fade-in
+        self.fade_in_anim = QtCore.QPropertyAnimation(self.opacity_effect, b"opacity")
+        self.fade_in_anim.setDuration(1500)
+        self.fade_in_anim.setStartValue(0)
+        self.fade_in_anim.setEndValue(1)
+        self.fade_in_anim.setEasingCurve(QtCore.QEasingCurve.Type.InOutQuad)
 
-    def paintEvent(self, event):
-        """
-        Dessine le fond défilant.
+        # Animation fade-out
+        self.fade_out_anim = QtCore.QPropertyAnimation(self.opacity_effect, b"opacity")
+        self.fade_out_anim.setDuration(1500)
+        self.fade_out_anim.setStartValue(1)
+        self.fade_out_anim.setEndValue(0)
+        self.fade_out_anim.setEasingCurve(QtCore.QEasingCurve.Type.InOutQuad)
+        self.fade_out_anim.finished.connect(self.change_image)
 
-        Algorithme :
-        1. Commence à dessiner à partir de -offset (hors écran à gauche)
-        2. Dessine chaque image en séquence
-        3. Répète les images si nécessaire pour couvrir toute la largeur
-        4. Centre verticalement chaque image
-        """
-        painter = QtGui.QPainter(self)
-        w = self.width()  # Largeur du widget
-        h = self.height()  # Hauteur du widget
+        # Timer pour le cycle : chaque 10 secondes
+        self.timer = QtCore.QTimer(self)
+        self.timer.setInterval(10000)
+        self.timer.timeout.connect(self.start_transition)
+        self.timer.start()
 
-        x = -self.offset  # Position de départ (négative pour le défilement)
-        img_index = 0  # Index de l'image courante
+        # Démarre le fade-in pour la première image
+        self.fade_in_anim.start()
 
-        # Dessine les images jusqu'à couvrir toute la largeur
-        while x < w:
-            pix = self.images[img_index]
-            # Centre verticalement l'image
-            y = (h - pix.height()) // 2
-            painter.drawPixmap(x, y, pix)
+    def set_current_image(self):
+        # Redimensionne l'image courante pour remplir le widget en conservant les proportions
+        pix = self.images[self.current_index]
+        scaled = pix.scaled(self.size(), QtCore.Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+                              QtCore.Qt.TransformationMode.SmoothTransformation)
+        self.label.setPixmap(scaled)
 
-            # Passe à l'image suivante
-            x += pix.width()
-            img_index += 1
+    def start_transition(self):
+        # Lance le fade-out pour passer à l'image suivante
+        self.fade_out_anim.start()
 
-            # Boucle sur les images si nécessaire
-            if img_index >= len(self.images):
-                img_index = 0
+    def change_image(self):
+        # Passe à l'image suivante
+        self.current_index = (self.current_index + 1) % len(self.images)
+        self.set_current_image()
+        # Lance le fade-in pour la nouvelle image
+        self.fade_in_anim.start()
+
+    def resizeEvent(self, event):
+        # Lors du redimensionnement, met à jour l'image affichée
+        self.set_current_image()
+        super().resizeEvent(event)
 
 
 ##############################################################################
@@ -465,7 +432,7 @@ class SplashPage(QtWidgets.QWidget):
 
         # Configuration du texte
         text = "Agency studio"
-        font = QtGui.QFont("Courier New", 72, QtGui.QFont.Weight.Bold)  # Police gras 72pt
+        font = QtGui.QFont("Arial", 72, QtGui.QFont.Weight.Bold)  # Police gras 72pt
 
         # Calcul positionnement précis
         fm = QtGui.QFontMetrics(font)
@@ -489,65 +456,43 @@ class SplashPage(QtWidgets.QWidget):
 
 
 ##############################################################################
-# 5) Page d'accueil (fond défilant + menu latéral + titre)
+# 5) Page d'accueil (menu latéral + titre + nouveau background Cyberpunk)
 ##############################################################################
 class HomePage(QtWidgets.QWidget):
-    """Page d'accueil principale avec fond animé, menu et titre."""
-
     def __init__(self, image_folder, parent=None):
-        """
-        Initialise la page d'accueil.
-
-        Args:
-            image_folder (str): Chemin vers les images du fond défilant
-            parent (QWidget, optional): Widget parent. Par défaut None.
-        """
         super().__init__(parent)
-        self.image_folder = image_folder  # Stocke le chemin des images
-        self.initUI()  # Initialise l'interface
+        self.image_folder = image_folder
+        self.initUI()
 
     def initUI(self):
-        """
-        Configure l'interface utilisateur complète :
-        - Layout principal horizontal
-        - Fond défilant en arrière-plan
-        - Menu latéral semi-transparent
-        - Titre central avec effets
-        """
-        # Layout principal sans marges ni espacement
         self.main_layout = QtWidgets.QHBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setSpacing(0)
 
-        # Configuration du système de superposition (couches)
+        # Utilisation du nouveau background Cyberpunk
+        # Remplace l'ancien fond défilant par CyberpunkBackgroundWidget
+        cyber_folder = os.path.join("Elements graphiques", "Background", "horror_forest_visual_novel_backgrounds_2",
+                                    "horror_forest")
+        self.background = CyberpunkBackgroundWidget(cyber_folder)
+
         stacked = QtWidgets.QStackedLayout()
         stacked.setStackingMode(QtWidgets.QStackedLayout.StackingMode.StackAll)
-
-        # Couche 1: Fond défilant infini
-        self.background = InfiniteScrollingBackground(self.image_folder)
         stacked.addWidget(self.background)
 
-        # Couche 2: Overlay (menu + titre)
         overlay = QtWidgets.QWidget()
         overlay_layout = QtWidgets.QHBoxLayout(overlay)
         overlay_layout.setContentsMargins(0, 0, 0, 0)
         overlay_layout.setSpacing(0)
 
-        # --- Menu latéral ---
         self.menu_widget = QtWidgets.QWidget()
-        self.menu_widget.setFixedWidth(220)  # Largeur fixe du menu
-        # Style semi-transparent noir
+        self.menu_widget.setFixedWidth(220)
         self.menu_widget.setStyleSheet("background-color: rgba(0, 0, 0, 200);")
-
         menu_layout = QtWidgets.QVBoxLayout(self.menu_widget)
-        menu_layout.setContentsMargins(15, 15, 15, 15)  # Marges internes
-        menu_layout.setSpacing(15)  # Espacement entre éléments
+        menu_layout.setContentsMargins(15, 15, 15, 15)
+        menu_layout.setSpacing(15)
 
-        # Titre du menu
         menu_label = QtWidgets.QLabel("Menu")
         menu_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-
-        # Style avec dégradé latéral
         menu_label.setStyleSheet("""
             QLabel {
                 color: white;
@@ -566,18 +511,11 @@ class HomePage(QtWidgets.QWidget):
                 border-radius: 2px;
             }
         """)
-
-        # Pour un centrage parfait dans le menu
-        menu_label.setMinimumWidth(180)  # Largeur légèrement inférieure au menu
-        menu_label.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Fixed
-        )
+        menu_label.setMinimumWidth(180)
+        menu_label.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
         menu_layout.addWidget(menu_label, alignment=QtCore.Qt.AlignmentFlag.AlignHCenter)
+        menu_layout.addStretch(1)
 
-        menu_layout.addStretch(1)  # Espace flexible
-
-        # Bouton Tutoriel
         self.tutoriel_btn = QtWidgets.QPushButton("Tutoriel")
         self.tutoriel_btn.setStyleSheet("""
             QPushButton {
@@ -594,7 +532,6 @@ class HomePage(QtWidgets.QWidget):
         """)
         menu_layout.addWidget(self.tutoriel_btn)
 
-        # Bouton Génération
         self.generation_btn = QtWidgets.QPushButton("Génération")
         self.generation_btn.setStyleSheet("""
             QPushButton {
@@ -611,9 +548,8 @@ class HomePage(QtWidgets.QWidget):
         """)
         menu_layout.addWidget(self.generation_btn)
 
-        menu_layout.addStretch(2)  # Espace flexible supplémentaire
+        menu_layout.addStretch(2)
 
-        # Nouveau bouton Quitter
         self.quit_btn = QtWidgets.QPushButton("Quitter")
         self.quit_btn.setStyleSheet("""
             QPushButton {
@@ -628,55 +564,40 @@ class HomePage(QtWidgets.QWidget):
                 background-color: #a55;
             }
         """)
-
         self.quit_btn.clicked.connect(self.show_quit_confirmation)
         menu_layout.addWidget(self.quit_btn)
 
-        overlay_layout.addWidget(self.menu_widget, 0)  # Menu à gauche
+        overlay_layout.addWidget(self.menu_widget, 0)
 
-        # --- Zone de titre central ---
         self.content_widget = QtWidgets.QWidget()
         content_layout = QtWidgets.QVBoxLayout(self.content_widget)
         content_layout.setContentsMargins(0, 0, 0, 0)
         content_layout.setSpacing(0)
 
-        # Titre principal
         self.title_label = QtWidgets.QLabel("Visage X")
         self.title_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-
-        # Style du titre
-        font = QtGui.QFont("Arial", 60, QtGui.QFont.Weight.Bold)
-        self.title_label.setFont(font)
+        title_font = QtGui.QFont("Bank Gothic", 60, QtGui.QFont.Weight.Bold)
+        self.title_label.setFont(title_font)
         self.title_label.setStyleSheet("color: white;")
-
-        # Effet d'ombre portée
         shadow = QtWidgets.QGraphicsDropShadowEffect(self.title_label)
-        shadow.setBlurRadius(10)  # Flou de l'ombre
-        shadow.setOffset(3, 3)  # Décalage
-        shadow.setColor(QtGui.QColor("#000000"))  # Couleur noire
+        shadow.setBlurRadius(10)
+        shadow.setOffset(3, 3)
+        shadow.setColor(QtGui.QColor("#000000"))
         self.title_label.setGraphicsEffect(shadow)
 
-        # Positionnement vertical centré
-
-        content_layout.addStretch(0)  # Espace avant
+        content_layout.addStretch(1)
         content_layout.addWidget(self.title_label)
-        content_layout.addStretch(2)  # Plus d'espace après
+        content_layout.addStretch(2)
+        overlay_layout.addWidget(self.content_widget, 1)
 
-        overlay_layout.addWidget(self.content_widget, 1)  # Titre au centre
-
-
-        stacked.addWidget(overlay)  # Ajoute l'overlay
-
-        # Conteneur final
+        stacked.addWidget(overlay)
         container = QtWidgets.QWidget()
         container.setLayout(stacked)
-        self.main_layout.addWidget(container)  # Ajoute au layout principal
+        self.main_layout.addWidget(container)
 
     def show_quit_confirmation(self):
-        """Affiche la boîte de dialogue de confirmation de sortie"""
         dialog = QuitConfirmationDialog(self)
         if dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
-            # Ferme proprement l'application
             QtCore.QCoreApplication.quit()
 
 
@@ -939,32 +860,18 @@ def main():
     """Point d'entrée principal de l'application.
     """
     app = QtWidgets.QApplication(sys.argv)
-
-    # Configuration du style de l'application
     AppStyler.setup_style(app)
 
-    # Configuration des curseurs personnalisés
     cursor_dir = os.path.join("Elements graphiques", "Curseur", "dark-red-faceted-crystal-style")
     default_cursor_path = os.path.abspath(os.path.join(cursor_dir, "cursor_resized.png"))
     pointer_cursor_path = os.path.abspath(os.path.join(cursor_dir, "pointer_resized.png"))
 
-    # Application des styles de curseur
     CursorManager.apply_global_style(app, default_cursor_path, pointer_cursor_path)
-
-    # Création et affichage de la fenêtre principale
     window = MainWindow("Data bases/Celeb A/Images/selected_images")
-
-    # Application du curseur à toute la hiérarchie de widgets
-    default_cursor = CursorManager.create(default_cursor_path)
-    CursorManager.apply_to_hierarchy(window, default_cursor)
-
+    CursorManager.apply_to_hierarchy(window, CursorManager.create(default_cursor_path))
     window.show()
-
-    # Exécute l'application et récupère le code de retour
     ret = app.exec()
-
-    # Nettoyage éventuel ici si nécessaire
-    sys.exit(ret)  # Quitte proprement avec le code de retour
+    sys.exit(ret)
 
 
 if __name__ == "__main__":
