@@ -410,7 +410,7 @@ class SplashPage(QtWidgets.QWidget):
 # 5) Page d'accueil (menu latéral + titre + nouveau background Cyberpunk)
 ##############################################################################
 class HomePage(QtWidgets.QWidget):
-    def __init__(self, parent=None, image_folder=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
         self.initUI()
 
@@ -588,7 +588,7 @@ class MainWindow(QtWidgets.QMainWindow):
         Utilisation de stretch pour centrer
         Suppression des marges inutiles
     """
-    def __init__(self, image_folder):
+    def __init__(self):
         super().__init__()
 
         # Fenêtre plein écran, sans décorations
@@ -604,7 +604,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.stack.addWidget(self.splash_page)
 
         # Home
-        self.home_page = HomePage(parent=self, image_folder=image_folder)
+        self.home_page = HomePage(parent=self)
         self.stack.addWidget(self.home_page)
 
         # On commence sur le splash
@@ -763,7 +763,7 @@ def main():
     pointer_cursor_path = os.path.abspath(os.path.join(cursor_dir, "pointer_resized.png"))
 
     CursorManager.apply_global_style(app, default_cursor_path, pointer_cursor_path)
-    window = MainWindow("Data bases/Celeb A/Images/selected_images")
+    window = MainWindow()
     CursorManager.apply_to_hierarchy(window, CursorManager.create(default_cursor_path))
     window.show()
     ret = app.exec()
