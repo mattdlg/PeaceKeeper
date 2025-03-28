@@ -1,7 +1,7 @@
 import glob
 import os
 import sys
-import random
+import zipfile
 
 from PyQt6 import QtCore, QtGui, QtWidgets, QtMultimedia, QtMultimediaWidgets
 
@@ -254,7 +254,8 @@ class BackgroundVideoWidget(QtWidgets.QGraphicsView):
         self.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setStyleSheet("border: none; background: transparent;")  # Fond transparent pour ne pas cacher les autres widgets
+        self.setStyleSheet(
+            "border: none; background: transparent;")  # Fond transparent pour ne pas cacher les autres widgets
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TransparentForMouseEvents,
                           True)  # Permet aux événements souris de passer à travers
 
@@ -284,6 +285,7 @@ class BackgroundVideoWidget(QtWidgets.QGraphicsView):
         self.scene.setSceneRect(0, 0, self.width(), self.height())
         self.video_item.setSize(QtCore.QSizeF(self.width(), self.height()))
         super().resizeEvent(event)
+
 
 ##############################################################################
 # 4) Page Splash (fade in + fade out du texte)
@@ -588,6 +590,7 @@ class MainWindow(QtWidgets.QMainWindow):
         Utilisation de stretch pour centrer
         Suppression des marges inutiles
     """
+
     def __init__(self):
         super().__init__()
 
@@ -748,13 +751,54 @@ class CursorManager:
 
 
 ##############################################################################
-# 9) Lancement
+# 9) Fonctions de vérifications au lacement
 ##############################################################################
+def dezip_images():
+    """
+    Vérifie si le dossier 'selected_images' contient des fichiers, sinon extrait l'archive zip correspondante.
+
+    Cette fonction s'assure que :
+    - Si le dossier 'selected_images' est vide ou inexistant, il est créé.
+    - Si une archive 'selected_images.zip' est présente, elle est extraite dans le répertoire parent.
+    - Si l'archive zip est absente et que le dossier est vide/inexistant, une exception est levée.
+
+    Notes
+    -----
+    - Le dossier des images est situé dans :
+      ``Data bases/Celeb A/Images/selected_images``
+    - L'archive zip est située dans :
+      ``Data bases/Celeb A/Images/selected_images.zip``
+
+    Raises
+    ------
+    FileNotFoundError
+        Si l'archive zip est absente et que le dossier des images est inexistant ou vide.
+    """
+    # Définition des chemins absolus
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "Data bases", "Celeb A", "Images"))
+    folder = os.path.join(base_dir, "selected_images")
+    zip_path = os.path.join(base_dir, "selected_images.zip")
+
+    # Vérifier si le dossier existe et contient au moins un fichier
+    if os.path.exists(folder) and any(os.scandir(folder)):
+        return  # Dossier déjà rempli, pas besoin de dézipper
+
+    # Si le dossier est vide ou inexistant, tenter de dézipper l'archive
+    if os.path.exists(zip_path):
+        os.makedirs(folder, exist_ok=True)  # Créer le dossier s'il n'existe pas
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(base_dir)  # Extraire dans le dossier parent pour recréer la structure
+    else:
+        raise FileNotFoundError(f"L'archive zip n'a pas été trouvée : {zip_path}")
 
 
+##############################################################################
+# 10) Lancement
+##############################################################################
 def main():
     """Point d'entrée principal de l'application.
     """
+    dezip_images()
     app = QtWidgets.QApplication(sys.argv)
     AppStyler.setup_style(app)
 
