@@ -100,12 +100,12 @@ class GeneticAlgorithm():
         None
 
         """
-        self.target_photos = np.asarray(target_list)
+        self.target_photos = np.asarray(target_list) # convert list of targets into a single array (easier to use for computation of euclidian distances)
         self.dimension = len(self.target_photos[0]) # dimension of the vector space = "number of gene of one individual"
 
-        self.max_iteration = max_iteration
+        self.max_iteration = max_iteration # max number of generations
 
-        self.population = self.create_random_init_pop(size_pop) # list : initial population from which the evolutionary process begins
+        self.population = self.create_random_init_pop(size_pop) # array : initial population from which the evolutionary process begins
         self.generation = None # list : selected population based on fitness at each generation
          
         self.m = nb_to_retrieve # nb of solutions we want to have at the end of the GA
@@ -113,8 +113,10 @@ class GeneticAlgorithm():
         self.count_generation = 0 # to count the number of generations and plot it afterwards. 
 
         self.dico_fitness = {} # dictionnary to memorize the fitness values of the population at each generation
-        self.solution = [] # list of the best approximation of the target at the end the GA.
+        # this dictionnary will have the form {n° generation : [fitness_indiv1, fitness_indiv2, ...], ...}
+        self.solution = [] # list of the best approximation of the targets at the end the GA.
 
+        # Parameters for selection, crossover and mutation
         self.selection_method = selection_method
         self.crossover_proba = crossover_proba
         self.crossover_method = crossover_method
@@ -124,14 +126,16 @@ class GeneticAlgorithm():
 
     def create_random_init_pop(self, size_pop):
         """
-        Creation of a list of ten vectors to start the evolution process.
+        Creation of a list of vectors to start the evolutionnary process.
+        To do so, randomly create vectors from a uniform distribution having for limits
+        the highest coordinate value in targets. 
 
         Parameters
         ----------
         size_pop : int 
             Number of individuals in the initial population
         
-        Use the dimension of the given target vector (self.dimension)
+        Also use the dimension of the vector space (self.dimension)
 
         Returns
         -------
@@ -140,17 +144,8 @@ class GeneticAlgorithm():
 
         """
         limit = np.max(self.target_photos)
-        # print(limit)
         init_population = np.random.uniform(-limit, limit, (size_pop, self.dimension))
-        # init_population = np.random.normal(0, 2, (size_pop,self.dimension)) 
-
-        """for _ in range(size_pop) : 
-            # Attention la vrai population ça sera pas juste des entiers et surtout pas que des 0 et des 1
-            init_population.append(np.random.rand(self.dimension)*10) #Generate an individual randomly
-        init_population = np.array(init_population)"""
-        # for indiv in init_population :
-           # print(f" norm : {np.min(-np.linalg.norm(indiv-np.asarray(self.target_photos), axis=1))}")
-           # print(f" norm : {np.max(-np.linalg.norm(indiv-np.asarray(self.target_photos), axis=1))}")
+        # init_population = np.random.normal(0, limit, (size_pop,self.dimension)) 
 
         return init_population
     
@@ -158,58 +153,70 @@ class GeneticAlgorithm():
 
         """
         Compute and store fitness of each individual
+        Here, fitness is defined as the smallest value of distances of the individual 
+        with each target.
 
         Parameters
         ----------
         None 
-            We use the euclidien distance to compute fitness (we might add a method parameter to test other metrics)
+            We use the euclidian distance to compute fitness 
 
         Returns
         -------
-        fitness : list
+        list
             List of the fitness of each individual in the same ordre as given by self.population.
 
         """
+        # We use self.population[:, np.newaxis, :] instead of just self.population to ensure
+        # that we can compute a euclidian distance for each couple individual-target.
+        # For the same purpose, we use axis=2, as the shape of the vector
+        # self.population[:, np.newaxis, :] - self.target_photos is (size_pop, nb_targets, nb_of_coordinates)
+        # so we have to sum on the last axis to get one value for each couple individual-target.
 
-        """fitness = []
-        for i in range(len(self.population)) :
-            # print(self.population[i])
-            fitness.append(self.calculate_individual_fitness(self.population[i]))
-            # fitness.append(-np.sqrt(np.sum(np.square(self.population[i] - self.target_photo)))) #Compute euclidean distance with the formula"""
-        
-        # fitness = -np.sqrt(np.sum(np.square(self.population - self.target_photo), axis=1))
-        """fitness = -np.linalg.norm(self.population - self.target_photo, axis=1)
-        return fitness.tolist()"""
-        # return fast_norm(self.population - self.target_photo).tolist()
+        distances = -np.linalg.norm(self.population[:, np.newaxis, :] - self.target_photos, axis=2) 
 
-        # With more than one target
-        distances = -np.linalg.norm(self.population[:, np.newaxis, :] - self.target_photos, axis=2)
-        return np.max(distances, axis=1).tolist()
+        # as fitness is defined as a negative value 
+        # (so that targets have fitness 0 and the fitness of the pop increase until it reach O)
+        # the smallest distance is actually the maximal negative value, so we use np.max.
+        # Then, we use axis=1 to have one value per individual (shape of distances is (size_pop, nb_targets)).
+
+        return np.max(distances, axis=1).tolist() 
     
     def calculate_fitness_with_numba(self):
+        """
+        Same function as calculate_fitness_without_numba but use 
+        the helper function fast_norm accelerated with numba.
+
+        """
         distances = fast_norm(self.population[:, np.newaxis, :] - self.target_photos)
         return np.max(distances, axis=1).tolist()
     
     def parallel_calculate_fitness(self):
-        fitness = Parallel(n_jobs=-1)(delayed(np.linalg.norm)(indiv - self.target_photo) for indiv in self.population)
-        return (-np.array(fitness)).tolist()
+        """
+        Same function as calculate_fitness_without_numba but use 
+        Parallelisation to accelerate the process.
+
+        """
+        fitness = Parallel(n_jobs=-1)(delayed(np.linalg.norm)(indiv - self.target_photos, axis=1) for indiv in self.population)
+        return np.max(-np.array(fitness), axis=1).tolist()
     
     def calculate_individual_fitness(self, indiv):
         """
-        Function to calculate the fitness of a single individual given as paramter.
+        Function to calculate the fitness of a single individual given as parameter.
+        As in calculate_fitness_without_numba, fitness is defined as the smallest distance 
+        (max negative value) between this individual and each of the target.
 
         Parameters 
         ----------
         indiv : np.array
-            Vector of a given indiviual of the population
+            Vector of a given individual of the population
         
         Returns 
         -------
-        fitness_val : float
+        float
             Euclidian distance between the parameter and the target vector
 
         """ 
-        # fitness_val = -np.sqrt(np.sum(np.square(indiv - self.target_photo)))
         fitness_values = -np.linalg.norm(indiv - self.target_photos, axis=1)
         return np.max(fitness_values)
     
@@ -681,6 +688,11 @@ def test_fitness(targets):
     end = time.time()
     print(f"Temps avec numba: {end - start:.4f} sec")
 
+    start = time.time()
+    fitness3 = ga.parallel_calculate_fitness()  # Version parallélisée
+    end = time.time()
+    print(f"Temps avec parallélisation: {end - start:.4f} sec")
+
 def ga_with_multiple_targets(targets):
 
     targets = [t.flatten(order = "C") for t in targets]
@@ -760,10 +772,10 @@ if __name__ == "__main__" :
     photos = [norm_target, norm_target2]
     list_targets = create_multiple_target_from_pictures(photos, 6)
 
-    # test_fitness(list_targets)
+    test_fitness(list_targets)
     # ga_with_multiple_targets(list_targets)
 
-    ga_multiple_targets_separated(list_targets)
+    # ga_multiple_targets_separated(list_targets)
     # run_multiple_ga(list_targets)
 
 
