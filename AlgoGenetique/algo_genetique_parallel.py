@@ -11,7 +11,7 @@ Auteurs :
     Deléglise Matthieu et Durand Julie
 -------------------------------
 Version : 
-    1.9 (17/03/2025)
+    2.8 (27/03/2025)
 """
 import numpy as np
 import matplotlib.pyplot as plt

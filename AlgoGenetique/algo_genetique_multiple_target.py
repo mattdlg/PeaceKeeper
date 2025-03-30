@@ -11,8 +11,10 @@ Auteurs :
     Deléglise Matthieu et Durand Julie
 -------------------------------
 Version : 
-    1.9 (17/03/2025)
+    3.3 (30/03/2025)
 """
+
+#### Libraries ####
 import numpy as np
 import matplotlib.pyplot as plt
 from random import choices
@@ -23,17 +25,38 @@ from scipy.optimize import minimize
 
 import time
 
+#### helper function ####
 @njit(fastmath=True)
 def fast_norm(x):
+    """
+    This fonction compute the euclidian norm of the vector given as parameter.
+    The computation is made faster by using the numba library.
+    It aims at decreasing time of computation of Euclidian distances 
+    in the Genetic Algorithm (GA).
+
+    Parameters
+    ----------
+    x : np.array
+        Numpy array representing a matrix. In the case of the GA,
+        it will contain the vectors between current population positions
+        and targets' positions. It is of the shape (size_pop, nb_targets, nb_of_coordinates)
+
+    Returns
+    -------
+    np.array 
+        Array containing the values of the Euclidian norm (norm 2) of these vectors.
+        It is all the euclidian distances between each combination of individual and target
+
+    """
     return -np.sqrt(np.sum(x ** 2, axis=2))
 
 class GeneticAlgorithm():
     """
     Class GeneticAlgorithm
 
-    This algorithm aims at creating a set of images similar to a target picture using 
+    This algorithm aims at creating a set of images similar to one or more target(s) picture(s) using 
     a genetic algorithm. 
-    These images are all representing as vectors of dimension n, which are the 
+    These images are all representing as flattened vectors of dimension n, which are the 
     representation of the images in the latent space of an autoencoder.
 
     """
@@ -44,10 +67,33 @@ class GeneticAlgorithm():
 
         Parameters
         ----------
-        target : np.array
-            Vector of size n representing the target photo in the latent space of the autoencoder. 
+        target_list : list
+            List of vectors of size n representing the targets photos in the latent space of the autoencoder. 
         max_iteration : int
             Maximal number of generation to obtain the final population
+        size_pop : int
+            Number of individuals in the population at each generation (constant size)
+        nb_to_retrieve : int
+            Number of solution of the Genetic Algorithm we want to obtain at the end.
+        stop_threshold : float
+            Arbitrary minimal condition (distance) to consider a solution to be close enough to one of the targets.
+        selection_method : string
+            Method used to select best/random individuals at each generation. 
+            Default is threshold. Can also be Fortune_Wheel or tournament.
+        crossover_proba : float ([0;1])
+            Probability of a crossover happening between two parents at each generation
+        crossover_method : string
+            Method used to cross coordinates of two parents.
+            Default is single-point. Can also be two-points, uniform, BLX-alpha or max_diversity.
+        mutation_rate : float ([0;1]) or couple of floats
+            Probability of mutation of each coordinate (gene) of a vector (chromosome)
+            If mutation_method is "constant", must be a single float. Else, must be a couple of floats,
+            one for badly fitted individuals and one for nicely fitted individuals.
+        sigma_mutation : float
+            Standart deviation of the normal distribution defining the random component added during a mutation.
+        mutation_method : string 
+            Method used to mutate coordinates of an individual.
+            Default is constant. Can also be adaptive.
 
         Returns
         -------
