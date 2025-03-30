@@ -90,7 +90,7 @@ class GeneticAlgorithm():
             If mutation_method is "constant", must be a single float. Else, must be a couple of floats,
             one for badly fitted individuals and one for nicely fitted individuals.
         sigma_mutation : float
-            Standart deviation of the normal distribution defining the random component added during a mutation.
+            Standard deviation of the normal distribution defining the random component added during a mutation.
         mutation_method : string 
             Method used to mutate coordinates of an individual.
             Default is constant. Can also be adaptive.
@@ -674,14 +674,31 @@ class GeneticAlgorithm():
 
 
 def varying_target(target, nb_solutions):
+    """
+    Create a given number of targets from a unique one 
+    by adding random components to it.
+
+    Parameters
+    ----------
+    target : np.array
+        Vector of the picture chosen by the user
+    nb_solutions : int
+        Number of targets to create from the initial vector
+
+    Returns 
+    -------
+    list_target : list
+        List of the nb_solutions vectors that will serve as targets in the GA
+
+    """
     dimensions = target.shape
 
     list_target = []
     for _ in range(nb_solutions):
-        mask = np.random.rand(dimensions[0], dimensions[1], dimensions[2]) < 0.5
-        mutations = np.random.normal(0, 1, dimensions)
+        mask = np.random.rand(dimensions[0], dimensions[1], dimensions[2]) < 0.5 # only mutates some coordinates
+        mutations = np.random.normal(0, 1, dimensions) # mutations are drawn from a standard normal distribution
         new_target = np.copy(target)
-        new_target[mask] += mutations[mask]
+        new_target[mask] += mutations[mask] # add the random component to the vector to get a new one
 
         list_target.append(new_target)
 
@@ -689,32 +706,53 @@ def varying_target(target, nb_solutions):
     return list_target
         
 def test_fitness(targets):
+    """
+    Test function to know which method of fitness computation between
+    normal numpy computation / numba optimization / parallelization
+    is the fastest.
 
-    targets = [t.flatten(order = "C") for t in targets]
+    Parameters
+    ----------
+    targets : list
+        List of np.arrays corresponding to the vectors defining target pictures
+
+    Returns
+    -------
+    None
+        Print time of computation with each method
+
+    """
+
+    targets = [t.flatten(order = "C") for t in targets] # flatten targets 
     ga = GeneticAlgorithm(targets, max_iteration=2000, size_pop=100, nb_to_retrieve=len(targets), stop_threshold=-1, 
                             selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="max_diversity", 
                             mutation_rate=(0.5, 0.05), sigma_mutation=0.8, mutation_method="adaptive")
 
     start = time.time()
-    fitness1 = ga.calculate_fitness_without_numba()  # Version NumPy seule
+    fitness1 = ga.calculate_fitness_without_numba()  # Version NumPy only
     end = time.time()
     print(f"Temps sans numba: {end - start:.4f} sec")
 
     start = time.time()
-    fitness2 = ga.calculate_fitness_with_numba()  # Version avec numba
+    fitness2 = ga.calculate_fitness_with_numba()  # Version with numba
     end = time.time()
     print(f"Temps avec numba: {end - start:.4f} sec")
 
     start = time.time()
-    fitness3 = ga.parallel_calculate_fitness()  # Version parallélisée
+    fitness3 = ga.parallel_calculate_fitness()  # Version parallelization
     end = time.time()
     print(f"Temps avec parallélisation: {end - start:.4f} sec")
 
 def test_BLX_alpha():
-    targets = [np.random.rand(4,4) * 10 for _ in range(2)]
+    """
+    Test BLX_alpha crossover method : 
+    comparison of parents and children coordinates of simple vectors.
+
+    """
+    targets = [np.random.rand(4,4) * 10 for _ in range(2)] # create simple random vectors
     targets = [t.flatten(order = "C") for t in targets]
     ga = GeneticAlgorithm(targets, max_iteration=2000, size_pop=100, nb_to_retrieve=len(targets), stop_threshold=-1, 
-                            selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="max_diversity", 
+                            selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="BLX-alpha", 
                             mutation_rate=(0.5, 0.05), sigma_mutation=0.8, mutation_method="adaptive")
     
     parent1 = targets[0]
@@ -727,15 +765,35 @@ def test_BLX_alpha():
     print(child2)
 
 def ga_with_multiple_targets(targets):
+    """
+    Run a genetic algorithm on a list of targets.
+    Use directly the whole vector of each target (no separation of each canal).
 
-    targets = [t.flatten(order = "C") for t in targets]
+    Parameters 
+    ----------
+    targets : list
+        List of np.arrays corresponding to the vectors defining target pictures
+
+    Returns 
+    -------
+    solutions : list
+        List of the vectors solution of the Genetic Algorithm
+
+    Also print the final fitness of these solutions and the standard deviation of the solutions (diversity)
+
+    """
+
+    targets = [t.flatten(order = "C") for t in targets] # flattening of the vectors
+
+    # run a single GA on the whole target vectors
     ga = GeneticAlgorithm(targets, max_iteration=2000, size_pop=100, nb_to_retrieve=len(targets), stop_threshold=-1, 
                             selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="max_diversity", 
                             mutation_rate=(0.5, 0.05), sigma_mutation=0.8, mutation_method="adaptive")
     
     solutions = ga.main_loop()
     ga.visualization()
-    
+
+    # statistics on the solutions
     print("Écart-type des coordonnées finales :", np.std(solutions, axis=0).mean())
     for s in solutions: 
         print(f" norm : {np.max(-np.linalg.norm(s-np.asarray(targets), axis=1))}")
@@ -743,7 +801,28 @@ def ga_with_multiple_targets(targets):
     return solutions
 
 def run_ga(i, targets, nb_solutions):
-    partial_targets = [t[i, :, :].flatten(order="C") for t in targets]
+    """
+    Run a Genetic algorithm on only one canal of the target vectors, 
+    defined by its index i. 
+    This allows to simulate a GA on big vectors by separating them in smaller parts.
+    This function is used in a parallization job to decrease the time of computation. 
+
+    Parameters
+    ----------
+    i : int
+        index of the canal (1rst dimension of the vectors) on which the GA must be run
+    targets : list
+        List of the numpy arrays representing the target vectors of the GA.
+    nb_solutions : int
+        Number of solutions of the GA to retrieve.
+
+    Returns 
+    -------
+    list   
+        List of solutions returned by the main_loop of the GA
+
+    """
+    partial_targets = [t[i, :, :].flatten(order="C") for t in targets] # retrieve the wanted canal on which to run a GA
     ga = GeneticAlgorithm(partial_targets, max_iteration=2000, size_pop=60, nb_to_retrieve=nb_solutions, stop_threshold=-1, 
                             selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="max_diversity", 
                             mutation_rate=(0.5, 0.05), sigma_mutation=0.8, mutation_method="adaptive")
@@ -751,12 +830,39 @@ def run_ga(i, targets, nb_solutions):
     return ga.main_loop()
 
 def ga_multiple_targets_separated(targets):
+    """
+    Run a genetic algorithm on a list of targets.
+    To do so, separate the vectors in smaller parts (one for each canal of the array (first dimension)).
+    Run a GA on each of these parts, and then reconstruct the whole solutions by concatenating solutions' parts togother
+
+    Indeed, running this GA on the whole vectors increases a lot the size of the vector space.
+    Therefore, individuals in the population have very little chance of being well fitted, and the program 
+    have a hard time converging towards the targets. 
+    Running several GAs on parts of the targets allow for a better convergence, with only a 
+    little loss of time thanks to parallelization. Only a small part of the convergence is lost
+    when merging back solutions' parts together (as each parts didn't converge equally, the whole
+    reconstruction is furthest away from the whole targets than parts-parts distance).
+
+    Parameters 
+    ----------
+    targets : list
+        List of np.arrays corresponding to the vectors defining target pictures
+
+    Returns 
+    -------
+    reconstructed_solutions : np.array
+        Array of the vectors solution of the Genetic Algorithm
+
+    Also print the final fitness of these solutions and the standard deviation of the solutions (diversity)
+
+    """
     dimensions = targets[0].shape
     print(dimensions)
-    solutions = Parallel(n_jobs=-1)(delayed(run_ga)(i, targets, len(targets)) for i in range(dimensions[0]))
+    solutions = Parallel(n_jobs=-1)(delayed(run_ga)(i, targets, len(targets)) for i in range(dimensions[0])) # run a GA on each canals of the targets
 
-    reconstructed_solutions = np.stack(solutions, axis=1).reshape((-1, *dimensions), order="C")
+    reconstructed_solutions = np.stack(solutions, axis=1).reshape((-1, *dimensions), order="C") # reconstruction of the whole solutions
 
+    # statistics on the solutions
     print("Écart-type des coordonnées finales :", np.std(solutions, axis=0).mean())
     for s in reconstructed_solutions: 
          print(f" norm : {np.max(-np.linalg.norm(s-np.asarray(targets), axis=1))}")
@@ -765,52 +871,107 @@ def ga_multiple_targets_separated(targets):
 
 
 def create_multiple_target_from_pictures(photos, nb_solutions):
-    alphas = np.linspace(0.1, 0.9, nb_solutions)
+    """
+    Use two photos (numpy array) to create nb_solutions different vectors
+    whose coordinates' values interpolate the range between the coordinates
+    of these two photos.
+
+    Parameters 
+    ----------
+    photos : list
+        List of numpy arrays (here 2) from which we create the different vectors
+    nb_solutions : int
+        Number of vectors we want to create
+
+    Returns
+    -------
+    targets : list
+        List of numpy array that will serve as targets for the GA
+
+    """
+    alphas = np.linspace(0.1, 0.9, nb_solutions) # get nb_solutions different value of alpha, defining the percentage of blending
     targets = []
     for a in alphas :
-        new_target = a * photos[0] + (1 - a) * photos[1]
+        new_target = a * photos[0] + (1 - a) * photos[1] # we keep 100*a% of the first photo and 100*(1-a)% of the second photo
         targets.append(new_target)
 
     return targets
 
 def run_multiple_ga(targets):
+    """
+    Instead of running one GA with n targets, 
+    run n GA with one different target each.
+
+    This increases a lot the time of computation (*n) but allow 
+    a better convergence and better diversity of the solutions
+
+    Parameters
+    ----------
+    targets : list
+        List of numpy array representing the target vectors of the GA
+
+    Returns 
+    -------
+    array_solutions : np.array
+        Array of the vectors solution of the Genetic Algorithm
+
+    """
     dimensions = targets[0].shape
     list_solutions = []
-    for picture in targets :
-        solution = Parallel(n_jobs=-1)(delayed(run_ga)(i, [picture], 1) for i in range(dimensions[0]))
-        reconstructed_solution = np.stack(solution, axis=1).reshape((-1, *dimensions), order="C")
+    for picture in targets : # run one GA for each picture in the targets list
+        solution = Parallel(n_jobs=-1)(delayed(run_ga)(i, [picture], 1) for i in range(dimensions[0])) # Parallelization as we run a GA on each canal of the vector
+        reconstructed_solution = np.stack(solution, axis=1).reshape((-1, *dimensions), order="C") # reconstruction of the whole solution
 
         print(-np.linalg.norm(reconstructed_solution - picture))
 
         list_solutions.append(reconstructed_solution)
         
-    array_solutions = np.asarray(list_solutions)
-    return array_solutions
+    array_solutions = np.asarray(list_solutions) # easier to use as an array
+    return array_solutions 
 
 def normalization(v):
     """
-    get a vector in [0,1] space
+    Normalize a vector so that its coordinates are 
+    all in the interval [0, 1]
+
+    Parameters
+    ----------
+    v : np.array
+        Array representing the vector to normalize
+
+    Returns 
+    -------
+    norm_vector : np.array
+        Normalized vector
     """
-    norm_vector = (v - np.min(v)) / (np.max(v)-np.min(v))
+    norm_vector = (v - np.min(v)) / (np.max(v)-np.min(v)) # usual normalization formula
     return norm_vector
 
 if __name__ == "__main__" :
     print(__name__)
+
+    #### Creation of random vectors ####
     target = np.random.rand(128,8,8) * 20
     norm_target = normalization(target)
     # list_targets = varying_target(target, 6)
     target2 = np.random.rand(128,8,8) * 20
+
     norm_target2 = normalization(target2)
     # photos = [target, target2]
     photos = [norm_target, norm_target2]
+
+    #### Creation of different target from the two initial one ####
     list_targets = create_multiple_target_from_pictures(photos, 6)
 
+    #### Simple test on the GA class methods ####
     # test_fitness(list_targets)
-    # ga_with_multiple_targets(list_targets)
+    # test_BLX_alpha()
 
+    #### Test one the different way of running the GA ####
+    # ga_with_multiple_targets(list_targets)
     # ga_multiple_targets_separated(list_targets)
-    # run_multiple_ga(list_targets)
-    test_BLX_alpha()
+    run_multiple_ga(list_targets)
+    
 
 
 
