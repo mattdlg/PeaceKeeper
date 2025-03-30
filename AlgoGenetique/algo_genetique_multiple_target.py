@@ -223,13 +223,13 @@ class GeneticAlgorithm():
     def select(self, nb_generation, criteria = "threshold"):
 
         """
-        Select a pair number of individuals according to their fitness. This set of individuals will then 
+        Select an even number of individuals according to their fitness. This set of individuals will then 
         endure crossover and mutation.
         
-        Possibly use two different criteria to do so : 
+        Possibly use three different criteria to do so : 
             - threshold : choose only the individuals that have a fitness greater than the average one.
-            - Fortune_Wheel : include a part of random in the process.
-            - tournament : randomization + choose best indiv.
+            - Fortune_Wheel : Choose individuals randomly, with probabilities proportional to their fitness.
+            - tournament : Choose best individuals in smaller random parts of the population.
 
         Parameters
         ----------
@@ -238,7 +238,7 @@ class GeneticAlgorithm():
         
         criteria : string
             Name of the criteria used for the selection. Default is "threshold".
-            Other criterion is "Fortune_Wheel".
+            Other criteria is "Fortune_Wheel" or "tournament".
 
         Returns
         -------
@@ -246,7 +246,7 @@ class GeneticAlgorithm():
             List of individuals selected to pursue algorithm.
 
         """
-        fitness_values = self.dico_fitness[nb_generation] 
+        fitness_values = self.dico_fitness[nb_generation] # fitness of individuals of the current generation
 
         if criteria == "threshold" :
             generation = []
@@ -255,11 +255,11 @@ class GeneticAlgorithm():
             
             fitness_avg = np.mean(fitness_values) # Compute average fitness
             for i in range(len(self.population)) : 
-                if  self.dico_fitness[nb_generation][i] >= fitness_avg : #Selection of the individuals
+                if  fitness_values[i] >= fitness_avg : # Selection of the individuals
                     generation.append(self.population[i])
                 else : 
-                    if self.dico_fitness[nb_generation][i] > max_fitness_after_threshold :    # Store the individual that is closer to the average fitness in case the number of individuals selected isn't pair.
-                        max_fitness_after_threshold, pop = self.dico_fitness[nb_generation][i], self.population[i]
+                    if fitness_values[i] > max_fitness_after_threshold : # Store the individual that is closer to the average fitness in case the number of individuals selected isn't pair.
+                        max_fitness_after_threshold, pop = fitness_values[i], self.population[i]
 
             if len(generation)%2 != 0 : # if we don't have a pair number of individuals
                 generation.append(pop)
@@ -269,58 +269,54 @@ class GeneticAlgorithm():
         elif criteria == "Fortune_Wheel" :
 
             proba_individuals = []
-            #table_proba = []
-            # max_fitness = np.max(list(self.dico_fitness.values())[-1][:]) # Retrieve the maximum fitness
             
-            """elite_size = int(len(self.population) * 0.1)  # Garde les 10 % meilleurs
+            #### Decomment next lines if you want to ensure you keep the 10% best individuals
+            """
+            elite_size = int(len(self.population) * 0.1)  # keep the 10 % best
             sorted_indices = np.argsort(fitness_values)[::-1]
             elite = [self.population[i] for i in sorted_indices[:elite_size]]
             fitness_array = np.array(fitness_values)
-            fitness_array = fitness_array[sorted_indices[elite_size:]]"""
+            fitness_array = fitness_array[sorted_indices[elite_size:]] # fitness values of non elite population
+            """
 
-            min_fitness = np.min(fitness_values) # compute the most negative fitness -> furtherst away from target
-            # transformed_fitness = [abs(f - min_fitness) for f in fitness_values] # translate value so that the closest fitness to 0 has the highest new positive value
-            
-            transformed_fitness = np.abs(np.array(fitness_values) - min_fitness)
-            
-            # sum_fitness = sum(transformed_fitness)
-            """for i in range(len(self.dico_fitness[nb_generation])): 
-                proba_individuals.append(self.dico_fitness[nb_generation][i]*1 / max_fitness) """      # Attribute a probability to each fitness 
-                #table_proba.append([self.population[i], self.dico_fitness[nb_generation][i], proba_individuals[i]]) # Création d'une table contenant l'individu, sa fitness et sa probabilité d'être tiré
+            min_fitness = np.min(fitness_values) # compute the most negative fitness -> furthest away from target
+            transformed_fitness = np.abs(np.array(fitness_values) - min_fitness) # translate value so that the closest fitness to 0 has the highest new positive value
 
-            """if sum_fitness == 0: # avoid dividing by 0 
-                proba_individuals = [1 / len(fitness_values)] * len(fitness_values)  # uniform distribution when they all have nul fitness
-            else:
-                proba_individuals = [f / sum_fitness for f in transformed_fitness] # normalisation of the fitness value by the sum of all fitness"""
-
+            # Compute the probabilities of choosing each individual. 
+            # The highest their transformed fitness, the highest their probabilities of being chosen.
+            # We use the square root (**0.5) to crush the differences that are too marked. 
+            # This allows worse individuals to have better chances to survive, to avoid stagnation of the GA.
+            # ensure we do not divide by 0 : when all transformed_fitness are 0, probabilities are uniform : 
+            # same chances to choose any individual
             proba_individuals = transformed_fitness ** 0.5 / np.sum(transformed_fitness ** 0.5) if np.sum(transformed_fitness) != 0 else np.ones_like(transformed_fitness) / len(transformed_fitness)
 
-            if len(self.population)%2 == 0 : # Test la parité de la population pour générer un nombre pair d'individus
+            if len(self.population)%2 == 0 : # Choose an even number of individual in the population
                 nb_tirages = len(self.population)//2
             else : 
                 nb_tirages = len(self.population)//2 + 1
-            #sample = choices(table_proba, weights = proba_individuals, k = nb_tirages)  # Tirage de taille_de_population/2 pair individus selon leur probabilité. Attention !! ESt-ce qu'il y a des remises ???
-            #generation.append(sample[:][0])
 
-            # nb_tirages -= elite_size  
+            # If we already kept the best individuals, we need to keep a lesser amount in the rest of the pop :
+            # nb_tirages -= elite_size 
 
-            ## Ou 
             index_choice = np.random.choice(len(self.population), size = nb_tirages, replace = False, p = proba_individuals) # list of the selected individuals according to their probability
             # index_choice = np.random.choice(sorted_indices[elite_size:], size = nb_tirages, replace = False, p = proba_individuals)
             generation = [self.population[k] for k in index_choice]
             # generation = generation + elite
 
-            """max_indice = np.argsort(fitness_values)[-1]
+            # to replace one of the value with the best indiv
+            """
+            max_indice = np.argsort(fitness_values)[-1]
             elite = self.population[max_indice] 
-            generation[-1] = elite"""
+            generation[-1] = elite
+            """
 
             return generation
 
         elif criteria == "tournament":
             fitness_array = np.array(fitness_values)
-            tournament_size = 4
+            tournament_size = 4 # number of individuals that will compete between each other to be selected
             
-            if len(self.population)%2 == 0 : # Test la parité de la population pour générer un nombre pair d'individus
+            if len(self.population)%2 == 0 : # Choose an even number of individual in the population
                 nb_tirages = len(self.population)//2
             else : 
                 nb_tirages = len(self.population)//2 + 1
@@ -329,7 +325,7 @@ class GeneticAlgorithm():
             for _ in range(nb_tirages): 
                 indices = np.random.choice(len(self.population), tournament_size, replace=False) # choose randomly some individuals
                 best_idx = indices[np.argmax(fitness_array[indices])]
-                selected.append(self.population[best_idx]) # select best individuals in these 
+                selected.append(self.population[best_idx]) # select best individual in these, depending on their fitness
 
             return selected
         else : 
