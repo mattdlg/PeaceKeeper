@@ -334,23 +334,28 @@ class GeneticAlgorithm():
     def crossover_and_mutations(self):
         """
         Last step of each loop of the genetic algorithm : 
-        - breeding between parents (crossover) too give a child population, 
+        - breeding between parents (crossover) to give a child population, 
         - mutation on these children
 
         Parameters
         ----------
-        crossover_proba : float
+        None 
+
+        Make use of : 
+        self.generation : list
+            List of the vectors of the selected individuals in the population
+        self.crossover_proba : float
             Probability of crossing over between two parents (between 0 and 1)
 
         Returns
         -------
-        new_populations : list
-            List of the vectors of the new population composed of the parents 
+        new_population : np.array
+            Array of the vectors of the new population composed of the parents 
             (best individuals from the previous generation) and their children.
 
         """
         new_population = self.generation[:] # new population will also contained the selected parents from the previous generation
-        for i in range(0, len(self.generation), 2): # Caution : this imply that the generation contain an even number of parents 
+        for i in range(0, len(self.generation), 2): # Caution : this imply that the generation contains an even number of parents 
             parent1 = self.generation[i]
             parent2 = self.generation[i+1]
             
@@ -375,11 +380,18 @@ class GeneticAlgorithm():
         The function exchange some of the vectors' coordinates to 
         create two children vectors. 
 
-        Possibly use three different methods to do so : 
-            - single-point : exchange every coordinates after this index (included).
+        Possibly use five different methods to do so : 
+            - single-point : exchange every coordinates after an index (included).
             - two-points : exchange every coordinates between the lower and upper bound (included).
             - uniform : for each coordinate : toss a coin to know if it will be from the first or 
             the second parent (if no coordinate were exchanged, randomly choose one to exchange).
+            - BLX-alpha : Extend the range of values the children can take outside of the parents range, 
+            using a factor alpha. It allows more diversity in offsprings to avoid premature convergence 
+            of the GA.
+            - max_diversity : blend coordinates of the two parents (linear combination) using a factor 
+            alpha defining the percentage of each parents is kept (ex : child1 = 0.7parent1 + 0.3parent2).
+            Alpha is set as a random value (in [0.2, 0.8]) to ensure more diversity : 
+            not the same blending at each generation.
 
         Parameters
         ----------
@@ -389,7 +401,7 @@ class GeneticAlgorithm():
             Array of dimension n representing the second parent (vector).
         method : string
             Name of the method used for the crossing over. Default is "single-point".
-            Other methods are "two-points" and "uniform".
+            Other methods are "two-points", "uniform", "BLX-alpha" and "max_diversity".
 
         Returns
         -------
@@ -401,7 +413,6 @@ class GeneticAlgorithm():
         """
         if method == "single-point" : # exchange every coordinates after a random index, including this index.
             crossing_point = np.random.randint(1, self.dimension) # self.dimension = size of the vectors = dimension of the vector space
-            # print(crossing_point)
             child1 = np.concatenate((parent1[:crossing_point], parent2[crossing_point:]))
             child2 = np.concatenate((parent2[:crossing_point], parent1[crossing_point:]))
 
@@ -409,21 +420,12 @@ class GeneticAlgorithm():
             low_crossing_point = np.random.randint(0, self.dimension) # lower bound can be any index in the range of the size of the vectors
             upper_bound = min(low_crossing_point + (self.dimension-1), self.dimension) # to be sure that not every coordinates are exchanged (meaning that children = parents), we ensure that at least one stay the same
             high_crossing_point = np.random.randint(low_crossing_point, upper_bound) # upper bound cannot be inferior to the lower one
-            # print(low_crossing_point, high_crossing_point)
             child1 = np.concatenate((parent1[:low_crossing_point], parent2[low_crossing_point:high_crossing_point+1], parent1[high_crossing_point+1:]))
             child2 = np.concatenate((parent2[:low_crossing_point], parent1[low_crossing_point:high_crossing_point+1], parent2[high_crossing_point+1:]))
 
         elif method == "uniform" : # randomly choose from which parents a coordinate will be 
             child1, child2 = np.array([0.0 for _ in range(self.dimension)]), np.array([0.0 for _ in range(self.dimension)])
-            """for i in range(self.dimension):
-                p = np.random.randint(0,2) # tossing a coin : result = 0 or 1
-                if p == 0 : # coordinate of child i come from parent i
-                    children1[i] = parent1[i]
-                    children2[i] = parent2[i]
-                else : # coordinate of child i come from the other parent
-                    children1[i] = parent2[i]
-                    children2[i] = parent1[i]"""
-            mask = np.random.randint(0, 2, size=self.dimension, dtype=bool)
+            mask = np.random.randint(0, 2, size=self.dimension, dtype=bool) # toss a coin for each coordinate : heads = coord from p1, tails = coord from p2
             child1, child2 = np.where(mask, parent1, parent2), np.where(mask, parent2, parent1)
 
             if np.array_equal(child1, parent1) : # if no exchange were made, while we want at least one when there is a crossover:
@@ -431,19 +433,24 @@ class GeneticAlgorithm():
                 child1[random_index] = parent2[random_index]
                 child2[random_index] = parent1[random_index]
         
-        elif method == "BLX-alpha":
-            alpha = 0.5
-            lower = np.minimum(parent1, parent2) - alpha * np.abs(parent1 - parent2)
-            upper = np.maximum(parent1, parent2) + alpha * np.abs(parent1 - parent2)
+        elif method == "BLX-alpha": # Blend Alpha crossover method
+            alpha = 0.5 # degree of exploration (increase of the range of values)
+
+            # compute lower and higher bound for each coordinate 
+            lower = np.minimum(parent1, parent2) - alpha * np.abs(parent1 - parent2) # lower = minimum value between the two parents minus alpha times the difference between them
+            upper = np.maximum(parent1, parent2) + alpha * np.abs(parent1 - parent2) # upper = maximum value between the two parents plus alpha times the difference between them
             child1 = np.random.uniform(lower, upper)
             child2 = np.random.uniform(lower, upper)
 
         elif method == "max_diversity": 
-            alpha = np.random.uniform(0.3, 0.7)  # Varie aléatoirement l’intensité du mélange
+            alpha = np.random.uniform(0.2, 0.8)  # Randomly varies the intensity of the blending
             child1 = alpha * parent1 + (1 - alpha) * parent2
             child2 = (1 - alpha) * parent1 + alpha * parent2
-            # T = max(0.2, 1 - self.count_generation / self.max_iteration)
-            return child1 + np.random.normal(0, 0.2, size=parent1.shape), child2 + np.random.normal(0, 0.2, size=parent2.shape)
+
+            # add a random component to explore outside the range of value of the parents = increase diversity.
+            # Already done with the mutations but can be useful to ensure more diversity. 
+            return child1, child2
+            # return child1 + np.random.normal(0, 0.2, size=parent1.shape), child2 + np.random.normal(0, 0.2, size=parent2.shape)
 
         else : 
             print("Error, unknown method")
@@ -689,6 +696,22 @@ def test_fitness(targets):
     end = time.time()
     print(f"Temps avec parallélisation: {end - start:.4f} sec")
 
+def test_BLX_alpha():
+    targets = [np.random.rand(4,4) * 10 for _ in range(2)]
+    targets = [t.flatten(order = "C") for t in targets]
+    ga = GeneticAlgorithm(targets, max_iteration=2000, size_pop=100, nb_to_retrieve=len(targets), stop_threshold=-1, 
+                            selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="max_diversity", 
+                            mutation_rate=(0.5, 0.05), sigma_mutation=0.8, mutation_method="adaptive")
+    
+    parent1 = targets[0]
+    parent2 = targets[1]
+    child1, child2 = ga.crossover(parent1, parent2, method="BLX-alpha")
+    print(parent1)
+    print(parent2)
+    print("-------------------")
+    print(child1)
+    print(child2)
+
 def ga_with_multiple_targets(targets):
 
     targets = [t.flatten(order = "C") for t in targets]
@@ -768,12 +791,12 @@ if __name__ == "__main__" :
     photos = [norm_target, norm_target2]
     list_targets = create_multiple_target_from_pictures(photos, 6)
 
-    test_fitness(list_targets)
+    # test_fitness(list_targets)
     # ga_with_multiple_targets(list_targets)
 
     # ga_multiple_targets_separated(list_targets)
     # run_multiple_ga(list_targets)
-
+    test_BLX_alpha()
 
 
 
