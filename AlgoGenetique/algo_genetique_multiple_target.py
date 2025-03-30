@@ -473,9 +473,9 @@ class GeneticAlgorithm():
             - adaptive : In this case, there is two mutation rates given as parameters : the first
             one is for badly fitted chromosomes, and the second one for well fitted chromosomes. 
             Indeed, when a chromosome is well fitted, its coordinates are already close from the target, 
-            meaning that mutating a lot of gene increases the chances of moving away from it. On the contrary,
+            meaning that mutating a lot of genes increases the chances of moving away from it. On the contrary,
             a badly fitted chromosome has all interest in having a high mutation probability to change a lot 
-            of its coordinate and move closer to the target. Therefore, it can be useful to have two different 
+            of its coordinates and move closer to the target. Therefore, it can be useful to have two different 
             mutation rates, one smaller for the good fits and one higher for the bad fits, to converge more
             rapidly toward the target.
 
@@ -487,7 +487,7 @@ class GeneticAlgorithm():
             If method is "constant", mutation rate is a unique float.
             If method is "adaptive", mutation rate is a tuple of two floats : (rate_for_low_fitness, rate_for_high_fitness)
         sigma_mutation : float
-            Standard deviation of the normal distribution from whcih are drawn mutations.
+            Standard deviation of the normal distribution from which are drawn mutations.
         method : str
             Method use for the mutation rate. Default is "constant". Other method is "adaptive".
 
@@ -505,27 +505,23 @@ class GeneticAlgorithm():
             fit_chr = self.calculate_individual_fitness(chr) # fitness of the current individual
             if fit_chr >= fit_avg : # individual is well fitted compared to the rest of the population 
                 proba_mutation = self.mutation_rate[1]
-                """if fit_chr >= -30 :
-                    sigma_mutation /= 5 # smaller mutation when closer to target"""
             else : # individual is badly fitted compared to the rest of the population
                 proba_mutation = self.mutation_rate[0]
-                # sigma_mutation *= 1.2 # higher size of mutation for individuals with a bad fitness
 
         else : 
             print("Error, unknow method") # if the method is incorrect, do not apply any mutation 
             return 
-
-        """for i in range(self.dimension):
-            if np.random.random_sample() < proba_mutation : 
-                m = np.random.normal(0, sigma_mutation) # mutations are drawn from a normal distribution distributed around 0. Modifying sigma allows to have bigger or smaller mutations
-                chr[i] += m"""
         
-        T = max(0.01, 1 - self.count_generation / self.max_iteration)
-        """if np.std(self.population, axis=0).mean() < 0.1:  # Seuil de diversité
-            self.sigma_mutation *= 1.2  # Réaugmente la mutation temporairement"""
-        mask = np.random.rand(self.dimension) < proba_mutation
+        # add a temperature : the more we advance, the more the individuals are closer to the targets :
+        # we therefore decrease the size of mutation at each generation using this factor
+        T = max(0.01, 1 - self.count_generation / self.max_iteration) 
+        """
+        if np.std(self.population, axis=0).mean() < 0.1:  # diversity threshold
+            self.sigma_mutation *= 1.2  # increase back mutation size to increase diversity
+        """
+        mask = np.random.rand(self.dimension) < proba_mutation # only mutate with a certain probability
         mutations = np.random.normal(0, sigma_mutation*T, self.dimension)
-        chr[mask] += mutations[mask]
+        chr[mask] += mutations[mask] # add random component to the vectors when its coordinates have mutated.
 
     def visualization(self):
         """
