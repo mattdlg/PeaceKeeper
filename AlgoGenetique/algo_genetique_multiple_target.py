@@ -536,14 +536,15 @@ class GeneticAlgorithm():
         None 
             Open a new window with the graph.
         """
-        index_generations = list(range(1, list(self.dico_fitness.keys())[-1]+1))
-        # print(list(self.dico_fitness.values())[-1])
+        index_generations = list(range(1, list(self.dico_fitness.keys())[-1]+1)) # x-axis
+
+        # fitness range :
         best_fitness_values = [np.max(list_fitness) for list_fitness in self.dico_fitness.values()]
         worst_fitness_values = [np.min(list_fitness) for list_fitness in self.dico_fitness.values()]
 
         plt.figure()
-        plt.plot(index_generations, best_fitness_values, label='Best Fitness', color='black')
-        plt.fill_between(index_generations, worst_fitness_values, best_fitness_values, color='gray', alpha=0.5, label='Fitness Range')
+        plt.plot(index_generations, best_fitness_values, label='Best Fitness', color='black') # maximal value of fitness at each generation
+        plt.fill_between(index_generations, worst_fitness_values, best_fitness_values, color='gray', alpha=0.5, label='Fitness Range') # Interval of value at each generation
         plt.xlabel('Generation')
         plt.ylabel('Fitness')
         plt.title('Fitness Over Generations')
@@ -554,27 +555,29 @@ class GeneticAlgorithm():
         """
         Stopping condition of the GA : 
         If the m individuals of the population with the highest fitness values 
-        all have a fitness inferior to an arbitrary threshold, stop the algorithms :
-        we consider that we are close enough from the target.
+        all have a fitness superior to an arbitrary threshold (close to 0), stop the algorithms :
+        we consider that we are close enough from the targets.
 
         Parameters 
         ----------
-        m : int
-            Number of vectors to retrieve
-        threshold : float
+        None 
+
+        Make use of the following parameters of the class
+        self.threshold : float
             Max distance until when we consider that we are close from the target
 
         Returns
         -------
         stop : bool
             True or false, depending on if we need to stop the GA or not.
+            True if m individuals respect the stop conditions
 
         """
         self.solution, max_fitness = self.retrieve_max_fitness_population() #  to retrieve only the m closest individuals to the target
 
         stop = True
         for val in max_fitness :
-            if val < self.threshold :
+            if val < self.threshold : # if at least one of the value do not respect the stop condition, we need to pursue the GA
                 stop = False
                 break
     
@@ -583,12 +586,19 @@ class GeneticAlgorithm():
     def retrieve_max_fitness_population(self):
         """
         Retrieve the m more fitted solutions in the population, 
-        which are the m closest vectors to the target.
+        which are the m closest vectors to the targets.
 
         Parameters
         ----------
-        m : int 
+        None
+
+        Make use of the following parameters from the class :
+        self.m : int 
             Number of vectors to retrieve
+        self.dico_fitness : dict
+            Values of fitness of each individual at each generation
+        self.population : np.array
+            Array of the vectors of each individual of the population
 
         Returns
         -------
@@ -599,11 +609,10 @@ class GeneticAlgorithm():
 
         """
         last_fitnesses = list(self.dico_fitness.values())[-1][:]
-        """last_fitnesses.sort()
-        print(last_fitnesses[-m:])""" # only retrieve max fitness but not their index in the list
 
         indices_max = np.argsort(last_fitnesses)[-self.m:][::-1] # finding the indices corresponding to the m highest values, in decreasing order
         fitness_max = np.sort(last_fitnesses)[-self.m:][::-1] # m highest values of fitness (used in the stop condition)
+
         population_max = [self.population[i] for i in indices_max]
         return population_max, fitness_max
     
@@ -611,6 +620,7 @@ class GeneticAlgorithm():
         """
         Main Loop of the Genetic Algorithm.
         The loop represent the evolution of the population over generations.
+        It follows the pattern : compute fitness --- selection --- crossover --- mutations
 
         Parameters
         ----------
@@ -623,29 +633,37 @@ class GeneticAlgorithm():
         """
         
         while self.count_generation < self.max_iteration :
-            self.count_generation += 1 
-            # print(self.count_generation)
+            self.count_generation += 1 # next generation
             self.dico_fitness[self.count_generation] = self.calculate_fitness_without_numba()
             if self.stop_condition(): # if we have solutions close enough to the target
                 break
             self.generation = self.select(self.count_generation, criteria=self.selection_method) 
             new_population = self.crossover_and_mutations()
             self.population = new_population
+            
+            # To avoid local minima (NOT WORKING FOR NOW)
+            """
+            if self.count_generation % 50 == 0:
+                self.refine_best_individual()
+            """
 
-            """if self.count_generation % 50 == 0:
-                self.refine_best_individual()"""
-            """if self.count_generation % 50 == 0:  # Toutes les 50 générations
-                n_migrants = max(1, len(self.population) // 10)  # Remplace 10% de la pop
-                self.population[:n_migrants] = np.random.uniform(-10, 10, (n_migrants, self.dimension))"""
-
-            # self.sigma_mutation *= 0.98 # decrease the size of mutations at each generation because closer to the target, smaller mutations are more beneficial
-           
-        # print(np.max(self.dico_fitness[self.count_generation]))
         # print("Écart-type des coordonnées finales :", np.std(self.solution, axis=0).mean())
-        # self.solution = self.retrieve_final_population(10) # already done in self.stop_condition()
         return self.solution
     
     def refine_best_individual(self):
+        """
+        Gradient descent on best individual (local optimisation)
+        to increase convergence and avoir local minima.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None 
+            Replace best individuals in the population by the new optimized vectors
+        """
         best_idx = np.argmax(self.dico_fitness[self.count_generation])
         best_individual = self.population[best_idx]
 
