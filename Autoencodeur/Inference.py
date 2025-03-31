@@ -351,13 +351,10 @@ class ImageApp:
             # Ex: latent_vector = genetic_algorithm(latent_vector)
 
             targets_list = GAm.create_multiple_target_from_pictures([v[0] for v in list_vectors], 6)
-            # print(len(targets_list))
-            # print(targets_list[0].shape)
-            print(np.max(list_vectors[0]), np.max(list_vectors[1]))
-            print(np.max(targets_list[0]))
-            solutions = GAm.run_multiple_ga(targets_list)
-
-            # print(solutions.shape)
+            norm_targets, min_val, max_val = GAm.normalization(np.array(targets_list))
+            
+            solutions = GAm.run_multiple_ga(norm_targets)
+            solutions = GAm.denormalization(solutions, min_val, max_val)
 
             # Convertir en tenseur PyTorch
             # sol = torch.tensor(solutions[0], dtype=torch.float32) # Ne prendre que l'image en position 0, il faudra faire une boucle et afficher les 10 images après

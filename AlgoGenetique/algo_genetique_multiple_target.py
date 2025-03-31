@@ -786,7 +786,7 @@ def ga_with_multiple_targets(targets):
     targets = [t.flatten(order = "C") for t in targets] # flattening of the vectors
 
     # run a single GA on the whole target vectors
-    ga = GeneticAlgorithm(targets, max_iteration=2000, size_pop=100, nb_to_retrieve=len(targets), stop_threshold=-1, 
+    ga = GeneticAlgorithm(targets, max_iteration=2000, size_pop=60, nb_to_retrieve=len(targets), stop_threshold=-1, 
                             selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="max_diversity", 
                             mutation_rate=(0.5, 0.05), sigma_mutation=0.8, mutation_method="adaptive")
     
@@ -823,7 +823,7 @@ def run_ga(i, targets, nb_solutions):
 
     """
     partial_targets = [t[i, :, :].flatten(order="C") for t in targets] # retrieve the wanted canal on which to run a GA
-    ga = GeneticAlgorithm(partial_targets, max_iteration=2000, size_pop=60, nb_to_retrieve=nb_solutions, stop_threshold=-1, 
+    ga = GeneticAlgorithm(partial_targets, max_iteration=2000, size_pop=60, nb_to_retrieve=nb_solutions, stop_threshold=-0.1, 
                             selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="max_diversity", 
                             mutation_rate=(0.5, 0.05), sigma_mutation=0.8, mutation_method="adaptive")
     print(i)
@@ -929,39 +929,76 @@ def run_multiple_ga(targets):
     array_solutions = np.asarray(list_solutions) # easier to use as an array
     return array_solutions 
 
-def normalization(v):
+def normalization(lv):
     """
-    Normalize a vector so that its coordinates are 
+    Normalize vectors so that their coordinates are 
     all in the interval [0, 1]
 
     Parameters
     ----------
-    v : np.array
-        Array representing the vector to normalize
+    lv : np.array
+        Array containing the vectors to normalize
 
     Returns 
     -------
-    norm_vector : np.array
-        Normalized vector
+    norm_vectors : list
+        List of normalized vectors
+    min_val : float
+        Minimal coordinate value of the initial vectors
+    max_val : float
+        Maximal coordinate value of the initial vectors
+
     """
-    norm_vector = (v - np.min(v)) / (np.max(v)-np.min(v)) # usual normalization formula
-    return norm_vector
+    min_val, max_val = np.min(lv), np.max(lv) # find min and max val of every values in the vectors
+
+    norm_vectors = []
+    for v in lv :
+        norm_vectors.append((v - min_val) / (max_val-min_val)) # usual normalization formula
+
+    return norm_vectors, min_val, max_val # return min and max to denormalize later.
+
+def denormalization(lv, min_val, max_val):
+    """
+    Denormalize vectors back into an original vector space
+    defined by its min and max values
+
+    Parameters
+    ----------
+    lv : np.array
+        Array containing the vectors to denormalize
+    min_val : float
+        Minimal coordinate value of the initial vectors
+    max_val : float
+        Maximal coordinate value of the initial vectors
+
+    Returns 
+    -------
+    denorm_vectors : list
+        List of denormalized vectors
+
+    """
+    denorm_vectors = []
+    for v in lv : 
+        denorm_vectors.append(v * (max_val - min_val) + min_val) # opposite formula compared to normalization 
+    
+    denorm_vectors = np.asarray(denorm_vectors)
+    return denorm_vectors
 
 if __name__ == "__main__" :
     print(__name__)
 
     #### Creation of random vectors ####
     target = np.random.rand(128,8,8) * 20
-    norm_target = normalization(target)
     # list_targets = varying_target(target, 6)
     target2 = np.random.rand(128,8,8) * 20
 
-    norm_target2 = normalization(target2)
-    # photos = [target, target2]
-    photos = [norm_target, norm_target2]
-
+    #### Normalization ####
+    photos = [target, target2]
+    # norm_photos, min_val, max_val = normalization(photos)
+    
     #### Creation of different target from the two initial one ####
     list_targets = create_multiple_target_from_pictures(photos, 6)
+    norm_targets, min_val, max_val = normalization(np.array(list_targets))
 
     #### Simple test on the GA class methods ####
     # test_fitness(list_targets)
@@ -969,9 +1006,18 @@ if __name__ == "__main__" :
 
     #### Test one the different way of running the GA ####
     # ga_with_multiple_targets(list_targets)
-    # ga_multiple_targets_separated(list_targets)
-    run_multiple_ga(list_targets)
-    
+    solutions = ga_multiple_targets_separated(norm_targets)
+    # run_multiple_ga(list_targets)
+
+    #### denormalization ####
+    real_solutions = denormalization(solutions, min_val, max_val)
+    # real_targets = denormalization(list_targets, min_val, max_val)
+
+    #### Final statistics ####
+    print("Écart-type des coordonnées finales :", np.std(real_solutions, axis=0).mean())
+    for s in real_solutions: 
+         print(f" norm : {np.max(-np.linalg.norm(s-np.array(list_targets), axis=1))}")
+
 
 
 
