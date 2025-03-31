@@ -260,10 +260,16 @@ class ImageApp:
             # ttk.Label(reconstructed_img_frame, text= f"Image reconstruite {k}", font=self.title_font).pack(side="top", pady=20)
             self.display_image(reconstructed[k], reconstructed_img_frame, "right")
 
+        # Bouton de confirmation de sélection d'images pour relancer algo gen
+        ttk.Button(self.image_frame, 
+                   text="Valider", 
+                   command=self.process_multiple_selection).pack(side=tk.LEFT, padx=10)
+
         # Bouton de retour
         ttk.Button(self.image_frame,
                    text="Retour au menu",
-                   command=self.load_new_images).pack(pady=10)
+                   command=self.load_new_images).pack(side=tk.RIGHT, pady=10)
+        
 
     def process_image(self, img_path):
         """Traite une image via l'autoencodeur"""
@@ -385,9 +391,10 @@ class ImageApp:
     def display_image(self, img, frame, side):
         """Affiche une image dans l'interface"""
         disp_img = ImageTk.PhotoImage(img.resize((200, 200)))
-        label = ttk.Label(frame, image=disp_img)
-        label.image = disp_img
-        label.pack(side=side, padx=20)
+        var = tk.BooleanVar()
+        chk = ttk.Checkbutton(self.image_frame, image = disp_img, variable = var)
+        chk.image = disp_img
+        chk.pack(side=side, padx=20)
         # pour relancer ensuite il faudra que ce soit des boutons comme au début
 
     def clear_interface(self):
