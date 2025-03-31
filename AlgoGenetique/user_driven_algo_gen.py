@@ -37,7 +37,7 @@ class GeneticAlgorithm():
         self.mutation_rate = mutation_rate
         self.sigma_mutation = sigma_mutation
         
-        self.solutions = self.crossover_and_mutations(nb_to_retrieve, self.dimension//10)
+        self.solutions = self.crossover_and_mutations(nb_to_retrieve, self.dimension//5)
 
     def crossover_and_mutations(self, nb_to_retrieve, size_crossover = None):
         """
@@ -69,14 +69,14 @@ class GeneticAlgorithm():
         arr_crossing_points = np.rint(arr_crossing_points).astype(np.int64)
     
         if self.crossover_method == "two-points" :
-            arr_lower_points = np.linspace(0.2, 0.8, nb_iteration)*self.dimension
+            arr_lower_points = np.linspace(0.25, 0.75, nb_iteration)*self.dimension
             arr_lower_points = np.rint(arr_lower_points).astype(np.int64)
             arr_upper_points = arr_lower_points + size_crossover
             arr_crossing_points = np.array([(arr_lower_points[i], arr_upper_points[i]) for i in range(len(arr_lower_points))])
 
         arr_explorations = np.linspace(0.2, 0.8, nb_iteration)
 
-        arr_alpha = np.linspace(0.1, 0.45, nb_to_retrieve) # stop before 0.5 because we create two child by crossover -> 0.4 and 0.6 will do exactly the same
+        arr_alpha = np.linspace(0.1, 0.45, nb_iteration) # stop before 0.5 because we create two child by crossover -> 0.4 and 0.6 will do exactly the same
 
         list_child = []
         for k in range(nb_iteration):
