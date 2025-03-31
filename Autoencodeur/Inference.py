@@ -11,6 +11,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from AlgoGenetique import algo_genetique_parallel as GA
 from AlgoGenetique import algo_genetique_multiple_target as GAm
+from AlgoGenetique import user_driven_algo_gen as udGA
 
 
 # ---------- Classe Principale ----------
@@ -344,11 +345,14 @@ class ImageApp:
             # Ici on pourrait modifier le latent_vector avant décodage
             # Ex: latent_vector = genetic_algorithm(latent_vector)
 
-            targets_list = GAm.create_multiple_target_from_pictures([v[0] for v in list_vectors], 6)
+            """targets_list = GAm.create_multiple_target_from_pictures([v[0] for v in list_vectors], 6)
             norm_targets, min_val, max_val = GAm.normalization(np.array(targets_list))
             
             solutions = GAm.run_multiple_ga(norm_targets)
-            solutions = GAm.denormalization(solutions, min_val, max_val)
+            solutions = GAm.denormalization(solutions, min_val, max_val)"""
+            space_limit = np.max(np.asarray(list_vectors))
+            solutions = udGA.run_ga(list_vectors, nb_solutions=6, crossover_method="blending", 
+                                    mutation_rate=0.1, sigma_mutation=0.1)
 
             # Convertir en tenseur PyTorch
             # sol = torch.tensor(solutions[0], dtype=torch.float32) # Ne prendre que l'image en position 0, il faudra faire une boucle et afficher les 10 images après
