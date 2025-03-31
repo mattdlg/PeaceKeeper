@@ -786,7 +786,7 @@ def ga_with_multiple_targets(targets):
     targets = [t.flatten(order = "C") for t in targets] # flattening of the vectors
 
     # run a single GA on the whole target vectors
-    ga = GeneticAlgorithm(targets, max_iteration=2000, size_pop=100, nb_to_retrieve=len(targets), stop_threshold=-1, 
+    ga = GeneticAlgorithm(targets, max_iteration=2000, size_pop=60, nb_to_retrieve=len(targets), stop_threshold=-1, 
                             selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="max_diversity", 
                             mutation_rate=(0.5, 0.05), sigma_mutation=0.8, mutation_method="adaptive")
     
@@ -823,7 +823,7 @@ def run_ga(i, targets, nb_solutions):
 
     """
     partial_targets = [t[i, :, :].flatten(order="C") for t in targets] # retrieve the wanted canal on which to run a GA
-    ga = GeneticAlgorithm(partial_targets, max_iteration=2000, size_pop=60, nb_to_retrieve=nb_solutions, stop_threshold=-1, 
+    ga = GeneticAlgorithm(partial_targets, max_iteration=2000, size_pop=60, nb_to_retrieve=nb_solutions, stop_threshold=-0.1, 
                             selection_method="Fortune_Wheel", crossover_proba=0.9, crossover_method="max_diversity", 
                             mutation_rate=(0.5, 0.05), sigma_mutation=0.8, mutation_method="adaptive")
     print(i)
@@ -931,7 +931,7 @@ def run_multiple_ga(targets):
 
 def normalization(lv):
     """
-    Normalize a vector so that its coordinates are 
+    Normalize vectors so that their coordinates are 
     all in the interval [0, 1]
 
     Parameters
@@ -957,6 +957,33 @@ def normalization(lv):
 
     return norm_vectors, min_val, max_val # return min and max to denormalize later.
 
+def denormalization(lv, min_val, max_val):
+    """
+    Denormalize vectors back into an original vector space
+    defined by its min and max values
+
+    Parameters
+    ----------
+    lv : np.array
+        Array containing the vectors to denormalize
+    min_val : float
+        Minimal coordinate value of the initial vectors
+    max_val : float
+        Maximal coordinate value of the initial vectors
+
+    Returns 
+    -------
+    denorm_vectors : list
+        List of denormalized vectors
+
+    """
+    denorm_vectors = []
+    for v in lv : 
+        denorm_vectors.append(v * (max_val - min_val) + min_val) # opposite formula compared to normalization 
+    
+    denorm_vectors = np.asarray(denorm_vectors)
+    return denorm_vectors
+
 if __name__ == "__main__" :
     print(__name__)
 
@@ -964,14 +991,14 @@ if __name__ == "__main__" :
     target = np.random.rand(128,8,8) * 20
     # list_targets = varying_target(target, 6)
     target2 = np.random.rand(128,8,8) * 20
-    targets = np.array([target, target2])
 
     #### Normalization ####
-    photos, min_val, max_val = normalization(targets)
-    # photos = [target, target2]
-
+    photos = [target, target2]
+    # norm_photos, min_val, max_val = normalization(photos)
+    
     #### Creation of different target from the two initial one ####
     list_targets = create_multiple_target_from_pictures(photos, 6)
+    norm_targets, min_val, max_val = normalization(np.array(list_targets))
 
     #### Simple test on the GA class methods ####
     # test_fitness(list_targets)
@@ -979,18 +1006,17 @@ if __name__ == "__main__" :
 
     #### Test one the different way of running the GA ####
     # ga_with_multiple_targets(list_targets)
-    solutions = ga_multiple_targets_separated(list_targets)
+    solutions = ga_multiple_targets_separated(norm_targets)
     # run_multiple_ga(list_targets)
 
     #### denormalization ####
-    real_solutions = []
-    for s in solutions : 
-        real_solutions.append(s * (max_val - min_val) + min_val)
+    real_solutions = denormalization(solutions, min_val, max_val)
+    # real_targets = denormalization(list_targets, min_val, max_val)
 
     #### Final statistics ####
     print("Écart-type des coordonnées finales :", np.std(real_solutions, axis=0).mean())
     for s in real_solutions: 
-         print(f" norm : {np.max(-np.linalg.norm(s-targets, axis=1))}")
+         print(f" norm : {np.max(-np.linalg.norm(s-np.array(list_targets), axis=1))}")
 
 
 
