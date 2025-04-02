@@ -2,6 +2,13 @@ import glob
 import os
 import sys
 import zipfile
+import torch
+import numpy as np
+from torchvision import transforms
+from PIL import Image
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'AlgoGenetique')))
+import user_driven_algo_gen as udGA
 
 from PyQt6 import QtCore, QtGui, QtWidgets, QtMultimedia, QtMultimediaWidgets
 
@@ -157,78 +164,92 @@ class TutorielDialog(QtWidgets.QDialog):
 # 2) Fenêtre de Génération (QDialog) - 10 images
 ##############################################################################
 class GenerationDialog(QtWidgets.QDialog):
-    """Fenêtre affichant une grille d'images générées
-
-    Points clés :
-
-    Initialisation de la fenêtre : Propriétés modales et sans bordure
-
-    Gestion des images :
-        Chargement sécurisé avec fallback sur placeholder
-        Redimensionnement intelligent (keep aspect ratio)
-
-    Layout :
-        Grille 5 colonnes avec positionnement automatique
-        Gestion du cas <10 images
-
-    Bouton Fermer :
-        Style personnalisé
-        Positionnement précis
-    """
+    """Fenêtre affichant une grille d'images générées"""
 
     def __init__(self, image_folder, parent=None):
-        """
-        Initialise la boîte de dialogue de génération d'images.
-
-        Args :
-            image_folder (str) : Chemin du dossier contenant les images à afficher
-            parent (QWidget, optional) : Widget parent. Par défaut None.
-
-        Configuration de base :
-        - Fenêtre modale sans bordure (FramelessWindowHint)
-        - Taille fixe 900x600 pixels
-        - Style noir avec bordure blanche
-        - Layout en grille pour les images
-        """
         super().__init__(parent)
+        self.setWindowTitle("Variation des portraits")
+        self.setFixedSize(900, 600)
+
+        self.image_folder = image_folder
+        self.autoencoder = AutoencoderModel()
+        self.selected_images = []  # Liste pour garder trace des images sélectionnées
+        self.selected_buttons = []
+        self.visualized_images = set()  # Ensemble pour garder trace des images déjà affichées
+
         # Configuration de la fenêtre
         self.setWindowFlags(QtCore.Qt.WindowType.FramelessWindowHint | QtCore.Qt.WindowType.Dialog)
-        self.setModal(True)  # Rend la fenêtre modale
-        self.setFixedSize(900, 600)  # Taille fixe
+        self.setModal(True)
+        self.setFixedSize(900, 600)
         self.setStyleSheet("background-color: #000000; border: 5px solid #fff;")
-        self.setAutoFillBackground(True)  # Remplissage automatique du fond
+        self.setAutoFillBackground(True)
 
-        # Initialisation du layout principal en grille
-        layout = QtWidgets.QGridLayout(self)
-        layout.setContentsMargins(10, 10, 10, 10)  # Marges intérieures
-        layout.setSpacing(10)  # Espacement entre les cellules
+        # Layout principal
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+        print("Layout principal initialisé avec succès !")
 
-        # Chargement et affichage des images
-        image_paths = glob.glob(os.path.join(image_folder, "*"))  # Récupère tous les fichiers
-        count = min(10, len(image_paths))  # Limite à 10 images max
+        # Créer un layout pour visualiser les 10 images
+        self.initial_section_layout = QtWidgets.QVBoxLayout()
+        # Créer un label pour le titre
+        self.title_label_choice = QtWidgets.QLabel("Veuillez sélectionner 2 portraits")
+        self.title_label_choice.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.title_label_choice.setStyleSheet(
+            "color: white; font-weight: bold; font-size: 20px; padding: 2px; border: none;")
+        self.title_label_choice.setFixedHeight(40)
+        self.initial_section_layout.addWidget(self.title_label_choice)
+        self.initial_layout = QtWidgets.QGridLayout()
+        self.initial_layout.setContentsMargins(0, 70, 0, 50)
+        self.initial_section_layout.addLayout(self.initial_layout)
+        self.main_layout.addLayout(self.initial_section_layout)
+        # self.main_layout.addStretch(1)  # Ajoute un espace flexible entre les deux layouts
 
-        for i in range(count):
-            label = QtWidgets.QLabel()  # Crée un label pour chaque image
+        # Layout pour afficher le label des images sélectionnées
+        self.original_layout = QtWidgets.QVBoxLayout()
+        self.title_label = QtWidgets.QLabel("Images sélectionnées")
+        self.title_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.title_label.setStyleSheet("color: white; font-weight: bold; font-size: 20px; padding: 2px; border: none;")
+        self.title_label.setFixedHeight(40)
+        self.original_layout.addWidget(self.title_label)
+        # Layout pour les images (horizontal)
+        self.images_layout = QtWidgets.QHBoxLayout()
+        self.images_layout.setContentsMargins(0, 0, 0, 0)
+        self.images_layout.setSpacing(150)
+        self.original_layout.addLayout(self.images_layout)
 
-            # Charge l'image ou crée un placeholder si échec
-            pix = QtGui.QPixmap(image_paths[i])
-            if pix.isNull():  # Si l'image est invalide
-                pix = QtGui.QPixmap(178, 218)  # Crée une image vide
-                pix.fill(QtGui.QColor("gray"))  # Remplit en gris
+        # Layout pour afficher les images générées
+        self.reconstructed_section_layout = QtWidgets.QVBoxLayout()
+        self.reconstructed_section_layout.setSpacing(5)  # Réduit l'espace entre le titre et les images
+        self.reconstructed_section_layout.setContentsMargins(0, 0, 0, 0)
+        self.title_label_choice = QtWidgets.QLabel("Veuillez sélectionner 2 portraits")
+        self.title_label_choice.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.title_label_choice.setStyleSheet(
+            "color: white; font-weight: bold; font-size: 20px; padding: 2px; border: none;")
+        self.reconstructed_section_layout.addWidget(self.title_label_choice)
+        self.reconstructed_layout = QtWidgets.QGridLayout()
+        self.reconstructed_layout.setContentsMargins(0, 20, 0, 20)
+        self.reconstructed_section_layout.addLayout(self.reconstructed_layout)
 
-            # Redimensionnement de l'image avec :
-            # - Conservation des proportions
-            # - Lissage haute qualité
-            pix = pix.scaled(150, 150,
-                             QtCore.Qt.AspectRatioMode.KeepAspectRatio,
-                             QtCore.Qt.TransformationMode.SmoothTransformation)
+        # Layout pour afficher le portrait définitif
+        self.final_reconstruction_layout = QtWidgets.QVBoxLayout()
+        self.title_label = QtWidgets.QLabel("Portrait définitif")
+        self.title_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.title_label.setStyleSheet("color: white; font-weight: bold; font-size: 20px; padding: 2px; border: none;")
+        self.final_reconstruction_layout.addWidget(self.title_label)
+        self.final_reconstruction_layout.addSpacing(50)
+        # Layout pour les images (horizontal)
+        self.final_image_layout = QtWidgets.QHBoxLayout()
+        self.final_reconstruction_layout.addLayout(self.final_image_layout)
 
-            label.setPixmap(pix)  # Applique l'image au label
-            layout.addWidget(label, i // 5, i % 5)  # Positionne dans la grille (5 colonnes)
+        # self.main_layout.addStretch(1)  # Ajoute un espace flexible entre les deux layouts
 
-        # Configuration du bouton Fermer
-        close_btn = QtWidgets.QPushButton("Fermer")
-        close_btn.setStyleSheet("""
+        # Layout pour les boutons (Bas)
+        self.button_layout = QtWidgets.QHBoxLayout()
+        self.button_layout.setSpacing(10)  # Ajustez cet espace selon vos besoins
+        self.button_layout.setContentsMargins(0, 0, 0, 0)  # Supprime les marges
+
+        # Ajouter un bouton de fermeture à droite
+        self.close_btn = QtWidgets.QPushButton("Fermer")
+        self.close_btn.setStyleSheet("""
             QPushButton {
                 border: 2px solid #fff;
                 padding: 5px;
@@ -240,9 +261,527 @@ class GenerationDialog(QtWidgets.QDialog):
                 background-color: #666;
             }
         """)
-        close_btn.clicked.connect(self.accept)  # Ferme la fenêtre quand cliqué
-        # Positionne le bouton en bas à droite (ligne 2, colonne 4)
-        layout.addWidget(close_btn, 2, 4, 1, 1, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
+        self.close_btn.clicked.connect(self.accept)
+        self.button_layout.addWidget(self.close_btn, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
+
+        self.validate_btn = QtWidgets.QPushButton("Valider")
+        self.validate_btn.setStyleSheet("""
+                                QPushButton {
+                                    border: 2px solid #fff;
+                                    padding: 5px;
+                                    font-size: 16px;
+                                    color: white;
+                                    background-color: #444;
+                                }
+                                QPushButton:hover {
+                                    background-color: #666;
+                                }
+                            """)
+        self.validate_btn.clicked.connect(self.validate_selection)
+        self.button_layout.addWidget(self.validate_btn, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
+
+        # Bouton "Nouvelles images"
+        self.load_new_img = QtWidgets.QPushButton("Nouvelles images")
+        self.load_new_img.setStyleSheet(""" QPushButton {
+                                border: 2px solid #fff;
+                                padding: 5px;
+                                font-size: 16px;
+                                color: white;
+                                background-color: #444;
+                            }
+                            QPushButton:hover {
+                                background-color: #666;
+                            }
+                        """)
+        self.load_new_img.clicked.connect(self.load_images)
+        self.button_layout.addWidget(self.load_new_img, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
+
+        # Ajouter un bouton "Portrait définitif"
+        self.final_btn = QtWidgets.QPushButton("Portrait définitif")
+        self.final_btn.setStyleSheet("""
+                    QPushButton {
+                        border: 2px solid #fff;
+                        padding: 5px;
+                        font-size: 16px;
+                        color: white;
+                        background-color: #444;
+                    }
+                    QPushButton:hover {
+                        background-color: #666;
+                    }
+                """)
+        self.final_btn.clicked.connect(self.display_definitive_portrait)
+
+        self.main_layout.addLayout(self.button_layout)
+
+        # Charger les images
+        self.load_images()
+
+    def load_images(self):
+        """Chargement des images et ajout au layout"""
+        print("Début du chargement des images...")
+
+        # Récupérer les chemins des images
+        # image_paths = glob.glob(os.path.join(self.image_folder, "*"))[:10]
+        # Récupérer les chemins des images qui n'ont pas encore été visualisées
+        image_paths = [img_path for img_path in glob.glob(os.path.join(self.image_folder, "*"))
+                       if img_path not in self.visualized_images][:10]
+
+        if not image_paths:
+            print("Aucune image trouvée !")
+            # Afficher un message disant qu'il n'y a plus d'images disponibles
+            # QtWidgets.QMessageBox.warning(self, "Avertissement", "Impossible de générer de nouvelles images, toutes les images ont été visualisées")
+            msg_box = QtWidgets.QMessageBox(self)
+            msg_box.setIcon(QtWidgets.QMessageBox.Icon.Warning)
+            msg_box.setWindowTitle("Avertissement")
+            msg_box.setText("Impossible de générer de nouvelles images, toutes les images ont été visualisées")
+
+            msg_box.setMinimumSize(500, 300)  # Définit une taille minimale pour la boîte de dialogue
+            msg_box.setStyleSheet("""
+                                            QMessageBox {
+                                                background-color: black;  /* Fond noir */
+                                                border: none;  /* Supprime les bordures */
+                                            }
+                                            QLabel {
+                                                color: white;  /* Texte en blanc */
+                                                font-size: 14px;  /* Taille de police */
+                                                font-weight: bold;  /* Mettre en gras (optionnel) */
+                                                border: none;
+                                            }
+                                            QPushButton {
+                                                background-color: gray;  /* Boutons en gris */
+                                                color: white;  /* Texte des boutons en blanc */
+                                                padding: 5px;  /* Réduit les marges internes */
+                                                border-radius: 10px;
+                                                border: none;
+                                            }
+                                            QPushButton:hover {
+                                                background-color: lightgray; /* Effet survol */
+                                            }
+                                        """)
+            msg_box.exec()  # Affiche la boîte de message
+            return
+
+        # Ajouter chaque image sous forme de boutons dans le layout
+        for i, img_path in enumerate(image_paths):
+            print(f"Chargement de l'image {i + 1} : {img_path}")
+            # Ajouter cette image à l'ensemble des images visualisées
+            self.visualized_images.add(img_path)
+
+            # Charger l'image (si l'image est invalide, on met une image grise par défaut)
+            pix = QtGui.QPixmap(img_path)
+            if pix.isNull():
+                pix = QtGui.QPixmap(150, 150)
+                pix.fill(QtGui.QColor("gray"))
+
+            # Redimensionner l'image
+            pix = pix.scaled(150, 150, QtCore.Qt.AspectRatioMode.KeepAspectRatio,
+                             QtCore.Qt.TransformationMode.SmoothTransformation)
+
+            img_width = pix.width()
+            img_height = pix.height()
+
+            # Création du bouton
+            btn = QtWidgets.QPushButton(self)
+            btn.setFixedSize(img_width, img_height)
+            btn.setIcon(QtGui.QIcon(pix))
+            btn.setIconSize(QtCore.QSize(img_width, img_height))
+            btn.setStyleSheet("border: none;")
+            # btn.clicked.connect(lambda checked, p=img_path: self.open_reconstructed_dialog(p))
+            btn.clicked.connect(lambda checked, p=img_path, b=btn: self.select_image(p, b))
+
+            # Ajouter le bouton à la grille
+            self.initial_layout.addWidget(btn, i // 5, i % 5)  # Disposition des images dans une grille 5x2
+
+            print(f"Image {i + 1} ajoutée au layout")
+
+            # A voir si on peut pas le sortir de load pcq pas très beau
+            # Bouton "Valider" après la sélection d'images
+            # self.validate_btn = QtWidgets.QPushButton("Valider")
+            # self.validate_btn.clicked.connect(self.validate_selection)
+            # Attention !!!! Il est sur le bouton quitter !!!!
+            # self.initial_layout.addWidget(self.validate_btn, 2, 3, 1, 1, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
+
+        print("Toutes les images ont été ajoutées au layout avec succès !")
+
+    def display_original_images(self):
+
+        print(f"Images sélectionnées : {self.selected_images}")
+
+        # Nettoyer l'affichage actuel
+        # Suppression des label (des 2 images) mais pas le label "Images séléctionnées"
+
+        for i in reversed(range(self.images_layout.count())):
+            widget = self.images_layout.itemAt(i).widget()
+            if widget and isinstance(widget, QtWidgets.QLabel):
+                widget.deleteLater()
+                # print("Label supprimé dans original_layout")
+
+        self.display_images(self.images_layout, 140)
+
+    def display_images(self, layout, img_size):
+        for img_data in self.selected_images:
+            # Créer un QLabel pour chaque image
+            label = QtWidgets.QLabel()
+            label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            label.setStyleSheet("border: none; background: none;")
+
+            if isinstance(img_data, str):
+                original_img = QtGui.QPixmap(img_data)
+            # Si c'est une liste de numpy array (les images regénérées),
+            elif isinstance(img_data, np.ndarray):
+                # Convertir numpy array en QImage
+                img_pil = Image.fromarray((img_data * 255).astype(np.uint8))
+                original_img = QtGui.QPixmap.fromImage(QtGui.QImage(
+                    img_pil.tobytes("raw", "RGB"),
+                    img_pil.width, img_pil.height, img_pil.width * 3,
+                    QtGui.QImage.Format.Format_RGB888
+                ))
+            label.setPixmap(original_img.scaled(img_size, img_size, QtCore.Qt.AspectRatioMode.KeepAspectRatio))
+            layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)  # Centre les images horizontalement
+            layout.addWidget(label)
+
+    def display_generated_images(self, generated_images):
+        """Affiche les 6 nouvelles images générées après application de l'algorithme génétique."""
+
+        # Nettoyer l'affichage actuel
+        # Suppression des boutons sauf "Valider", "Fermer"
+        for i in reversed(range(self.reconstructed_layout.count())):
+            widget = self.reconstructed_layout.itemAt(i).widget()
+            if widget and isinstance(widget, QtWidgets.QPushButton):
+                # A tester mais je pense qu'on peut enlever
+                if widget not in [self.validate_btn]:
+                    widget.deleteLater()
+                    # print("Bouton supprimé dans reconstructed_layout")
+
+        self.button_image_map = {}  # Dictionnaire pour lier les boutons aux images
+
+        # Ajouter les nouvelles images sous forme de boutons
+        for i, img_array in enumerate(generated_images):
+            img_pil = Image.fromarray((img_array * 255).astype(np.uint8))
+            img_qpixmap = QtGui.QPixmap.fromImage(QtGui.QImage(
+                img_pil.tobytes("raw", "RGB"),
+                128, 128, 128 * 3, QtGui.QImage.Format.Format_RGB888
+            ))
+
+            img_width = img_qpixmap.width()
+            img_height = img_qpixmap.height()
+
+            # Création du bouton
+            btn = QtWidgets.QPushButton(self)
+            btn.setFixedSize(img_width, img_height)
+            btn.setIcon(QtGui.QIcon(img_qpixmap))
+            btn.setIconSize(QtCore.QSize(img_width, img_height))
+            btn.setStyleSheet("border: none;")
+            btn.clicked.connect(lambda checked, p=img_array, b=btn: self.select_image_from_generated(p, b))
+            # btn.clicked.connect(lambda checked: self.on_button_click(checked, img_array, btn))
+            # btn.clicked.connect(lambda checked, p=img_array, b=btn: self.say_hello(p, b))
+
+            # Associer le bouton à son tableau numpy dans le dictionnaire
+            self.button_image_map[btn] = img_array
+
+            self.reconstructed_layout.addWidget(btn, i // 3, i % 3)
+
+        print("Affichage des images générées terminé.")
+
+    def display_definitive_portrait(self):
+        print(
+            f"Avant maj selected_images, len(img) : {len(self.selected_images)} et len(btn) : {len(self.selected_buttons)}")
+        if self.selected_buttons:
+            # self.selected_images.clear()
+            for btn in self.selected_buttons:
+                associated_img = self.button_image_map.get(btn)
+                self.selected_images.append(associated_img)
+
+        self.selected_buttons.clear()
+        print(
+            f"Après maj selected_images, len(img) : {len(self.selected_images)} et len(btn) : {len(self.selected_buttons)}")
+
+        if len(self.selected_images) != 1:
+            msg_box = QtWidgets.QMessageBox(self)
+            msg_box.setIcon(QtWidgets.QMessageBox.Icon.Warning)
+            msg_box.setWindowTitle("Erreur")
+            msg_box.setText("Veuillez sélectionner exactement une image")
+
+            msg_box.setMinimumSize(500, 300)  # Définit une taille minimale pour la boîte de dialogue
+            msg_box.setStyleSheet("""
+                                QMessageBox {
+                                    background-color: black;  /* Fond noir */
+                                    border: none;  /* Supprime les bordures */
+                                }
+                                QLabel {
+                                    color: white;  /* Texte en blanc */
+                                    font-size: 14px;  /* Taille de police */
+                                    font-weight: bold;  /* Mettre en gras (optionnel) */
+                                    border: none;
+                                }
+                                QPushButton {
+                                    background-color: gray;  /* Boutons en gris */
+                                    color: white;  /* Texte des boutons en blanc */
+                                    padding: 5px;  /* Réduit les marges internes */
+                                    border-radius: 10px;
+                                    border: none;
+                                }
+                                QPushButton:hover {
+                                    background-color: lightgray; /* Effet survol */
+                                }
+                            """)
+            msg_box.exec()  # Affiche la boîte de message
+            return
+        print("Il y a bien qu'une seule image sélectionnée !")
+
+        self.button_layout.removeWidget(self.validate_btn)
+        self.validate_btn.deleteLater()
+        self.button_layout.removeWidget(self.final_btn)
+        self.final_btn.deleteLater()
+        self.main_layout.removeItem(self.button_layout)
+        self.remove_layout(self.main_layout, self.original_layout)
+        self.remove_layout(self.main_layout, self.reconstructed_section_layout)
+        self.main_layout.addLayout(self.final_reconstruction_layout)
+        self.final_reconstruction_layout.addStretch(1)
+        self.main_layout.addStretch(1)
+        self.main_layout.addLayout(self.button_layout)
+        self.display_images(self.final_image_layout, 350)
+
+    def generate_new_images(self, selected_images):
+        """Génère 6 nouvelles images à partir des 2 images sélectionnées"""
+
+        # Charger et encoder les images sélectionnées
+        list_vectors = []
+
+        """
+        for img_path in selected_images:
+            img = Image.open(img_path).convert("RGB")
+        """
+
+        for img_data in selected_images:
+            # Si c'est un chemin de fichier (les 10 images générées initialement):
+            if isinstance(img_data, str):
+                img = Image.open(img_data).convert("RGB")
+                # print("Les images sont converties en RGB")
+            # Si c'est une liste de numpy array (les images regénérées),
+            # convertir en PIL.Image
+            elif isinstance(img_data, np.ndarray):
+                # Vérifier si c'est la bonne conversion
+                img = Image.fromarray((img_data * 255).astype(np.uint8))
+            else:
+                print(f"Type de donnée inattendu : {type(img_data)}")
+                continue  # On saute cet élément s'il est invalide
+
+            tensor_img = self.autoencoder.transforms(img).unsqueeze(0).to(self.autoencoder.device)
+
+            with torch.no_grad():
+                latent_vector = self.autoencoder.model.encode(tensor_img)
+                list_vectors.append(latent_vector.cpu().numpy())
+
+        # Appliquer l'algorithme génétique pour générer 6 nouvelles images
+        # new_targets = GAm.create_multiple_target_from_pictures([v[0] for v in list_vectors], 6)
+        # solutions = GAm.run_multiple_ga(new_targets)
+        solutions = udGA.run_ga(list_vectors, nb_solutions=6, crossover_method="blending", mutation_rate=0.1,sigma_mutation=0.1)
+        # Convertir en tenseur PyTorch
+        sol = torch.tensor(solutions, dtype=torch.float32).view(solutions.shape[0], 128, 8, 8)
+
+        with torch.no_grad():
+            reconstructed = self.autoencoder.model.decode(sol).cpu().numpy().transpose(0, 2, 3, 1)
+        print("Les solutions sont reconstruites")
+        # print(f"Les images originales sont : {self.selected_images}")
+
+        """
+        for i in reversed(range(self.initial_layout.count())):
+            widget = self.initial_layout.itemAt(i).widget()
+            if widget:
+                widget.deleteLater()  # Supprime le widget
+        """
+
+        if self.button_layout.indexOf(self.final_btn) == -1:  # Vérifie si le bouton est déjà dans le layout
+            self.button_layout.addWidget(self.final_btn, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
+
+        # Afficher les images séléctionnées
+        print(self.selected_images)
+        self.display_original_images()
+        self.selected_images.clear()  # vérifier si c'est nécessaire
+        # Afficher les nouvelles images
+        self.display_generated_images(reconstructed)
+        print("L'étape de visualisation est réussit")
+
+    def validate_selection(self):
+        """Valide la sélection et affiche l'image reconstruite de la première image sélectionnée"""
+        # Une fois la première regénération réalisée,
+        # on capture le btn sélectionnée et non l'image donc
+        # ici il faut capturer l'image
+        print(f"Avant maj selected_images, len(img) : {len(self.selected_images)} et len(btn) : {len(self.selected_buttons)}")
+        if self.selected_buttons:
+            # self.selected_images.clear()
+            for btn in self.selected_buttons:
+                associated_img = self.button_image_map.get(btn)
+                self.selected_images.append(associated_img)
+
+        self.selected_buttons.clear()
+        print(
+            f"Après maj selected_images, len(img) : {len(self.selected_images)} et len(btn) : {len(self.selected_buttons)}")
+        print(type(self.selected_images[0]))
+
+        if len(self.selected_images) != 2:
+            msg_box = QtWidgets.QMessageBox(self)
+            msg_box.setIcon(QtWidgets.QMessageBox.Icon.Warning)
+            msg_box.setWindowTitle("Erreur")
+            msg_box.setText("Veuillez sélectionner exactement deux images")
+
+            msg_box.setMinimumSize(500, 300)  # Définit une taille minimale pour la boîte de dialogue
+            msg_box.setStyleSheet("""
+                    QMessageBox {
+                        background-color: black;  /* Fond noir */
+                        border: none;  /* Supprime les bordures */
+                    }
+                    QLabel {
+                        color: white;  /* Texte en blanc */
+                        font-size: 14px;  /* Taille de police */
+                        font-weight: bold;  /* Mettre en gras (optionnel) */
+                        border: none;
+                    }
+                    QPushButton {
+                        background-color: gray;  /* Boutons en gris */
+                        color: white;  /* Texte des boutons en blanc */
+                        padding: 5px;  /* Réduit les marges internes */
+                        border-radius: 10px;
+                        border: none;
+                    }
+                    QPushButton:hover {
+                        background-color: lightgray; /* Effet survol */
+                    }
+                """)
+            msg_box.exec()
+            return
+
+        # self.initial_section_layout.removeWidget(self.title_label_choice)
+        # Supprimer l'ancien layout
+        self.remove_layout(self.main_layout, self.initial_section_layout)
+        # Supprimer le bouton "Nouvelles images"
+        if self.load_new_img in [self.button_layout.itemAt(i).widget() for i in range(self.button_layout.count())]:
+            self.button_layout.removeWidget(self.load_new_img)
+            self.load_new_img.deleteLater()
+        # Supprimer 'button_layout' temporairement
+        self.main_layout.removeItem(self.button_layout)
+        # Ajouter les nouveaux layouts
+        self.main_layout.addLayout(self.original_layout)
+        self.main_layout.addStretch(1)
+        self.main_layout.addLayout(self.reconstructed_section_layout)
+        self.main_layout.addStretch(1)
+        # Réajouter les boutons en bas
+        self.main_layout.addLayout(self.button_layout)
+        # Ouvre la fenêtre d'image reconstruite pour la première image
+        self.generate_new_images(self.selected_images)
+        # self.open_reconstructed_dialog(img_path)
+
+    def select_image(self, img_path, button):
+        """Sélectionne une image et l'encadre en rouge"""
+        if img_path not in self.selected_images:
+            self.selected_images.append(img_path)
+            # Ajout d'une ombre portée
+            shadow = QtWidgets.QGraphicsDropShadowEffect()
+            shadow.setBlurRadius(20)  # Intensité de l'effet
+            shadow.setColor(QtGui.QColor(180, 180, 180))
+            shadow.setOffset(0, 0)  # Pas de décalage, effet centré
+            button.setGraphicsEffect(shadow)
+        else:
+            self.selected_images.remove(img_path)
+            button.setGraphicsEffect(None)  # Retirer l'effet d'ombrage
+
+    def select_image_from_generated(self, img_array, button):
+        """Sélectionne un bouton (image générée) parmi ceux qui sont affichés."""
+
+        # Vérifier si le bouton est déjà dans la liste des boutons sélectionnés
+        # Je ne peux pas aller chercher directement si l'img est dans la liste
+        # pcq c'est galère de faire ça avec les 3D numpy donc je passe par le bouton
+        # que j'ai associé à l'image dans un dictonnaire donc on va pouvoir aller
+        # rechercher l'image associée
+        # Sûrement pas la méthode la plus jolie mai sj'ai rien trouvé d'autre
+        if button not in self.selected_buttons:
+            self.selected_buttons.append(button)
+            # Ajout d'une ombre portée
+            shadow = QtWidgets.QGraphicsDropShadowEffect()
+            shadow.setBlurRadius(20)  # Intensité de l'effet
+            shadow.setColor(QtGui.QColor(180, 180, 180))
+            shadow.setOffset(0, 0)  # Pas de décalage, effet centré
+            button.setGraphicsEffect(shadow)
+        else:
+            self.selected_buttons.remove(button)
+            button.setGraphicsEffect(None)
+
+    def remove_layout(self, layout_parent, layout):
+        """Supprime un layout et tous ses widgets du layout_parent"""
+
+        if layout is not None:
+            # Supprimer tous les widgets à l'intérieur du layout
+            while layout.count():
+                item = layout.takeAt(0)  # Prend l'élément (widget ou sous-layout)
+
+                if item.widget():
+                    item.widget().deleteLater()  # Supprime le widget
+                elif item.layout():
+                    self.remove_layout(layout, item.layout())  # Supprime récursivement les sous-layouts
+
+            # Retirer le layout du parent et le supprimer
+            layout_parent.removeItem(layout)
+
+
+class AutoencoderModel:
+    # Classe pour charger et utiliser l'autoencodeur
+
+    def __init__(self, model_path="conv_autoencoder.pth", device=None):  # "Autoencodeur/conv_autoencoder.pth"
+        # self.device = torch.device("cpu")  # Forcer l'exécution sur CPU
+        self.device = device if device else torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model = self.load_model(model_path)
+        self.transforms = self.create_transforms()
+
+    def load_model(self, model_path):
+        # Charge le modèle
+        class ConvAutoencoder(torch.nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.encoder = torch.nn.Sequential(
+                    torch.nn.Conv2d(3, 16, 3, stride=2, padding=1),
+                    torch.nn.ReLU(True),
+                    torch.nn.Conv2d(16, 32, 3, stride=2, padding=1),
+                    torch.nn.ReLU(True),
+                    torch.nn.Conv2d(32, 64, 3, stride=2, padding=1),
+                    torch.nn.ReLU(True),
+                    torch.nn.Conv2d(64, 128, 3, stride=2, padding=1),
+                    torch.nn.ReLU(True),
+                )
+                self.decoder = torch.nn.Sequential(
+                    torch.nn.ConvTranspose2d(128, 64, 3, stride=2, padding=1, output_padding=1),
+                    torch.nn.ReLU(True),
+                    torch.nn.ConvTranspose2d(64, 32, 3, stride=2, padding=1, output_padding=1),
+                    torch.nn.ReLU(True),
+                    torch.nn.ConvTranspose2d(32, 16, 3, stride=2, padding=1, output_padding=1),
+                    torch.nn.ReLU(True),
+                    torch.nn.ConvTranspose2d(16, 3, 3, stride=2, padding=1, output_padding=1),
+                    torch.nn.Sigmoid(),
+                )
+
+            def encode(self, x):
+                return self.encoder(x)
+
+            def decode(self, z):
+                return self.decoder(z)
+
+            def forward(self, x):
+                return self.decoder(self.encoder(x))
+
+        model = ConvAutoencoder().to(self.device)
+        model.load_state_dict(torch.load(model_path, map_location=self.device))
+        model.eval()
+        return model
+
+    def create_transforms(self):
+        # Transformations pour adapter l'image au modèle
+        return transforms.Compose([
+            transforms.Resize((128, 128)),
+            transforms.CenterCrop((128, 128)),
+            transforms.ToTensor(),
+        ])
+
 
 
 ##############################################################################
@@ -422,7 +961,7 @@ class HomePage(QtWidgets.QWidget):
         self.main_layout.setSpacing(0)
 
         # Définition du chemin de la vidéo
-        video_path = os.path.join("Elements graphiques", "Background",
+        video_path = os.path.join("..", "Elements graphiques", "Background",
                                   "night-walk-cyberpunk-city-pixel-moewalls-com.mp4")
         self.background = BackgroundVideoWidget(video_path)
 
@@ -632,7 +1171,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_generation(self):
         # Ouvre la fenêtre de génération
-        folder = "Data bases/Celeb A/Images/selected_images"  # adapte le chemin
+        folder = "../Data bases/Celeb A/Images/selected_images"  # adapte le chemin
         dialog = GenerationDialog(folder, self)
         dialog.exec()
 
@@ -775,7 +1314,7 @@ def dezip_images():
         Si l'archive zip est absente et que le dossier des images est inexistant ou vide.
     """
     # Définition des chemins absolus
-    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "Data bases", "Celeb A", "Images"))
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Data bases", "Celeb A", "Images"))
     folder = os.path.join(base_dir, "selected_images")
     zip_path = os.path.join(base_dir, "selected_images.zip")
 
@@ -791,7 +1330,6 @@ def dezip_images():
     else:
         raise FileNotFoundError(f"L'archive zip n'a pas été trouvée : {zip_path}")
 
-
 ##############################################################################
 # 10) Lancement
 ##############################################################################
@@ -802,7 +1340,7 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     AppStyler.setup_style(app)
 
-    cursor_dir = os.path.join("Elements graphiques", "Curseur", "dark-red-faceted-crystal-style")
+    cursor_dir = os.path.join("..", "Elements graphiques", "Curseur", "dark-red-faceted-crystal-style")
     default_cursor_path = os.path.abspath(os.path.join(cursor_dir, "cursor_resized.png"))
     pointer_cursor_path = os.path.abspath(os.path.join(cursor_dir, "pointer_resized.png"))
 
