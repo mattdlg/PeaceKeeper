@@ -7,6 +7,7 @@ import numpy as np
 from torchvision import transforms
 from PIL import Image
 import sys
+import random
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'AlgoGenetique')))
 import user_driven_algo_gen as udGA
 
@@ -176,6 +177,7 @@ class GenerationDialog(QtWidgets.QDialog):
         self.selected_images = []  # Liste pour garder trace des images sélectionnées
         self.selected_buttons = []
         self.visualized_images = set()  # Ensemble pour garder trace des images déjà affichées
+        self.button_image_map = {}  # Dictionnaire pour lier les boutons aux images
 
         # Configuration de la fenêtre
         self.setWindowFlags(QtCore.Qt.WindowType.FramelessWindowHint | QtCore.Qt.WindowType.Dialog)
@@ -211,7 +213,7 @@ class GenerationDialog(QtWidgets.QDialog):
         self.title_label.setFixedHeight(40)
         self.original_layout.addWidget(self.title_label)
         # Layout pour les images (horizontal)
-        self.images_layout = QtWidgets.QHBoxLayout()
+        self.images_layout = QtWidgets.QGridLayout()
         self.images_layout.setContentsMargins(0, 0, 0, 0)
         self.images_layout.setSpacing(150)
         self.original_layout.addLayout(self.images_layout)
@@ -324,10 +326,12 @@ class GenerationDialog(QtWidgets.QDialog):
         # Récupérer les chemins des images
         # image_paths = glob.glob(os.path.join(self.image_folder, "*"))[:10]
         # Récupérer les chemins des images qui n'ont pas encore été visualisées
-        image_paths = [img_path for img_path in glob.glob(os.path.join(self.image_folder, "*"))
-                       if img_path not in self.visualized_images][:10]
+        #image_paths = [img_path for img_path in glob.glob(os.path.join(self.image_folder, "*"))if img_path not in self.visualized_images][:10]
+        # Récupérer les chemins des images qui n'ont pas encore été visualisées
+        all_image_paths = glob.glob(os.path.join(self.image_folder, "*"))
+        remaining_images = [img_path for img_path in all_image_paths if img_path not in self.visualized_images]
 
-        if not image_paths:
+        if not remaining_images:
             print("Aucune image trouvée !")
             # Afficher un message disant qu'il n'y a plus d'images disponibles
             # QtWidgets.QMessageBox.warning(self, "Avertissement", "Impossible de générer de nouvelles images, toutes les images ont été visualisées")
@@ -361,6 +365,9 @@ class GenerationDialog(QtWidgets.QDialog):
                                         """)
             msg_box.exec()  # Affiche la boîte de message
             return
+
+        # Sélectionner 10 images aléatoires parmi celles non visualisées (ou moins si moins de 10 restantes)
+        image_paths = random.sample(remaining_images, min(10, len(remaining_images)))
 
         # Ajouter chaque image sous forme de boutons dans le layout
         for i, img_path in enumerate(image_paths):
@@ -413,11 +420,56 @@ class GenerationDialog(QtWidgets.QDialog):
 
         for i in reversed(range(self.images_layout.count())):
             widget = self.images_layout.itemAt(i).widget()
-            if widget and isinstance(widget, QtWidgets.QLabel):
+            if widget :
                 widget.deleteLater()
                 # print("Label supprimé dans original_layout")
 
-        self.display_images(self.images_layout, 140)
+        self.display_buttons(self.images_layout, self.selected_images, 2)
+
+    def display_buttons(self, layout, data_img, nb_col):
+        """Affiche des images sous forme de boutons cliquables."""
+
+        target_size = 128
+
+        # Ajouter les nouvelles images sous forme de boutons
+        for i, img_array in enumerate(data_img):
+            if isinstance(img_array, str):
+                img_qpixmap = QtGui.QPixmap(img_array)
+                #img_qpixmap = img_qpixmap.scaled(target_size, target_size, QtCore.Qt.AspectRatioMode.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation)
+                print("Image str chargée")
+            # Si c'est une liste de numpy array (les images regénérées),
+            elif isinstance(img_array, np.ndarray):
+                img_pil = Image.fromarray((img_array * 255).astype(np.uint8))
+                #img_pil = img_pil.resize((target_size, target_size), Image.Resampling.LANCZOS)
+                img_qpixmap = QtGui.QPixmap.fromImage(QtGui.QImage(
+                    img_pil.tobytes("raw", "RGB"),
+                    img_pil.width, img_pil.height, img_pil.width * 3, QtGui.QImage.Format.Format_RGB888
+                ))
+                print("Image np chargée")
+            img_qpixmap = img_qpixmap.scaled(target_size, target_size, QtCore.Qt.AspectRatioMode.KeepAspectRatio,
+                                             QtCore.Qt.TransformationMode.SmoothTransformation)
+            img_width = img_qpixmap.width()
+            img_height = img_qpixmap.height()
+            print("Dimensions récupérées")
+
+            # Création du bouton
+            btn = QtWidgets.QPushButton(self)
+            btn.setFixedSize(img_width, img_height)
+            btn.setIcon(QtGui.QIcon(img_qpixmap))
+            btn.setIconSize(QtCore.QSize(img_width, img_height))
+            btn.setStyleSheet("border: none;")
+            print("Img assimilée au btn")
+            btn.clicked.connect(lambda checked, p=img_array, b=btn: self.select_image_from_generated(p, b))
+            print("Btn connecté à select_image_from_generated")
+            # btn.clicked.connect(lambda checked: self.on_button_click(checked, img_array, btn))
+            # btn.clicked.connect(lambda checked, p=img_array, b=btn: self.say_hello(p, b))
+
+            # Associer le bouton à son tableau numpy dans le dictionnaire
+            self.button_image_map[btn] = img_array
+            print("Btn ajouté au dico")
+
+            layout.addWidget(btn, i // nb_col, i % nb_col)
+            print("Btn ajouté au layout")
 
     def display_images(self, layout, img_size):
         for img_data in self.selected_images:
@@ -454,45 +506,10 @@ class GenerationDialog(QtWidgets.QDialog):
                     widget.deleteLater()
                     # print("Bouton supprimé dans reconstructed_layout")
 
-        self.button_image_map = {}  # Dictionnaire pour lier les boutons aux images
-
-        # Ajouter les nouvelles images sous forme de boutons
-        for i, img_array in enumerate(generated_images):
-            img_pil = Image.fromarray((img_array * 255).astype(np.uint8))
-            img_qpixmap = QtGui.QPixmap.fromImage(QtGui.QImage(
-                img_pil.tobytes("raw", "RGB"),
-                128, 128, 128 * 3, QtGui.QImage.Format.Format_RGB888
-            ))
-
-            img_width = img_qpixmap.width()
-            img_height = img_qpixmap.height()
-
-            # Création du bouton
-            btn = QtWidgets.QPushButton(self)
-            btn.setFixedSize(img_width, img_height)
-            btn.setIcon(QtGui.QIcon(img_qpixmap))
-            btn.setIconSize(QtCore.QSize(img_width, img_height))
-            btn.setStyleSheet("border: none;")
-            btn.clicked.connect(lambda checked, p=img_array, b=btn: self.select_image_from_generated(p, b))
-            # btn.clicked.connect(lambda checked: self.on_button_click(checked, img_array, btn))
-            # btn.clicked.connect(lambda checked, p=img_array, b=btn: self.say_hello(p, b))
-
-            # Associer le bouton à son tableau numpy dans le dictionnaire
-            self.button_image_map[btn] = img_array
-
-            self.reconstructed_layout.addWidget(btn, i // 3, i % 3)
-
+        self.display_buttons(self.reconstructed_layout, generated_images, 3)
         print("Affichage des images générées terminé.")
 
     def display_definitive_portrait(self):
-        print(
-            f"Avant maj selected_images, len(img) : {len(self.selected_images)} et len(btn) : {len(self.selected_buttons)}")
-        if self.selected_buttons:
-            # self.selected_images.clear()
-            for btn in self.selected_buttons:
-                associated_img = self.button_image_map.get(btn)
-                self.selected_images.append(associated_img)
-
         self.selected_buttons.clear()
         print(
             f"Après maj selected_images, len(img) : {len(self.selected_images)} et len(btn) : {len(self.selected_buttons)}")
@@ -609,12 +626,6 @@ class GenerationDialog(QtWidgets.QDialog):
         # Une fois la première regénération réalisée,
         # on capture le btn sélectionnée et non l'image donc
         # ici il faut capturer l'image
-        print(f"Avant maj selected_images, len(img) : {len(self.selected_images)} et len(btn) : {len(self.selected_buttons)}")
-        if self.selected_buttons:
-            # self.selected_images.clear()
-            for btn in self.selected_buttons:
-                associated_img = self.button_image_map.get(btn)
-                self.selected_images.append(associated_img)
 
         self.selected_buttons.clear()
         print(
@@ -696,8 +707,14 @@ class GenerationDialog(QtWidgets.QDialog):
         # que j'ai associé à l'image dans un dictonnaire donc on va pouvoir aller
         # rechercher l'image associée
         # Sûrement pas la méthode la plus jolie mai sj'ai rien trouvé d'autre
+        associated_img = self.button_image_map.get(button)
         if button not in self.selected_buttons:
             self.selected_buttons.append(button)
+            print("Bouton ajouté")
+            # Ajout de l'image correspondante avec son identifiant
+            if associated_img is not None and id(associated_img) not in [id(img) for img in self.selected_images]:
+                print("{associated_img} est trouvée")
+                self.selected_images.append(associated_img)
             # Ajout d'une ombre portée
             shadow = QtWidgets.QGraphicsDropShadowEffect()
             shadow.setBlurRadius(20)  # Intensité de l'effet
@@ -706,6 +723,8 @@ class GenerationDialog(QtWidgets.QDialog):
             button.setGraphicsEffect(shadow)
         else:
             self.selected_buttons.remove(button)
+            # Supprimer l'image associée en comparant les identifiants
+            self.selected_images = [img for img in self.selected_images if id(img) != id(associated_img)]
             button.setGraphicsEffect(None)
 
     def remove_layout(self, layout_parent, layout):
