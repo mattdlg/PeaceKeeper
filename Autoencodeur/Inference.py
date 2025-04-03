@@ -345,7 +345,7 @@ class ImageApp:
             # Étape 1: Encodage vers l'espace latent
             for i in range(len(list_vectors)) :
                 list_vectors[i] = self.model.encode(list_vectors[i])
-                list_vectors[i] = list_vectors[i].numpy()    # Convertit en np array
+                list_vectors[i] = list_vectors[i][0].numpy()    # Convertit en np array
 
             # [SECTION POUR ALGORITHME GÉNÉTIQUE]
             # Ici on pourrait modifier le latent_vector avant décodage
@@ -357,8 +357,8 @@ class ImageApp:
             solutions = GAm.run_multiple_ga(norm_targets)
             solutions = GAm.denormalization(solutions, min_val, max_val)"""
             space_limit = np.max(np.asarray(list_vectors))
-            solutions = udGA.run_ga(list_vectors, nb_solutions=6, crossover_method="blending", 
-                                    mutation_rate=0.1, sigma_mutation=0.1)
+            solutions = udGA.run_ga(list_vectors, nb_solutions=6, crossover_method="square", 
+                                    mutation_rate=0.3, sigma_mutation=0.5)
 
             # Convertir en tenseur PyTorch
             # sol = torch.tensor(solutions[0], dtype=torch.float32) # Ne prendre que l'image en position 0, il faudra faire une boucle et afficher les 10 images après
@@ -393,7 +393,7 @@ class ImageApp:
         """Affiche une image dans l'interface"""
         disp_img = ImageTk.PhotoImage(img.resize((200, 200)))
         var = tk.BooleanVar()
-        chk = ttk.Checkbutton(self.image_frame, image = disp_img, variable = var)
+        chk = ttk.Checkbutton(frame, image = disp_img, variable = var)
         chk.image = disp_img
         chk.pack(side=side, padx=20)
         # pour relancer ensuite il faudra que ce soit des boutons comme au début
