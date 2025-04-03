@@ -11,7 +11,7 @@ Auteurs :
     Deléglise Matthieu et Durand Julie
 -------------------------------
 Version : 
-    4.1 (31/03/2025)
+    4.2 (31/03/2025)
 """
 
 #### Libraries ####
@@ -31,15 +31,18 @@ class GeneticAlgorithm():
         self.p1 = picture1
         self.p2 = picture2
 
-        self.dimension = len(self.p1) # dimension of the vector space = "number of gene of one individual"
+        self.dimension = self.p1.shape # dimension of the vector space = "number of gene of one individual"
+        print(self.dimension)
 
         self.crossover_method = crossover_method
         self.mutation_rate = mutation_rate
         self.sigma_mutation = sigma_mutation
         
-        self.solutions = self.crossover_and_mutations(nb_to_retrieve, self.dimension//5)
+        self.square_size = (2, 2)
 
-    def crossover_and_mutations(self, nb_to_retrieve, size_crossover = None):
+        self.solutions = self.crossover_and_mutations(nb_to_retrieve)
+
+    def crossover_and_mutations(self, nb_to_retrieve):
         """
         Last step of each loop of the genetic algorithm : 
         - breeding between parents (crossover) to give a child population, 
@@ -65,14 +68,29 @@ class GeneticAlgorithm():
         # Crossovers
         nb_iteration = nb_to_retrieve//2 # nb_to_retrieve must be even
 
-        arr_crossing_points = np.linspace(0.2, 0.8, nb_iteration)*self.dimension
+        """arr_crossing_points = np.linspace(0.2, 0.8, nb_iteration)*self.dimension
         arr_crossing_points = np.rint(arr_crossing_points).astype(np.int64)
     
         if self.crossover_method == "two-points" :
             arr_lower_points = np.linspace(0.25, 0.75, nb_iteration)*self.dimension
             arr_lower_points = np.rint(arr_lower_points).astype(np.int64)
             arr_upper_points = arr_lower_points + size_crossover
-            arr_crossing_points = np.array([(arr_lower_points[i], arr_upper_points[i]) for i in range(len(arr_lower_points))])
+            arr_crossing_points = np.array([(arr_lower_points[i], arr_upper_points[i]) for i in range(len(arr_lower_points))])"""
+
+        arr_crossing_points = np.zeros(nb_iteration)
+        if self.crossover_method == "single-canal" :
+            arr_crossing_points = np.random.choice(self.dimension[0], nb_iteration, replace=False) # exchange only some particular canals
+        elif self.crossover_method == "single-line" :
+            arr_crossing_points = np.random.choice(self.dimension[1], nb_iteration, replace=False) # exchange only some particular lines
+        elif self.crossover_method == "single-column" :
+            arr_crossing_points = np.random.choice(self.dimension[2], nb_iteration, replace=False) # exchange only some particular columns
+        
+        elif self.crossover_method == "square" : # exchange only some particular squares of coordinates
+            arr_line_index = np.random.choice(self.dimension[1]-self.square_size[0], nb_iteration, replace=False)
+            arr_column_index = np.random.choice(self.dimension[2]-self.square_size[1], nb_iteration, replace=False)
+            arr_crossing_points = np.array([(arr_line_index[i], arr_column_index[i]) for i in range(nb_iteration)])
+
+        # faire test square sur qq canal seulement (modif de deux trois features only)
 
         arr_explorations = np.linspace(0.2, 0.8, nb_iteration)
 
@@ -87,8 +105,8 @@ class GeneticAlgorithm():
                                             arr_alpha[k])
 
             # Mutations
-            self.mutation(child1)
-            self.mutation(child2)
+            self.modified_mutation(child1)
+            self.modified_mutation(child2)
 
             list_child.append(child1)
             list_child.append(child2)
@@ -131,6 +149,8 @@ class GeneticAlgorithm():
             Array of dimension n representing the second child (vector).
 
         """
+
+        """
         if self.crossover_method == "single-point" : # exchange every coordinates after a random index, including this index.
             child1 = np.concatenate((parent1[:crossing_point], parent2[crossing_point:]))
             child2 = np.concatenate((parent2[:crossing_point], parent1[crossing_point:]))
@@ -141,9 +161,31 @@ class GeneticAlgorithm():
             
             child1 = np.concatenate((parent1[:low_crossing_point], parent2[low_crossing_point:high_crossing_point+1], parent1[high_crossing_point+1:]))
             child2 = np.concatenate((parent2[:low_crossing_point], parent1[low_crossing_point:high_crossing_point+1], parent2[high_crossing_point+1:]))
+        """
+        if self.crossover_method == "single-canal":
+            child1, child2 = parent1.copy(), parent2.copy()
+            child1[crossing_point, :, :] = parent2[crossing_point, :, :]
+            child2[crossing_point, :, :] = parent1[crossing_point, :, :]
+        
+        elif self.crossover_method == "single-line":
+            child1, child2 = parent1.copy(), parent2.copy()
+            child1[:, crossing_point, :] = parent2[:, crossing_point, :]
+            child2[:, crossing_point, :] = parent1[:, crossing_point, :]
+
+        elif self.crossover_method == "single-column":
+            child1, child2 = parent1.copy(), parent2.copy()
+            child1[:, :, crossing_point] = parent2[:, :, crossing_point]
+            child2[:, :, crossing_point] = parent1[:, :, crossing_point]
+
+        elif self.crossover_method == "square":
+            child1, child2 = parent1.copy(), parent2.copy()
+            lower_line_index, upper_line_index = crossing_point[0], crossing_point[0]+self.square_size[0]
+            lower_column_index, upper_column_index = crossing_point[1], crossing_point[1]+self.square_size[1]
+            child1[:, lower_line_index:upper_line_index, lower_column_index:upper_column_index] = parent2[:, lower_line_index:upper_line_index, lower_column_index:upper_column_index]
+            child2[:, lower_line_index:upper_line_index, lower_column_index:upper_column_index] = parent1[:, lower_line_index:upper_line_index, lower_column_index:upper_column_index]
 
         elif self.crossover_method == "uniform" : # randomly choose from which parents a coordinate will be 
-            child1, child2 = np.array([0.0 for _ in range(self.dimension)]), np.array([0.0 for _ in range(self.dimension)])
+            child1, child2 = np.zeros(self.dimension, dtype=np.float32), np.zeros(self.dimension, dtype=np.float32)
             mask = np.random.randint(0, 2, size=self.dimension, dtype=bool) # toss a coin for each coordinate : heads = coord from p1, tails = coord from p2
             child1, child2 = np.where(mask, parent1, parent2), np.where(mask, parent2, parent1)
 
@@ -195,16 +237,25 @@ class GeneticAlgorithm():
             chr is modified directly by the function and thus do not need to be returned.
 
         """
-        mask = np.random.rand(self.dimension) < self.mutation_rate # only mutate with a certain probability
+        mask = np.random.rand(self.dimension[0], self.dimension[1], self.dimension[2]) < self.mutation_rate # only mutate with a certain probability
         mutations = np.random.normal(0, self.sigma_mutation, self.dimension)
         chr[mask] += mutations[mask] # add random component to the vectors when its coordinates have mutated.
 
+    def modified_mutation(self, chr):
+        mask = np.random.rand(self.dimension[1], self.dimension[2]) < self.mutation_rate # only mutate with a certain probability
+        mutations = np.random.normal(0, self.sigma_mutation, (self.dimension[1], self.dimension[2]))
+        for i in range(self.dimension[0]):
+            chr[i][mask] += mutations[mask]
+        # chr[:][mask] += mutations[mask] # add random component to the vectors when its coordinates have mutated.
+
+
+
 def test_mutation(picture1, picture2):
-    ga = GeneticAlgorithm(picture1, picture2, nb_to_retrieve=6, crossover_method="single-point", 
+    ga = GeneticAlgorithm(picture1, picture2, nb_to_retrieve=6, crossover_method="single-line", 
                           mutation_rate=0.5, sigma_mutation=1)
     
-    chr = np.random.rand(4,4) * 20
-    chr = chr.flatten(order="C")
+    chr = np.random.rand(4,4,3) * 20
+    # chr = chr.flatten(order="C")
     print("Before mutation: ")
     print(chr) 
     ga.mutation(chr)
@@ -213,7 +264,7 @@ def test_mutation(picture1, picture2):
     print("\n")
 
 def test_crossover(picture1, picture2, point_of_crossover, w, alpha, method):
-    ga = GeneticAlgorithm(picture1, picture2, nb_to_retrieve=6, crossover_method=method, 
+    ga = GeneticAlgorithm(picture1, picture2, nb_to_retrieve=2, crossover_method=method, 
                           mutation_rate=0.5, sigma_mutation=1)
     
     print("---- Parents ----")
@@ -225,22 +276,22 @@ def test_crossover(picture1, picture2, point_of_crossover, w, alpha, method):
     print(child2)
 
 def run_ga(targets, nb_solutions, crossover_method, mutation_rate, sigma_mutation):
-    dimensions = targets[0].shape
-    flat_targets = [t.flatten(order="C") for t in targets]
+    # dimensions = targets[0].shape
+    # flat_targets = [t.flatten(order="C") for t in targets] # essayer sans aplatir
 
-    ga = GeneticAlgorithm(flat_targets[0], flat_targets[1], nb_to_retrieve=nb_solutions, crossover_method=crossover_method, 
+    ga = GeneticAlgorithm(targets[0], targets[1], nb_to_retrieve=nb_solutions, crossover_method=crossover_method, 
                           mutation_rate=mutation_rate, sigma_mutation=sigma_mutation)
     
     solutions = ga.solutions
-    solutions = solutions.reshape((-1, *dimensions), order="C") 
+    # solutions = solutions.reshape((-1, *dimensions), order="C") 
     return solutions
 
 if __name__ == "__main__" :
     print(__name__)
-    target = np.random.rand(4,4) * 20
-    target2 = np.random.rand(4,4) * 20
-    # test_mutation(target.flatten(order="C"), target2.flatten(order="C"))
-    # test_crossover(target.flatten(order="C"), target2.flatten(order="C"), (8, 12), 0.5, 0.3, "blending")
+    target = np.random.rand(4,4,3) * 20
+    target2 = np.random.rand(4,4,3) * 20
+    # test_mutation(target, target2)
+    ##test_crossover(target, target2, 1, 0.5, 0.3, "single-canal")
 
     solutions = run_ga([target, target2], nb_solutions=6, crossover_method="blending", mutation_rate=0.5, sigma_mutation=1)
 
