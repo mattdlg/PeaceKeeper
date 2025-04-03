@@ -1335,7 +1335,7 @@ def dezip_images():
     # Définition des chemins absolus
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Data bases", "Celeb A", "Images"))
     folder = os.path.join(base_dir, "selected_images")
-    zip_path = os.path.join(base_dir, "selected_images.zip")
+    zip_path = os.path.join(base_dir, "selected_images.rar")
 
     # Vérifier si le dossier existe et contient au moins un fichier
     if os.path.exists(folder) and any(os.scandir(folder)):
