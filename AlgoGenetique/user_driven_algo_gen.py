@@ -11,76 +11,107 @@ Auteurs :
     Deléglise Matthieu et Durand Julie
 -------------------------------
 Version : 
-    4.2 (31/03/2025)
+    4.3 (31/03/2025)
 """
 
 #### Libraries ####
 import numpy as np
-import matplotlib.pyplot as plt
-from random import choices
-
-from numba import njit
-from joblib import Parallel, delayed
-from scipy.optimize import minimize
-
-import time
 
 class GeneticAlgorithm():
+    """
+    Class GeneticAlgorithm
+
+    This algorithm aims at creating a set of images similar to one or more target(s) picture(s) using 
+    genetic algorithm technics of crossover and mutation. 
+    The rest of the GA steps (initialisation, selection, stop condition)
+    are directly done by the user in a graphical interface (see inference.py)
+    These images are all represented as small arrays, which are the 
+    representation of the images in the latent space of an autoencoder.
+
+    """
     
-    def __init__(self, picture1, picture2, nb_to_retrieve, crossover_method, mutation_rate, sigma_mutation):
+    def __init__(self, picture1, picture2, nb_to_retrieve, mutation_rate, sigma_mutation, crossover_method = "square"):
+        """
+        Creation of an instance of the GeneticAlgorithm class.
+
+        Parameters
+        ----------
+        picture1 : np.array
+           Array of size (m,n,p) encoding an image.
+        picture2 : np.array
+           Array of size (m,n,p) encoding a second image.
+        nb_to_retrieve : int
+            Number of solutions (images to create) of the Genetic Algorithm we want to obtain at the end.
+        crossover_method : string
+            Method used to cross coordinates of the two parents images.
+            Default is "square". Can also be "single-canal", "single-line", 
+            "single-column", "uniform", "BLX-alpha" or "blending".
+        mutation_rate : float ([0;1])
+            Probability of mutation of each coordinate (gene) of an array (chromosome).
+        sigma_mutation : float
+            Standard deviation of the normal distribution defining the random component added during a mutation.
+
+        Returns
+        -------
+        None
+
+        """
+        #### Initial images ####
         self.p1 = picture1
         self.p2 = picture2
 
         self.dimension = self.p1.shape # dimension of the vector space = "number of gene of one individual"
-        print(self.dimension)
 
+        #### Crossover and mutation parameters ####
         self.crossover_method = crossover_method
         self.mutation_rate = mutation_rate
         self.sigma_mutation = sigma_mutation
         
-        self.square_size = (2, 2)
+        self.square_size = (2, 2) # Arbitrary size of a square to be exchange if crossover_method is "square"
 
-        self.solutions = self.crossover_and_mutations(nb_to_retrieve)
+        self.solutions = self.crossover_and_mutations(nb_to_retrieve) # solutions of the GA.
 
     def crossover_and_mutations(self, nb_to_retrieve):
         """
-        Last step of each loop of the genetic algorithm : 
+        Last step of each loop of a Genetic algorithm :
         - breeding between parents (crossover) to give a child population, 
         - mutation on these children
 
         Parameters
         ----------
-        None 
+        nb_to_retrieve : int
+            Number of solutions to create by crossing and mutating initial images. 
 
         Make use of : 
-        self.generation : list
-            List of the vectors of the selected individuals in the population
-        self.crossover_proba : float
-            Probability of crossing over between two parents (between 0 and 1)
+        self.p1, self.p2, self.dimension
+        self.crossover_method, self.square_size
 
         Returns
         -------
-        new_population : np.array
-            Array of the vectors of the new population composed of the parents 
-            (best individuals from the previous generation) and their children.
+        arr_child : np.array
+            Array of arrays of the new population composed of the children images 
+            created by crossing coordinates of parents and then adding random mutations.
 
         """
         # Crossovers
         nb_iteration = nb_to_retrieve//2 # nb_to_retrieve must be even
 
-        """arr_crossing_points = np.linspace(0.2, 0.8, nb_iteration)*self.dimension
+        """
+        #### Decomment this if the array are flattened ####
+        arr_crossing_points = np.linspace(0.2, 0.8, nb_iteration)*self.dimension
         arr_crossing_points = np.rint(arr_crossing_points).astype(np.int64)
     
         if self.crossover_method == "two-points" :
             arr_lower_points = np.linspace(0.25, 0.75, nb_iteration)*self.dimension
             arr_lower_points = np.rint(arr_lower_points).astype(np.int64)
             arr_upper_points = arr_lower_points + size_crossover
-            arr_crossing_points = np.array([(arr_lower_points[i], arr_upper_points[i]) for i in range(len(arr_lower_points))])"""
+            arr_crossing_points = np.array([(arr_lower_points[i], arr_upper_points[i]) for i in range(len(arr_lower_points))])
+        """
 
         arr_crossing_points = np.zeros(nb_iteration)
         if self.crossover_method == "single-canal" :
             arr_crossing_points = np.random.choice(self.dimension[0], nb_iteration, replace=False) # exchange only some particular canals
-        elif self.crossover_method == "single-line" :
+        elif self.crossover_method == "single-line" : # ne pas échanger les lignes tout au dessus (pareil dans square ?)
             arr_crossing_points = np.random.choice(self.dimension[1], nb_iteration, replace=False) # exchange only some particular lines
         elif self.crossover_method == "single-column" :
             arr_crossing_points = np.random.choice(self.dimension[2], nb_iteration, replace=False) # exchange only some particular columns
@@ -151,6 +182,7 @@ class GeneticAlgorithm():
         """
 
         """
+        #### Decomment this if the array are flattened ####
         if self.crossover_method == "single-point" : # exchange every coordinates after a random index, including this index.
             child1 = np.concatenate((parent1[:crossing_point], parent2[crossing_point:]))
             child2 = np.concatenate((parent2[:crossing_point], parent1[crossing_point:]))
@@ -162,12 +194,13 @@ class GeneticAlgorithm():
             child1 = np.concatenate((parent1[:low_crossing_point], parent2[low_crossing_point:high_crossing_point+1], parent1[high_crossing_point+1:]))
             child2 = np.concatenate((parent2[:low_crossing_point], parent1[low_crossing_point:high_crossing_point+1], parent2[high_crossing_point+1:]))
         """
-        if self.crossover_method == "single-canal":
+
+        if self.crossover_method == "single-canal": # échanger plus de canaux
             child1, child2 = parent1.copy(), parent2.copy()
             child1[crossing_point, :, :] = parent2[crossing_point, :, :]
             child2[crossing_point, :, :] = parent1[crossing_point, :, :]
         
-        elif self.crossover_method == "single-line":
+        elif self.crossover_method == "single-line": 
             child1, child2 = parent1.copy(), parent2.copy()
             child1[:, crossing_point, :] = parent2[:, crossing_point, :]
             child2[:, crossing_point, :] = parent1[:, crossing_point, :]
@@ -177,7 +210,7 @@ class GeneticAlgorithm():
             child1[:, :, crossing_point] = parent2[:, :, crossing_point]
             child2[:, :, crossing_point] = parent1[:, :, crossing_point]
 
-        elif self.crossover_method == "square":
+        elif self.crossover_method == "square": # plusieurs carrés / par canaux # blur(filtre) sur les contours pour meilleur intégration
             child1, child2 = parent1.copy(), parent2.copy()
             lower_line_index, upper_line_index = crossing_point[0], crossing_point[0]+self.square_size[0]
             lower_column_index, upper_column_index = crossing_point[1], crossing_point[1]+self.square_size[1]
@@ -214,22 +247,22 @@ class GeneticAlgorithm():
 
     def mutation(self, chr):
         """
-        Implementation of a mutational event on a chromosome/individual (vector).
+        Implementation of a mutational event on a chromosome/individual (array).
         Each gene (coordinate) of the chromosome as a probability of mutating depending
-        on the mutation rate given in parameter. 
+        on the mutation rate given in parameter of the class. 
+        In this version of the mutation method, different mutational vectors are added to
+        each canal (first dimension)
 
         Mutations are drawn from a normal distribution distributed around 0. 
         Modifying the standard deviation sigma allows to have bigger or smaller mutations.
 
         Parameters
         ----------
-        chr : 
-        mutation_rate : float or tuple
-            probability of mutation of a gene (between 0 and 1).
-            If method is "constant", mutation rate is a unique float.
-            If method is "adaptive", mutation rate is a tuple of two floats : (rate_for_low_fitness, rate_for_high_fitness)
-        sigma_mutation : float
-            Standard deviation of the normal distribution from which are drawn mutations.
+        chr : np.array
+            Array representing an encoded image
+        
+        Make use of : 
+        self.dimension, self.mutation_rate and self.sigma_mutation
 
         Returns
         -------
@@ -242,6 +275,30 @@ class GeneticAlgorithm():
         chr[mask] += mutations[mask] # add random component to the vectors when its coordinates have mutated.
 
     def modified_mutation(self, chr):
+        """
+        Implementation of a mutational event on a chromosome/individual (array).
+        Each gene (coordinate) of the chromosome as a probability of mutating depending
+        on the mutation rate given in parameter of the class. 
+        In this version of the mutation method, the same mutational vector is added to 
+        each canal of the image (first dimension)
+
+        Mutations are drawn from a normal distribution distributed around 0. 
+        Modifying the standard deviation sigma allows to have bigger or smaller mutations.
+
+        Parameters
+        ----------
+        chr : np.array
+            Array representing an encoded image
+        
+        Make use of : 
+        self.dimension, self.mutation_rate and self.sigma_mutation
+
+        Returns
+        -------
+        None
+            chr is modified directly by the function and thus do not need to be returned.
+
+        """
         mask = np.random.rand(self.dimension[1], self.dimension[2]) < self.mutation_rate # only mutate with a certain probability
         mutations = np.random.normal(0, self.sigma_mutation, (self.dimension[1], self.dimension[2]))
         for i in range(self.dimension[0]):
