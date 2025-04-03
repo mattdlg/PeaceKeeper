@@ -632,7 +632,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_generation(self):
         # Ouvre la fenêtre de génération
-        folder = "Data bases/Celeb A/Images/selected_images"  # adapte le chemin
+        folder = "Data bases/selected_images"  # adapte le chemin
         dialog = GenerationDialog(folder, self)
         dialog.exec()
 
@@ -775,9 +775,9 @@ def dezip_images():
         Si l'archive zip est absente et que le dossier des images est inexistant ou vide.
     """
     # Définition des chemins absolus
-    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "Data bases", "Celeb A", "Images"))
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "Data base"))
     folder = os.path.join(base_dir, "selected_images")
-    zip_path = os.path.join(base_dir, "selected_images.zip")
+    zip_path = os.path.join(base_dir, "selected_images.rar")
 
     # Vérifier si le dossier existe et contient au moins un fichier
     if os.path.exists(folder) and any(os.scandir(folder)):
