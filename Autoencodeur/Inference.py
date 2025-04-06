@@ -7,13 +7,16 @@ import torch
 import numpy as np
 from torchvision import transforms
 
+from utils_autoencoder import load_best_hyperparameters, Autoencoder, device, transform_
+
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from AlgoGenetique import algo_genetique_parallel as GA
 from AlgoGenetique import algo_genetique_multiple_target as GAm
 from AlgoGenetique import user_driven_algo_gen as udGA
 
-
+best_params = load_best_hyperparameters("Autoencodeur/best_hyperparameters.pth")
+ 
 # ---------- Classe Principale ----------
 class ImageApp:
     def __init__(self, master):
@@ -32,14 +35,15 @@ class ImageApp:
         # Chemin des images
         # self.image_folder = "Data bases/Celeb A/Images/img_align_celeba/" # phi : "/Users/phifr/Documents/4A-S1/S2/DvptWeb/img_from_celeba"
         # chemin d'accès dans le git : 
-        self.image_folder = "Data Base/selected_images/selected_images"
+        self.image_folder = "Data Base/selected_images"
         self.all_images = self.load_image_list()
         self.used_images = set()
 
         # Initialisation du modèle
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = self.load_model()
-        self.transform = self.create_transforms()
+        self.device = device
+        self.model = Autoencoder(nb_channels=best_params['nb_channels'], nb_layers=best_params['nb_layers']).to(self.device)
+        self.model.load_state_dict(torch.load('Autoencodeur/conv_autoencoder.pth', map_location=self.device))
+        self.model.eval()
 
         # Interface utilisateur
         self.create_widgets()
@@ -72,6 +76,8 @@ class ImageApp:
         control_frame = ttk.Frame(main_frame)
         control_frame.pack(side="bottom",pady=20)
 
+        self.transform = transform_
+
         ttk.Button(control_frame,
                    text="Nouvelles Images",
                    command=self.confirm_new_images).pack(side=tk.LEFT, padx=10)
@@ -83,63 +89,6 @@ class ImageApp:
         ttk.Button(control_frame,
                    text="Quitter",
                    command=self.confirm_exit).pack(side=tk.RIGHT, padx=10)
-
-    # ---------- Gestion du Modèle ----------
-    def load_model(self):
-        """Charge le modèle entraîné"""
-
-        class ConvAutoencoder(torch.nn.Module):
-            def __init__(self):
-                super().__init__()
-                # Encoder
-                self.encoder = torch.nn.Sequential(
-                    torch.nn.Conv2d(3, 16, 3, stride=2, padding=1),
-                    torch.nn.ReLU(True),
-                    torch.nn.Conv2d(16, 32, 3, stride=2, padding=1),
-                    torch.nn.ReLU(True),
-                    torch.nn.Conv2d(32, 64, 3, stride=2, padding=1),
-                    torch.nn.ReLU(True),
-                    torch.nn.Conv2d(64, 128, 3, stride=2, padding=1),
-                    torch.nn.ReLU(True),
-                )
-                # Decoder
-                self.decoder = torch.nn.Sequential(
-                    torch.nn.ConvTranspose2d(128, 64, 3, stride=2, padding=1, output_padding=1),
-                    torch.nn.ReLU(True),
-                    torch.nn.ConvTranspose2d(64, 32, 3, stride=2, padding=1, output_padding=1),
-                    torch.nn.ReLU(True),
-                    torch.nn.ConvTranspose2d(32, 16, 3, stride=2, padding=1, output_padding=1),
-                    torch.nn.ReLU(True),
-                    torch.nn.ConvTranspose2d(16, 3, 3, stride=2, padding=1, output_padding=1),
-                    torch.nn.Sigmoid()
-                    # L'activation sigmoide permet de normaliser les sorties du décodeur pour qu'elles puissent
-                    # être interprétées comme des intensités de pixels (normalisées entre 0 et 1),
-                    # facilitant ainsi la conversion en image avec PIL
-                )
-
-            def encode(self, x):
-                return self.encoder(x)
-
-            def decode(self, z):
-                return self.decoder(z)
-
-            def forward(self, x):
-                return self.decoder(self.encoder(x))
-
-        model = ConvAutoencoder().to(self.device)
-        # model.load_state_dict(torch.load('conv_autoencoder.pth', map_location=self.device))
-        # git
-        model.load_state_dict(torch.load('Autoencodeur/conv_autoencoder.pth', map_location=self.device))
-        model.eval()
-        return model
-
-    def create_transforms(self):
-        """Crée les transformations d'images"""
-        return transforms.Compose([
-            transforms.Resize((128, 128)),
-            transforms.CenterCrop((128, 128)),
-            transforms.ToTensor(),
-        ])
 
     # ---------- Logique Métier ----------
     def load_new_images(self):
