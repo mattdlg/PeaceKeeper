@@ -8,10 +8,10 @@ Algorithme génétique :
     naturelle.
 -------------------------------
 Auteurs : 
-    Deléglise Matthieu et Durand Julie
+    Deléglise Matthieu & Durand Julie
 -------------------------------
 Version : 
-    4.3 (31/03/2025)
+    4.4 (06/04/2025)
 """
 
 #### Libraries ####
@@ -93,8 +93,9 @@ class GeneticAlgorithm():
             created by crossing coordinates of parents and then adding random mutations.
 
         """
-        # Crossovers
-        nb_iteration = nb_to_retrieve//2 # nb_to_retrieve must be even
+        #### Crossovers Parameters ####
+        # WARNING : nb_to_retrieve must be even
+        nb_iteration = nb_to_retrieve//2 # number of crossover event to do between parents to have the good number of children
 
         """
         #### Decomment this if the array are flattened ####
@@ -109,13 +110,15 @@ class GeneticAlgorithm():
         """
 
         arr_crossing_points = np.zeros(nb_iteration)
-        if self.crossover_method == "single-canal" :
+        # For "single" method, choose nb_iteration canal (resp line, column) to exchange between the parents to get nb_iteration*2 children
+        if self.crossover_method == "single-canal" : 
             arr_crossing_points = np.random.choice(self.dimension[0], nb_iteration, replace=False) # exchange only some particular canals
         elif self.crossover_method == "single-line" : # ne pas échanger les lignes tout au dessus (pareil dans square ?)
             arr_crossing_points = np.random.choice(self.dimension[1], nb_iteration, replace=False) # exchange only some particular lines
         elif self.crossover_method == "single-column" :
             arr_crossing_points = np.random.choice(self.dimension[2], nb_iteration, replace=False) # exchange only some particular columns
         
+        # For "square" method, randomly choose the coordinate of the top left vertice of the square. The size of the square is arbitrarily fixed by self.square_size
         elif self.crossover_method == "square" : # exchange only some particular squares of coordinates
             arr_line_index = np.random.choice(self.dimension[1]-self.square_size[0], nb_iteration, replace=False)
             arr_column_index = np.random.choice(self.dimension[2]-self.square_size[1], nb_iteration, replace=False)
@@ -123,37 +126,47 @@ class GeneticAlgorithm():
 
         # faire test square sur qq canal seulement (modif de deux trois features only)
 
-        arr_explorations = np.linspace(0.2, 0.8, nb_iteration)
+        # BLX-alpha method with exploration parameter of different size :
+        arr_explorations = np.linspace(0.2, 0.8, nb_iteration) 
 
+        # Blending method with different percentage of parents' arrays to mix :
         arr_alpha = np.linspace(0.1, 0.45, nb_iteration) # stop before 0.5 because we create two child by crossover -> 0.4 and 0.6 will do exactly the same
 
+        #### Reproduction ####
         list_child = []
         for k in range(nb_iteration):
-            # Crossover
+            ## Crossover ##
             child1, child2 = self.crossover(self.p1, self.p2, 
                                             arr_crossing_points[k], 
                                             arr_explorations[k],
                                             arr_alpha[k])
 
-            # Mutations
+            ## Mutations ##
             self.modified_mutation(child1)
             self.modified_mutation(child2)
 
             list_child.append(child1)
             list_child.append(child2)
         
-        arr_child = np.asarray(list_child)
+        arr_child = np.asarray(list_child) # return the children as an Array of arrays (easier to use later)
         return arr_child
     
     def crossover(self, parent1, parent2, crossing_point, w, alpha):
         """
-        Implementation of a crossing over between two parents vectors. 
+        Implementation of a crossing over between two parents arrays. 
         The function exchange some of the vectors' coordinates to 
         create two children vectors. 
 
         Possibly use five different methods to do so : 
             - single-point : exchange every coordinates after an index (included).
             - two-points : exchange every coordinates between the lower and upper bound (included).
+
+            - single-canal : exchange every coordinates in a particular canal of the arrays
+            - single-line : exchange every coordinates in a particular line of the arrays
+            - single column : exchange every coordinates in a particular column of the arrays
+
+            - square : exchange every coordinates in a particular square (same square in each canal) of the arrays
+
             - uniform : for each coordinate : toss a coin to know if it will be from the first or 
             the second parent (if no coordinate were exchanged, randomly choose one to exchange).
             - BLX-alpha : Extend the range of values the children can take outside of the parents range, 
@@ -165,19 +178,17 @@ class GeneticAlgorithm():
         Parameters
         ----------
         parent1 : np.array
-            Array of dimension n representing the first parent (vector).
+            Array of dimension n representing the first parent.
         parent2 : np.array
-            Array of dimension n representing the second parent (vector).
-        method : string
-            Name of the method used for the crossing over. Default is "single-point".
-            Other methods are "two-points", "uniform", "BLX-alpha" and "blending".
+            Array of dimension n representing the second parent.
+        
 
         Returns
         -------
         child1 : np.array
-            Array of dimension n representing the first child (vector).
+            Array of dimension n representing the first child.
         child2 : np.array
-            Array of dimension n representing the second child (vector).
+            Array of dimension n representing the second child.
 
         """
 
@@ -197,15 +208,18 @@ class GeneticAlgorithm():
 
         if self.crossover_method == "single-canal": # échanger plus de canaux
             child1, child2 = parent1.copy(), parent2.copy()
+            # Only exchange one canal :
             child1[crossing_point, :, :] = parent2[crossing_point, :, :]
             child2[crossing_point, :, :] = parent1[crossing_point, :, :]
         
         elif self.crossover_method == "single-line": 
             child1, child2 = parent1.copy(), parent2.copy()
+            # only exchange one line
             child1[:, crossing_point, :] = parent2[:, crossing_point, :]
             child2[:, crossing_point, :] = parent1[:, crossing_point, :]
 
         elif self.crossover_method == "single-column":
+            # only exchange one column
             child1, child2 = parent1.copy(), parent2.copy()
             child1[:, :, crossing_point] = parent2[:, :, crossing_point]
             child2[:, :, crossing_point] = parent1[:, :, crossing_point]
@@ -214,6 +228,7 @@ class GeneticAlgorithm():
             child1, child2 = parent1.copy(), parent2.copy()
             lower_line_index, upper_line_index = crossing_point[0], crossing_point[0]+self.square_size[0]
             lower_column_index, upper_column_index = crossing_point[1], crossing_point[1]+self.square_size[1]
+            # only exchange one square :
             child1[:, lower_line_index:upper_line_index, lower_column_index:upper_column_index] = parent2[:, lower_line_index:upper_line_index, lower_column_index:upper_column_index]
             child2[:, lower_line_index:upper_line_index, lower_column_index:upper_column_index] = parent1[:, lower_line_index:upper_line_index, lower_column_index:upper_column_index]
 
@@ -229,12 +244,15 @@ class GeneticAlgorithm():
         
         elif self.crossover_method == "BLX-alpha": # Blend Alpha crossover method
             # compute lower and higher bound for each coordinate 
-            lower = np.minimum(parent1, parent2) - w * np.abs(parent1 - parent2) # lower = minimum value between the two parents minus alpha times the difference between them
-            upper = np.maximum(parent1, parent2) + w * np.abs(parent1 - parent2) # upper = maximum value between the two parents plus alpha times the difference between them
+            # w == exploration weight
+            lower = np.minimum(parent1, parent2) - w * np.abs(parent1 - parent2) # lower = minimum value between the two parents minus w times the difference between them
+            upper = np.maximum(parent1, parent2) + w * np.abs(parent1 - parent2) # upper = maximum value between the two parents plus w times the difference between them
+            # Randomly creates coordinate between the lower and upper limit (explore more than the range of the parents' values) :
             child1 = np.random.uniform(lower, upper)
             child2 = np.random.uniform(lower, upper)
 
         elif self.crossover_method == "blending": # linear combination of the coordinates
+            # child1 keep alpha*100% of parent1 and (1-alpha)*100% of parent2, and inversely for child2 :
             child1 = alpha * parent1 + (1 - alpha) * parent2
             child2 = (1 - alpha) * parent1 + alpha * parent2
 
@@ -271,7 +289,7 @@ class GeneticAlgorithm():
 
         """
         mask = np.random.rand(self.dimension[0], self.dimension[1], self.dimension[2]) < self.mutation_rate # only mutate with a certain probability
-        mutations = np.random.normal(0, self.sigma_mutation, self.dimension)
+        mutations = np.random.normal(0, self.sigma_mutation, self.dimension) # mutation are drawn from a normal distribution
         chr[mask] += mutations[mask] # add random component to the vectors when its coordinates have mutated.
 
     def modified_mutation(self, chr):
@@ -300,14 +318,17 @@ class GeneticAlgorithm():
 
         """
         mask = np.random.rand(self.dimension[1], self.dimension[2]) < self.mutation_rate # only mutate with a certain probability
-        mutations = np.random.normal(0, self.sigma_mutation, (self.dimension[1], self.dimension[2]))
+        mutations = np.random.normal(0, self.sigma_mutation, (self.dimension[1], self.dimension[2])) # mutation are drawn from a normal distribution
         for i in range(self.dimension[0]):
-            chr[i][mask] += mutations[mask]
+            chr[i][mask] += mutations[mask] # same mutation on each canal of the matrix
         # chr[:][mask] += mutations[mask] # add random component to the vectors when its coordinates have mutated.
 
 
 
 def test_mutation(picture1, picture2):
+    """
+    Test Function of the mutation method of the GA.
+    """
     ga = GeneticAlgorithm(picture1, picture2, nb_to_retrieve=6, crossover_method="single-line", 
                           mutation_rate=0.5, sigma_mutation=1)
     
@@ -321,6 +342,9 @@ def test_mutation(picture1, picture2):
     print("\n")
 
 def test_crossover(picture1, picture2, point_of_crossover, w, alpha, method):
+    """
+    Test Function of the crossover method of the GA
+    """
     ga = GeneticAlgorithm(picture1, picture2, nb_to_retrieve=2, crossover_method=method, 
                           mutation_rate=0.5, sigma_mutation=1)
     
@@ -333,6 +357,28 @@ def test_crossover(picture1, picture2, point_of_crossover, w, alpha, method):
     print(child2)
 
 def run_ga(targets, nb_solutions, crossover_method, mutation_rate, sigma_mutation):
+    """
+    Main Function to run the GA class and retrieve its solutions 
+
+    Parameters
+    ----------
+    targets : list
+        List of the arrays of the parents to give to the GA.
+    nb_solutions : int
+        Number of children to create using crossover and mutation in the GA
+    crossover_method : string
+        Method of crossover to use to mix coordinate of parents and get new children
+    mutation_rate : float
+        Probability of mutation of each coordinate of an array
+    sigma_mutation : float
+        Standard deviation of the normal distribution used to create random vectors of mutation.
+
+    Returns
+    -------
+    solutions : np.array
+        Array of arrays of the solution of the GA 
+
+    """
     # dimensions = targets[0].shape
     # flat_targets = [t.flatten(order="C") for t in targets] # essayer sans aplatir
 
