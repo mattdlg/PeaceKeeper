@@ -35,7 +35,8 @@ class ImageApp:
         # Chemin des images
         # self.image_folder = "Data bases/Celeb A/Images/img_align_celeba/" # phi : "/Users/phifr/Documents/4A-S1/S2/DvptWeb/img_from_celeba"
         # chemin d'accès dans le git : 
-        self.image_folder = "Data Base/selected_images"
+        # self.image_folder = "Data Base/selected_images" # n'affiche rien ??
+        self.image_folder = "Data Bases/Celeb A/Images/selected_images"
         self.all_images = self.load_image_list()
         self.used_images = set()
 
@@ -306,16 +307,16 @@ class ImageApp:
             
             solutions = GAm.run_multiple_ga(norm_targets)
             solutions = GAm.denormalization(solutions, min_val, max_val)"""
-            space_limit = np.max(np.asarray(list_vectors))
-            solutions = udGA.run_ga(list_vectors, nb_solutions=6, crossover_method="square", 
+            # space_limit = np.max(np.asarray(list_vectors))
+            solutions = udGA.run_ga(list_vectors, nb_solutions=6, crossover_method="single-point", 
                                     mutation_rate=0.3, sigma_mutation=0.5)
 
             # Convertir en tenseur PyTorch
             # sol = torch.tensor(solutions[0], dtype=torch.float32) # Ne prendre que l'image en position 0, il faudra faire une boucle et afficher les 10 images après
             sol = torch.tensor(solutions, dtype=torch.float32)
 
-            # Changer la forme en [1, 128, 8, 8]
-            sol = sol.view(solutions.shape[0], 128, 8, 8) # 6 images reconstructes
+            # Reprendre la forme d'un tenseur (6, tenseur_shape)
+            sol = sol.view(solutions.shape[0], list_vectors[0].shape[0]) # 6 images reconstructes
 
             # Étape 2: Décodage à partir de l'espace latent:
 
