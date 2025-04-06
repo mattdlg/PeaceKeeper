@@ -8,59 +8,43 @@ from torchvision import transforms
 import matplotlib.pyplot as plt
 from PIL import Image
 
-from utils_autoencoder import CelebADataset, Autoencoder, split_data, train_model
+from utils_autoencoder import (
+    CelebADataset, Autoencoder, load_best_hyperparameters, split_data, train_model,
+    data_dir, transform_, search_file, device
+)
 
-# ===== 1. Charger les hyperparamètres optimisés ===== Donne
-best_params = torch.load('best_hyperparameters.pth')
-print("Hyperparamètres chargés :", best_params)
+max_images = 50000
+train_ratio = 0.7
+external_image_path = "img_align_celeba/200001.jpg"
 
-image_size = (128, 128)
-data_dir = "img_align_celeba"
-transform_ = transforms.Compose([
-    transforms.Resize(image_size),
-    transforms.CenterCrop(image_size),
-    transforms.ToTensor()
-])
+def give_param_model(model, best_params, train_dataset, test_dataset):
+    """
+    Prépare les paramètres pour l'entraînement du modèle.
 
-# ===== 2. Préparation des données =====
-dataset = CelebADataset(folder=data_dir, transform=transform_, max_images=20000)
-train_dataset, test_dataset =split_data(dataset, train_ratio=0.7)
+    Crée les DataLoaders (entraînement et test) à partir des datasets et configure la fonction de perte (MSE) et l’optimiseur (RMSProp).
 
-# ===== 3. Gestion automatique du nom de fichier =====
-base_name = "conv_autoencoder"
-model_id = 1
+    `MSELoss` et non 'l1' a été choisi car des tests de validations préliminaires Optuna ont montré que c'était la meilleure
+    Pareil pour RMSProp qui permet d’ajuster dynamiquement le learning rate par paramètre.
+    Idem pour batch_size.
+    Le test_loader est en shuffle=True pour diversifier les images reconstruites à chaque test.
 
-# Chercher les modèles déjà existants
-while os.path.exists(f"{base_name}{'' if model_id == 1 else model_id}.pth"):
-    model_id += 1
+    Paramètres
+    ----------
+    model : nn.Module
+        L'autoencodeur à entraîner.
+    best_params : dict
+        Dictionnaire d’hyperparamètres optimisés.
+    train_dataset : Dataset
+        Sous-ensemble de données d'entraînement.
+    test_dataset : Dataset
+        Sous-ensemble de données de test.
 
-# Proposer d'utiliser le dernier existant (model_id - 1) ou de créer un nouveau
-if model_id > 1:
-    last_model_id = model_id - 1
-    last_filename = f"{base_name}{'' if last_model_id == 1 else last_model_id}.pth"
-    choice = input(f"\nLe fichier '{last_filename}' existe déjà. Voulez-vous :\n1. Réutiliser ce modèle\n2. Enregistrer un nouveau modèle\n> ")
-    
-    if choice == '1':
-        model_filename = last_filename
-        reutiliser_modele = True
-    else:
-        model_filename = f"{base_name}{model_id}.pth"
-        reutiliser_modele = False
-else:
-    print("Entrée invalide. Par défaut, un nouveau modèle sera créé.")
-    model_filename = f"{base_name}{model_id}.pth"
-    reutiliser_modele = False
-
-# Création du modèle avec les bons hyperparamètres
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = Autoencoder(nb_channels=best_params['nb_channels'], nb_layers=best_params['nb_layers']).to(device)
-
-# ===== 5. Entraînement ou chargement =====
-if reutiliser_modele:
-    model.load_state_dict(torch.load(model_filename, map_location=device))
-    print(f"\n Modèle chargé depuis : {model_filename}")
-else:
-    data_model = {
+    Retour
+    -------
+    dict :
+        Un dictionnaire structuré avec tous les composants nécessaires à l’appel de train_model().
+    """
+    return {
         "model": model,
         "criterion": nn.MSELoss(),
         "optimizer": optim.RMSprop(model.parameters(), lr=best_params['lr'], weight_decay=best_params['weight_decay']),
@@ -68,40 +52,99 @@ else:
         "test_loader": DataLoader(test_dataset, batch_size=1, shuffle=True),
         "num_epochs": 20,
     }
-    epoch_loss, test_loss = train_model(data_model)
-    torch.save(model.state_dict(), model_filename)
-    print(f"\nModèle sauvegardé sous : {model_filename}")
 
-# ===== 6. Test sur une image externe =====
-external_image_path = "img_align_celeba/200003.jpg"
-external_img = Image.open(external_image_path).convert("RGB")
-external_img_transformed = transform_(external_img)
-external_img_batch = external_img_transformed.unsqueeze(0).to(device)
+def test_model_on_image(model, device, image_path):
+    """
+    Teste le modèle entraîné sur une image externe qui ne fait pas parti du dataset d'entraînement.
 
-model.eval()
+    Permet de reconstruire l'image à partir de l'original qu'il n'a jamais vu.
+    qu’il n’a jamais vue. Elle est transformée pour correspondre aux dimensions 128x128 du dataset
+    Elle est encodée en vecteur latent puis décodée.
+    L’évaluation se fait sans gradients (torch.no_grad) pour économiser mémoire et temps.
 
-with torch.no_grad():
-    latent_vector = model.encode(external_img_batch)
+    Paramètres
+    ----------
+    model : nn.Module
+        Autoencodeur entraîné.
+    device : torch.device
+        CPU ou GPU utilisé.
+    image_path : str
+        Chemin vers l’image à tester.
 
-print("Latent vector shape:", model.final_shape)
+    Retour
+    -------
+    original_img : PIL.Image
+        Image d’origine (non transformée).
+    reconstructed_img : numpy.ndarray
+        Image reconstruite par le modèle, au format compatible avec matplotlib (H, W, C).
+    """
+    external_img = Image.open(image_path).convert("RGB")
+    external_img_transformed = transform_(external_img)
+    external_img_batch = external_img_transformed.unsqueeze(0).to(device)
 
-with torch.no_grad():
-    reconstructed_batch = model.decode(latent_vector)
+    model.eval()
+    with torch.no_grad():
+        latent_vector = model.encode(external_img_batch)
+        print("Latent vector shape:", model.final_shape)
+        reconstructed_batch = model.decode(latent_vector)
 
-reconstructed_img_tensor = reconstructed_batch.squeeze(0).cpu()
-reconstructed_img = reconstructed_img_tensor.numpy().transpose(1, 2, 0)
+    reconstructed_img_tensor = reconstructed_batch.squeeze(0).cpu()
+    reconstructed_img = reconstructed_img_tensor.numpy().transpose(1, 2, 0)
 
-# ===== 7. Visualisation =====
-plt.figure(figsize=(10, 5))
+    return external_img, reconstructed_img
 
-plt.subplot(1, 2, 1)
-plt.title("Original external image")
-plt.imshow(external_img)
-plt.axis("off")
+def show_images(original_img, reconstructed_img):
+    '''
+    Affiche l’image d’origine et l’image reconstruite par le modèle. Visualisation qualitative.
 
-plt.subplot(1, 2, 2)
-plt.title("Reconstructed image")
-plt.imshow(reconstructed_img)
-plt.axis("off")
+    Paramètres
+    ----------
+    original_img : PIL.Image
+        Image originale chargée depuis le disque.
+    reconstructed_img : np.ndarray
+        Image reconstruite par le modèle.
+    '''
+    plt.figure(figsize=(10, 5))
+    plt.subplot(1, 2, 1)
+    plt.title("Original external image")
+    plt.imshow(original_img)
+    plt.axis("off")
 
-plt.show()
+    plt.subplot(1, 2, 2)
+    plt.title("Reconstructed image")
+    plt.imshow(reconstructed_img)
+    plt.axis("off")
+    plt.show()
+
+def main():
+    # ===== 1. Charger les hyperparamètres optimisés ====
+    best_params = load_best_hyperparameters("best_hyperparameters.pth")
+
+    # ===== 2. Préparation des données =====
+    dataset = CelebADataset(data_dir, transform_, max_images)
+    train_dataset, test_dataset =split_data(dataset, train_ratio)
+
+    model_filename, reuse_model = search_file("conv_autoencoder", extension=".pth")
+    model = Autoencoder(nb_channels=best_params['nb_channels'], nb_layers=best_params['nb_layers']).to(device)
+
+    # ===== 3. Entraînement ou chargement =====
+    if reuse_model:
+        model.load_state_dict(torch.load(model_filename, map_location=device))
+        print(f"\n Modèle chargé depuis : {model_filename}")
+    
+    else: 
+        data_model = give_param_model(model, best_params, train_dataset, test_dataset)
+        epoch_loss, test_loss = train_model(data_model)
+        torch.save(model.state_dict(), model_filename)
+        print(f"\nModèle sauvegardé sous : {model_filename}")
+
+    # ===== 6. Test sur une image externe =====
+    original_img, reconstructed_img = test_model_on_image(model, device, external_image_path)
+
+    # ===== 7. Visualisation =====
+    show_images(original_img, reconstructed_img)
+    
+if __name__ == "__main__":
+    main()
+
+
