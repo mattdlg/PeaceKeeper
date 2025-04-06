@@ -347,6 +347,7 @@ class ImageApp:
                 list_vectors[i] = self.model.encode(list_vectors[i])
                 list_vectors[i] = list_vectors[i][0].numpy()    # Convertit en np array
 
+            print(list_vectors[0].shape)
             # [SECTION POUR ALGORITHME GÉNÉTIQUE]
             # Ici on pourrait modifier le latent_vector avant décodage
             # Ex: latent_vector = genetic_algorithm(latent_vector)
