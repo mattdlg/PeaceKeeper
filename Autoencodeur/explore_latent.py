@@ -16,7 +16,6 @@ Version :
 
 #### Libraries ####
 import numpy as np
-# from utils_autoencoder import load_best_hyperparameters, Autoencoder, device, transform_
 
 #### Creation of vectors ####
 def create_random_vectors(size, nb_to_create):
@@ -105,7 +104,6 @@ def interpolate_vectors(start_vector, end_vector, nb_to_create):
 
     """
     fraction = np.linspace(0, 1, nb_to_create)
-    print(fraction)
     vectors = np.zeros((nb_to_create, start_vector.shape[0]))
     for i in range(nb_to_create) :
         vectors[i] = start_vector + (end_vector - start_vector) * fraction[i]
