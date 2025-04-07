@@ -309,7 +309,7 @@ class ImageApp:
             solutions = GAm.denormalization(solutions, min_val, max_val)"""
             # space_limit = np.max(np.asarray(list_vectors))
             solutions = udGA.run_ga(list_vectors, nb_solutions=6, crossover_method="single-point", 
-                                    mutation_rate=0.3, sigma_mutation=0.5)
+                                    mutation_rate=0.01, sigma_mutation=0.1)
 
             # Convertir en tenseur PyTorch
             # sol = torch.tensor(solutions[0], dtype=torch.float32) # Ne prendre que l'image en position 0, il faudra faire une boucle et afficher les 10 images après
