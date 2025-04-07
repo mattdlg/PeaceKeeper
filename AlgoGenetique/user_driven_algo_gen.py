@@ -11,7 +11,7 @@ Auteurs :
     Deléglise Matthieu & Durand Julie
 -------------------------------
 Version : 
-    4.4 (06/04/2025)
+    4.5 (07/04/2025)
 """
 
 #### Libraries ####
@@ -101,7 +101,8 @@ class GeneticAlgorithm():
         arr_crossing_points = np.zeros(nb_iteration)
         if len(self.dimension) == 1 : # the arrays have been flattened 
             if self.crossover_method == "single-coordinate":
-                arr_crossing_points = np.random.randint(0, self.dimension[0], nb_iteration).astype(np.int64)
+                arr_crossing_points = np.linspace(500, 502, nb_iteration).astype(np.int64)
+                # arr_crossing_points = np.random.randint(0, self.dimension[0], nb_iteration).astype(np.int64)
 
             elif self.crossover_method == "single-point" :
                 arr_crossing_points = np.linspace(0.2, 0.8, nb_iteration)*self.dimension
@@ -201,8 +202,9 @@ class GeneticAlgorithm():
         # print(self.crossover_method)
         if size == 1 and self.crossover_method == "single-coordinate" : # Only exchange a single coordinate
             child1, child2 = parent1.copy(), parent2.copy()
-            child1[crossing_point] = parent2[crossing_point]
-            child2[crossing_point] = parent1[crossing_point]
+            print(crossing_point)
+            child1[crossing_point] = 100
+            child2[crossing_point] = 100
 
         elif size == 1 and self.crossover_method == "single-point" : # exchange every coordinates after a random index, including this index.
             child1 = np.concatenate((parent1[:crossing_point], parent2[crossing_point:]))
@@ -339,15 +341,30 @@ class GeneticAlgorithm():
 
 
 
-def test_mutation(picture1, picture2):
+def test_mutation(picture1, picture2, p_mut=0.5, s_mut=1):
     """
     Test Function of the mutation method of the GA.
+
     """
     ga = GeneticAlgorithm(picture1.flatten(order="C"), picture2.flatten(order="C"), nb_to_retrieve=6, crossover_method="single-line", 
-                          mutation_rate=0.5, sigma_mutation=1)
+                          mutation_rate=p_mut, sigma_mutation=s_mut)
     
-    chr = np.random.rand(3,4,4) * 20
+    np.random.seed(42)
+    chr = np.random.rand(2,2,2) * 10
     chr = chr.flatten(order="C")
+    
+    apply_mutation(chr,ga)
+
+def apply_mutation(chr, ga):
+    """
+    >>> np.random.seed(42)
+    >>> a = np.random.rand(8) * 10
+    [3.74540119 9.50714306 7.31993942 5.98658484 1.5601864  1.5599452
+    0.58083612 8.66176146]
+    >>> test_mutation(a)
+    [ 3.74540119  9.50714306  5.59502159  5.98658484  1.5601864   1.87419254
+    -0.32718795  7.24945776]
+    """
     print("Before mutation: ")
     print(chr) 
     ga.modified_mutation(chr)
@@ -355,9 +372,23 @@ def test_mutation(picture1, picture2):
     print(chr)
     print("\n")
 
+
 def test_crossover(picture1, picture2, point_of_crossover, w, alpha, method):
     """
     Test Function of the crossover method of the GA
+
+    >>> np.random.seed(42)
+    >>> a = np.random.rand(8) * 10
+    [3.74540119 9.50714306 7.31993942 5.98658484 1.5601864  1.5599452
+    0.58083612 8.66176146]
+    >>> b = np.random.rand(8) * 10
+    [6.01115012 7.08072578 0.20584494 9.69909852 8.32442641 2.12339111
+    1.81824967 1.8340451 ]
+    >>> test_crossover(a,b,1, 0.5, 0.3, "single-point")
+    [3.74540119 7.08072578 0.20584494 9.69909852 8.32442641 2.12339111
+    1.81824967 1.8340451 ]
+    [6.01115012 9.50714306 7.31993942 5.98658484 1.5601864  1.5599452
+    0.58083612 8.66176146]
     """
     ga = GeneticAlgorithm(picture1, picture2, nb_to_retrieve=2, crossover_method=method, 
                           mutation_rate=0.5, sigma_mutation=1)
@@ -405,8 +436,11 @@ def run_ga(targets, nb_solutions, crossover_method, mutation_rate, sigma_mutatio
 
 if __name__ == "__main__" :
     print(__name__)
-    target = np.random.rand(3,4,4) * 20
-    target2 = np.random.rand(3,4,4) * 20
+    
+    np.random.seed(42)
+    target = np.random.rand(2,2,2) * 10
+    target2 = np.random.rand(2,2,2) * 10
+    
     # test_mutation(target, target2)
     test_crossover(target.flatten(order="C"), target2.flatten(order="C"), 1, 0.5, 0.3, "single-point")
 

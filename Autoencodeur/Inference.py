@@ -297,13 +297,14 @@ class ImageApp:
             for i in range(len(list_vectors)) :
                 z = self.model.encode(list_vectors[i])
 
-                if tensor_flattened_shape == None :
+                """if tensor_flattened_shape == None :
                     tensor_flattened_shape = z.shape[1]
                     
                 x = self.model.fc_dec(z)
                 x = self.model.unflatten(x)
-                list_vectors[i] = x
-                list_vectors[i] = list_vectors[i][0].numpy()    # Convertit en np array
+                list_vectors[i] = x"""
+
+                list_vectors[i] = z[0].numpy()    # Convertit en np array
 
             # print(list_vectors[0].shape)
             # [SECTION POUR ALGORITHME GÉNÉTIQUE]
@@ -315,12 +316,12 @@ class ImageApp:
             
             solutions = GAm.run_multiple_ga(norm_targets)
             solutions = GAm.denormalization(solutions, min_val, max_val)"""
-            # space_limit = np.max(np.asarray(list_vectors))
-
+            space_limit = np.max(np.asarray(list_vectors))
+            print(space_limit)
             # UNFLATTENING 
             
-            solutions = udGA.run_ga(list_vectors, nb_solutions=6, crossover_method="blending", 
-                                    mutation_rate=0.01, sigma_mutation=0.1)
+            solutions = udGA.run_ga(list_vectors, nb_solutions=6, crossover_method="single-coordinate", 
+                                    mutation_rate=0, sigma_mutation=0.2)
             
             # Convertir en tenseur PyTorch
             # sol = torch.tensor(solutions[0], dtype=torch.float32) # Ne prendre que l'image en position 0, il faudra faire une boucle et afficher les 10 images après
@@ -328,8 +329,9 @@ class ImageApp:
 
             # Reprendre la forme d'un tenseur (6, tenseur_shape)
             # sol = sol.view(solutions.shape[0], list_vectors[0].shape[0], list_vectors[0].shape[1], list_vectors[0].shape[2]) # 6 images reconstructes
+            sol = sol.view(solutions.shape[0], list_vectors[0].shape[0]) # 6 images reconstructes
 
-            list_tensors = []
+            """list_tensors = []
             for i in range(sol.shape[0]):
                 z = sol[i,:,:,:].view(1, list_vectors[0].shape[0], list_vectors[0].shape[1], list_vectors[0].shape[2]) 
                 x = self.model.flatten(z)
@@ -337,7 +339,7 @@ class ImageApp:
                 list_tensors.append(flat_tensor[0])
 
             arr_tensors = np.array(list_tensors)
-            sol = torch.tensor(arr_tensors, dtype=torch.float32)
+            sol = torch.tensor(arr_tensors, dtype=torch.float32)"""
             # print(sol.shape)
             """sol = sol.view(6, 1024)
             print(sol.shape)"""

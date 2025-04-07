@@ -1193,7 +1193,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_generation(self):
         # Ouvre la fenêtre de génération
-        folder = "../Data bases/Celeb A/Images/selected_images"  # adapte le chemin
+        folder = "Data bases/Celeb A/Images/selected_images"  # .. adapte le chemin
         dialog = GenerationDialog(folder, self)
         dialog.exec()
 
