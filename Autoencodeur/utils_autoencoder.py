@@ -46,8 +46,8 @@ def load_best_hyperparameters(path):
     best_params = torch.load(path)
     print("Hyperparamètres chargés :", best_params)
     return best_params
-
-def search_file(base_name, extension = ".pth"):
+    
+def search_file(base_name, extension = ".pth", ask_reuse = True):
     """
     Gère la création ou la réutilisation d'un fichier existant avec incrémentation automatique.
 
@@ -73,22 +73,25 @@ def search_file(base_name, extension = ".pth"):
     while os.path.exists(f"{base_name}{'' if file_id == 1 else file_id}{extension}"):
         file_id += 1
 
-    if file_id > 1:
+    if file_id >1:
         last_id = file_id - 1
         last_filename = f"{base_name}{'' if last_id == 1 else last_id}{extension}"
-        choice = input(
-            f"\nLe fichier '{last_filename}' existe déjà. Voulez-vous :\n"
-            f"1. Réutiliser \n"
-            f"2. Enregistrer un nouveau\n> "
-        )
-        if choice == '1':
-            reuse_file=True
-            return last_filename, reuse_file
+        if ask_reuse: 
+            choice = input(
+                f"\nLe fichier '{last_filename}' existe déjà. Voulez-vous :\n"
+                f"1. Réutiliser \n"
+                f"2. Enregistrer un nouveau\n> "
+            )
+            if choice == '1':
+                reuse_file=True
+                return last_filename, reuse_file
+            else:
+                return f"{base_name}{file_id}{extension}", reuse_file
         else:
-            return f"{base_name}{file_id}{extension}", reuse_file
+            return last_filename, reuse_file
     else:
-        return f"{base_name}{extension}", reuse_file
-
+        f"{base_name}{extension}", reuse_file
+              
 # ===== Custom Dataset Creation =====
 class CelebADataset(Dataset):
     """
@@ -502,6 +505,9 @@ def train_model(data_model, optuna_args=None):
     data_model['criterion']
     is_optuna = optuna_args is not None
 
+    train_losses = []
+    test_losses = []
+
     #  Initialisation pour early stopping
     early_stop_patience = 5
     min_delta = 0.0003
@@ -531,6 +537,7 @@ def train_model(data_model, optuna_args=None):
 
          # Compute average loss for the epoch
         epoch_loss = running_loss / len(data_model['train_loader'].dataset)
+        train_losses.append(epoch_loss)
             
         if pbar: pbar.close()
 
@@ -544,6 +551,7 @@ def train_model(data_model, optuna_args=None):
                 test_loss += loss.item() * images.size(0)
 
         test_loss = test_loss / len(data_model['test_loader'].dataset)
+        test_losses.append(test_loss)
         print(f"\n Epoch {epoch+1} ; Epoch Loss: {epoch_loss:.4f} ; Test loss: {test_loss:.4f}")
 
         # Pruning Optuna
@@ -568,7 +576,7 @@ def train_model(data_model, optuna_args=None):
         return test_loss
         
     else:
-        return epoch_loss, test_loss
+        return train_losses, test_losses
 
 def split_data(dataset, train_ratio=0.9):
     """
@@ -615,4 +623,3 @@ def latent_size(input_size, nb_layers, nb_channels):
     shape = (nb_channels, H_out, W_out)
     size = nb_channels * H_out * W_out
     return shape, size
-
