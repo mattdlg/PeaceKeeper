@@ -68,7 +68,7 @@ class GeneticAlgorithm():
         self.sigma_mutation = sigma_mutation
         
         self.size_crossover = int(self.dimension[0]/10) # useful only if the array are flattened
-        self.square_size = (2, 2) # Arbitrary size of a square to be exchange if crossover_method is "square"
+        self.square_size = (1, 1) # Arbitrary size of a square to be exchange if crossover_method is "square"
 
         self.solutions = self.crossover_and_mutations(nb_to_retrieve) # solutions of the GA.
 
