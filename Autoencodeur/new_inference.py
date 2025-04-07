@@ -13,7 +13,8 @@ import user_driven_algo_gen as udGA
 
 from PyQt6 import QtCore, QtGui, QtWidgets, QtMultimedia, QtMultimediaWidgets
 
-
+from utils_autoencoder import load_best_hyperparameters, Autoencoder, device, transform_
+best_params = load_best_hyperparameters("Autoencodeur/best_hyperparameters.pth")
 ##############################################################################
 # 1) Fenêtre de Tutoriel (QDialog)
 ##############################################################################
@@ -747,10 +748,12 @@ class GenerationDialog(QtWidgets.QDialog):
 class AutoencoderModel:
     # Classe pour charger et utiliser l'autoencodeur
 
-    def __init__(self, model_path="conv_autoencoder.pth", device=None):  # "Autoencodeur/conv_autoencoder.pth"
+    def __init__(self, model_path="Autoencodeur/conv_autoencoder.pth", device=None):  # "Autoencodeur/conv_autoencoder.pth"
         # self.device = torch.device("cpu")  # Forcer l'exécution sur CPU
         self.device = device if device else torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = self.load_model(model_path)
+        # self.model = self.load_model(model_path)
+        self.model = Autoencoder(nb_channels=best_params['nb_channels'], nb_layers=best_params['nb_layers']).to(self.device)
+        self.model.load_state_dict(torch.load('Autoencodeur/conv_autoencoder.pth', map_location=self.device))
         self.transforms = self.create_transforms()
 
     def load_model(self, model_path):
@@ -980,7 +983,7 @@ class HomePage(QtWidgets.QWidget):
         self.main_layout.setSpacing(0)
 
         # Définition du chemin de la vidéo
-        video_path = os.path.join("..", "Elements graphiques", "Background",
+        video_path = os.path.join("Elements graphiques", "Background",
                                   "night-walk-cyberpunk-city-pixel-moewalls-com.mp4")
         self.background = BackgroundVideoWidget(video_path)
 
@@ -1359,7 +1362,7 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     AppStyler.setup_style(app)
 
-    cursor_dir = os.path.join("..", "Elements graphiques", "Curseur", "dark-red-faceted-crystal-style")
+    cursor_dir = os.path.join("Elements graphiques", "Curseur", "dark-red-faceted-crystal-style")
     default_cursor_path = os.path.abspath(os.path.join(cursor_dir, "cursor_resized.png"))
     pointer_cursor_path = os.path.abspath(os.path.join(cursor_dir, "pointer_resized.png"))
 
