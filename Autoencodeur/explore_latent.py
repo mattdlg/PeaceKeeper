@@ -109,6 +109,46 @@ def interpolate_vectors(start_vector, end_vector, nb_to_create):
         vectors[i] = start_vector + (end_vector - start_vector) * fraction[i]
     return vectors
 
+def explore_one_coord(coord_index, increment, size, nb_to_create):
+    """
+    Create an array containing a given number of 1D vectors
+    all having the same size, and whose coordinates are all 0 except 
+    for one which is increased by an arbitrary value 
+    in each vectors of the array compared to the previous one
+
+    Parameters
+    ----------
+    coord_index : int
+        Index of the coordinate to modify in each vector. 
+        Must be in [0, size[
+    increment : float
+        Value to increment the coordinate to modify.
+    size : int
+        Size of the vectors 
+    nb_to_create : int
+        Number of vectors to generate in the array
+
+    Returns 
+    -------
+    vectors : np.array
+        Array containing the generated 1D vectors.
+
+    >>> explore_one_coord(5,10,3)
+    [[0.   0.   0.   0.   0.   0.   0.   0.   0.   0.  ]
+     [0.   0.   0.   0.   0.   0.25 0.   0.   0.   0.  ]
+     [0.   0.   0.   0.   0.   0.5  0.   0.   0.   0.  ]]
+
+    >>> explore_one_coord([2,5,8],1,10,3)
+    [[0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+     [0. 0. 1. 0. 0. 1. 0. 0. 1. 0.]
+     [0. 0. 2. 0. 0. 2. 0. 0. 2. 0.]]
+
+    """
+    vectors = np.zeros((nb_to_create, size))
+    for i in range(1, nb_to_create):
+        vectors[i][coord_index] = vectors[i-1][coord_index] + increment
+    return vectors
+
 if __name__ == "__main__":
     np.random.seed(42)
     # list_vectors = create_random_vectors(4, 3)
@@ -120,4 +160,6 @@ if __name__ == "__main__":
     snd = np.array([1, 1, 3, 4, 1, 5, 5, 5, 4, 3])
     list_vectors = interpolate_vectors(fst, snd, 5)
     print(list_vectors)
+
+    print(explore_one_coord([2,5,8],1,10,3))
 

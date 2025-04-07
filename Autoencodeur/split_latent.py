@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import os
 from PIL import Image
 
-from explore_latent import create_random_vectors, create_black_and_white_vectors, interpolate_vectors
+from explore_latent import create_random_vectors, create_black_and_white_vectors, interpolate_vectors, explore_one_coord
 
 def decode_latent_vectors(model, latent_vectors, device):
     """
@@ -104,13 +104,14 @@ def main():
     # latent_vectors = create_black_and_white_vectors(size, 30)
     start_vector, end_vector = load_two_images(model, "200001.jpg", "200003.jpg")
 
-    plot_histogram_distance(distances = np.abs(start_vector - end_vector), nb_images = 1) # distance coord by coord)
+    # plot_histogram_distance(distances = np.abs(start_vector - end_vector), nb_images = 1) # distance coord by coord)
 
-    latent_vectors = interpolate_vectors(start_vector, end_vector, 30)
+    # latent_vectors = interpolate_vectors(start_vector, end_vector, 30)
+    latent_vectors = explore_one_coord(np.arange(30, 70), 0.25, size, 30)
     
     reconstructed_latent_vectors = decode_latent_vectors(model, latent_vectors, device)
     display_reconstructed_images(reconstructed_latent_vectors, nb_cols=5)
 
 if __name__ == "__main__":
-    compute_mean_distance(2000)
-    # main()
+    # compute_mean_distance(2000)
+    main()
