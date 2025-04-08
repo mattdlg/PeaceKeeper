@@ -4,15 +4,12 @@ import sys
 import zipfile
 import torch
 import numpy as np
-from torchvision import transforms
 from PIL import Image
-import sys
 import random
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'AlgoGenetique')))
-import user_driven_algo_gen as udGA
-
 from PyQt6 import QtCore, QtGui, QtWidgets, QtMultimedia, QtMultimediaWidgets
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from AlgoGenetique import user_driven_algo_gen as udGA
 from utils_autoencoder import load_best_hyperparameters, Autoencoder, device, transform_
 best_params = load_best_hyperparameters("Autoencodeur/best_hyperparameters.pth")
 ##############################################################################
@@ -209,13 +206,22 @@ class GenerationDialog(QtWidgets.QDialog):
             Layout used to display the final portrait.
         button_layout : QHBoxLayout
             Layout for action buttons such as "Validate", "New Images", "Final Portrait", and "Close".
+        self.transforms : torchvision.transforms.Compose
+            A composition of preprocessing transformations applied to input images before
+            passing them through the model. Includes resizing, center cropping, and normalization
+            to tensor format.
+        self.device : torch.device
+            Specifies the device on which tensors and the autoencoder model will be allocated.
+            Automatically selects 'cuda' if a GPU is available; otherwise defaults to 'cpu'.
+        self.model : Autoencoder
+            The convolutional autoencoder model used to encode and decode images.
+            It is initialized with the best hyperparameters.
         """
         super().__init__(parent)
         self.setWindowTitle("Variation des portraits")
         self.setFixedSize(900, 600)
 
         self.image_folder = image_folder
-        self.autoencoder = AutoencoderModel()
         self.selected_images = []  # Liste pour garder trace des images sélectionnées
         self.selected_buttons = []
         self.visualized_images = set()  # Ensemble pour garder trace des images déjà affichées
@@ -353,6 +359,12 @@ class GenerationDialog(QtWidgets.QDialog):
         self.final_btn.clicked.connect(self.display_definitive_portrait)
 
         self.main_layout.addLayout(self.button_layout)
+
+        # Initialisation du modèle
+        self.device = device
+        self.model = Autoencoder(nb_channels=best_params['nb_channels'], nb_layers=best_params['nb_layers']).to(self.device)
+        self.model.load_state_dict(torch.load('Autoencodeur/conv_autoencoder.pth', map_location=self.device))
+        self.transforms = transform_
 
         # Charger les images
         self.load_images()
@@ -754,8 +766,16 @@ class GenerationDialog(QtWidgets.QDialog):
 
         Makes use of
         ------------
-        self.autoencoder : AutoencoderModel
-            The autoencoder instance used for encoding and decoding images.
+        self.transforms : torchvision.transforms.Compose
+            A composition of preprocessing transformations applied to input images before
+            passing them through the model. Includes resizing, center cropping, and normalization
+            to tensor format.
+        self.device : torch.device
+            Specifies the device on which tensors and the autoencoder model will be allocated.
+            Automatically selects 'cuda' if a GPU is available; otherwise defaults to 'cpu'.
+        self.model : Autoencoder
+            The convolutional autoencoder model used to encode and decode images.
+            It is initialized with the best hyperparameters.
         self.selected_images : list
             Stores references to the clicked QPushButton instances
             (will be used as input to the genetic algorithm).
@@ -798,30 +818,27 @@ class GenerationDialog(QtWidgets.QDialog):
                 print(f"Type de donnée inattendu : {type(img_data)}")
                 continue  # On saute cet élément s'il est invalide
 
-            tensor_img = self.autoencoder.transforms(img).unsqueeze(0).to(self.autoencoder.device)
+            tensor_img = self.transforms(img).unsqueeze(0).to(self.device)
+            #tensor_img = self.autoencoder.transforms(img).unsqueeze(0).to(self.autoencoder.device)
 
             with torch.no_grad():
-                latent_vector = self.autoencoder.model.encode(tensor_img)
-                list_vectors.append(latent_vector.cpu().numpy())
+                latent_vector = self.model.encode(tensor_img)
+                list_vectors.append(latent_vector[0].cpu().numpy())
 
         # Appliquer l'algorithme génétique pour générer 6 nouvelles images
         # new_targets = GAm.create_multiple_target_from_pictures([v[0] for v in list_vectors], 6)
         # solutions = GAm.run_multiple_ga(new_targets)
-        solutions = udGA.run_ga(list_vectors, nb_solutions=6, crossover_method="blending", mutation_rate=0.1,sigma_mutation=0.1)
+        solutions = udGA.run_ga(list_vectors, nb_solutions=6, crossover_method="single-coordinate", mutation_rate=0,sigma_mutation=0.2)
         # Convertir en tenseur PyTorch
-        sol = torch.tensor(solutions, dtype=torch.float32).view(solutions.shape[0], 128, 8, 8)
+        sol = torch.tensor(solutions, dtype=torch.float32)
+        sol = sol.view(solutions.shape[0], list_vectors[0].shape[0])
+        #sol = torch.tensor(solutions, dtype=torch.float32).view(solutions.shape[0], 128, 8, 8)
 
         with torch.no_grad():
-            reconstructed = self.autoencoder.model.decode(sol).cpu().numpy().transpose(0, 2, 3, 1)
+            reconstructed = self.model.decode(sol).cpu().numpy().transpose(0, 2, 3, 1)
         print("Les solutions sont reconstruites")
         # print(f"Les images originales sont : {self.selected_images}")
 
-        """
-        for i in reversed(range(self.initial_layout.count())):
-            widget = self.initial_layout.itemAt(i).widget()
-            if widget:
-                widget.deleteLater()  # Supprime le widget
-        """
 
         if self.button_layout.indexOf(self.final_btn) == -1:  # Vérifie si le bouton est déjà dans le layout
             self.button_layout.addWidget(self.final_btn, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
@@ -1052,68 +1069,6 @@ class GenerationDialog(QtWidgets.QDialog):
                     self.remove_layout(layout, item.layout())
 
             layout_parent.removeItem(layout)
-
-
-class AutoencoderModel:
-    # Classe pour charger et utiliser l'autoencodeur
-
-    def __init__(self, model_path="Autoencodeur/conv_autoencoder.pth", device=None):  # "Autoencodeur/conv_autoencoder.pth"
-        # self.device = torch.device("cpu")  # Forcer l'exécution sur CPU
-        self.device = device if device else torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        # self.model = self.load_model(model_path)
-        self.model = Autoencoder(nb_channels=best_params['nb_channels'], nb_layers=best_params['nb_layers']).to(self.device)
-        self.model.load_state_dict(torch.load('Autoencodeur/conv_autoencoder.pth', map_location=self.device))
-        self.transforms = self.create_transforms()
-
-    def load_model(self, model_path):
-        # Charge le modèle
-        class ConvAutoencoder(torch.nn.Module):
-            def __init__(self):
-                super().__init__()
-                self.encoder = torch.nn.Sequential(
-                    torch.nn.Conv2d(3, 16, 3, stride=2, padding=1),
-                    torch.nn.ReLU(True),
-                    torch.nn.Conv2d(16, 32, 3, stride=2, padding=1),
-                    torch.nn.ReLU(True),
-                    torch.nn.Conv2d(32, 64, 3, stride=2, padding=1),
-                    torch.nn.ReLU(True),
-                    torch.nn.Conv2d(64, 128, 3, stride=2, padding=1),
-                    torch.nn.ReLU(True),
-                )
-                self.decoder = torch.nn.Sequential(
-                    torch.nn.ConvTranspose2d(128, 64, 3, stride=2, padding=1, output_padding=1),
-                    torch.nn.ReLU(True),
-                    torch.nn.ConvTranspose2d(64, 32, 3, stride=2, padding=1, output_padding=1),
-                    torch.nn.ReLU(True),
-                    torch.nn.ConvTranspose2d(32, 16, 3, stride=2, padding=1, output_padding=1),
-                    torch.nn.ReLU(True),
-                    torch.nn.ConvTranspose2d(16, 3, 3, stride=2, padding=1, output_padding=1),
-                    torch.nn.Sigmoid(),
-                )
-
-            def encode(self, x):
-                return self.encoder(x)
-
-            def decode(self, z):
-                return self.decoder(z)
-
-            def forward(self, x):
-                return self.decoder(self.encoder(x))
-
-        model = ConvAutoencoder().to(self.device)
-        model.load_state_dict(torch.load(model_path, map_location=self.device))
-        model.eval()
-        return model
-
-    def create_transforms(self):
-        # Transformations pour adapter l'image au modèle
-        return transforms.Compose([
-            transforms.Resize((128, 128)),
-            transforms.CenterCrop((128, 128)),
-            transforms.ToTensor(),
-        ])
-
-
 
 ##############################################################################
 # 3)Background Vidéo
