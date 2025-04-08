@@ -19,46 +19,60 @@ Dans l'objectif de combiner deux images entre elle et de créer de la variabilit
 ![Static Badge](https://img.shields.io/badge/Tool-Numpy-blue?logo=numpy)
 
 
-## Visuals
+## Visuel
 Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
 
 ## Installation
 Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
 
-## Usage
+## Utilisation
 
 Pour lancer le Programme complet et simuler la création d'un portrait robot :
 
->>> python
->>> From Autoencodeur import new_inference
->>> main()
+'''python
+From Autoencodeur import new_inference
+main()
+'''
+
+Ceci lance l'interface graphique qui permet d'afficher quelques images de la base de donnée et commencer les étapes de sélections/modifications.
 
 Pour comprendre la structure des vecteurs de l'espace latent et leur reconstruction en image :
 
->>> python
->>> From Autoencodeur import split_latent
->>> main()
+'''python
+From Autoencodeur import split_latent
+method = "interpolation"
+'''main(method)
+
+Le paramètre method peut être défini comme : "random", "b&w", "interpolation" and "coord". Cela génerera différent type de vecteurs dans l'espace latent afin de mieux comprendre sa structure. Voir la doc de split_latent.py pour plus de détails. Le programme affiche ensuite les images reconstituées à partir des vecteurs générés
 
 Pour comprendre le fonctionnement de l'algorithme génétique :
 
->>> python
->>> From AlgoGenetique import user_driven_algo_gen
->>> run_ga(targets, nb_solutions, crossover_method, mutation_rate, sigma_mutation)
+'''python
+From AlgoGenetique import user_driven_algo_gen
+# ... Definition des paramètres de run_ga (voir ci-dessous)
+run_ga(targets, nb_solutions, crossover_method, mutation_rate, sigma_mutation)
+'''
+
+Ceci lance un algorithme génétique et croise les coordonnées des deux images données dans "targets", puis les fais muter. Le programme renvoie la liste des "nb_solutions" vecteurs générés par cet algorithme.
+Le croisement se fait selon la méthode donnée dans "crossover_method", et les mutations dépendent de "mutation_rate" et "sigma_mutation". Voir la doc de user_driven_algo_gen.py pour plus de détails.
 
 ## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+Contactez matthieu.deleglise@insa-lyon.fr pour toute question sur l'algorithme génétique.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+## Pistes d'améliorations
+- segmentation du visage pour un meilleur choix des coordonnées à modifier
+- selections par l'utilisateurs des parties du visage à modifier
+- questionnaire pour une préselection des images dans la base de donnée
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+## Contribution
+Ce code étant open-source, les auteurs sont ouverts à toutes contributions/réutilisations suivant la licence ci-dessous. 
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+- Dans le code de l'algorithme génétique, vous trouverez de simple fonctions de test que vous pouvez lancer pour vérifier que vos modifications des méthodes de crossover et de mutation fonctionnent. 
+- Dans l'autoencodeur, les différents modèles entrainés sont sauvegardés dans des fichiers distincts, vous pouvez donc tenter d'entrainer un nouveau modèle sans risque de perdre le précédent.
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+Vous pouvez contacter les auteurs par mail (matthieu.deleglise@insa-lyon.fr) en cas de besoin et avant toute contribution (non nécessaire si vous récupérer le code localement sans modifier celui-ci).
 
-## Authors and acknowledgment
+## Auteur(e)s et remerciement
 - Amrou Anibou 
 - Morad Bel Melih
 - Matthieu Deléglise
@@ -67,9 +81,9 @@ You can also document commands to lint the code or run tests. These steps help t
 
 Nous remercions le tuteur de ce projet, Monsieur Robin Trombetta, pour son aide et ses conseils tout au long du projet
 
-## License
+## Licence
 Ce projet est placé sous les termes de la licence MIT (Copyright 2025).
 
-## Project status
+## Status du projet
 Ce projet a été réalisé en suivant la méthode Agile. Actuellement, il est en fin de deuxième sprint. 
 Etant seulement à visé scolaire, il ne sera pas maintenu par la suite. 
