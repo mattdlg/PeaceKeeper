@@ -20,7 +20,7 @@ Dans l'objectif de combiner deux images entre elle et de créer de la variabilit
 
 
 ## Visuel
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+![What is this](interface.png)
 
 ## Installation
 
@@ -34,19 +34,20 @@ pip install new_inference
 
 Pour lancer le Programme complet et simuler la création d'un portrait robot :
 
-'''python
+```python
 From Autoencodeur import new_inference
 main()
-'''
+```
 
 Ceci lance l'interface graphique qui permet d'afficher quelques images de la base de donnée et commencer les étapes de sélections/modifications.
 
 Pour comprendre la structure des vecteurs de l'espace latent et leur reconstruction en image :
 
-'''python
+```python
 From Autoencodeur import split_latent
 method = "interpolation"
-'''main(method)
+main(method)
+```
 
 Le paramètre method peut être défini comme : "random", "b&w", "interpolation" and "coord". Cela génerera différent type de vecteurs dans l'espace latent afin de mieux comprendre sa structure. Voir la doc de split_latent.py pour plus de détails. Le programme affiche ensuite les images reconstituées à partir des vecteurs générés
 
