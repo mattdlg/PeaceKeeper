@@ -23,7 +23,12 @@ Dans l'objectif de combiner deux images entre elle et de créer de la variabilit
 Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
 
 ## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+
+Utilisez le package manager [pip](https://pip.pypa.io/en/stable/) pour installer new_inference.
+
+```bash
+pip install new_inference
+```
 
 ## Utilisation
 
@@ -47,17 +52,19 @@ Le paramètre method peut être défini comme : "random", "b&w", "interpolation"
 
 Pour comprendre le fonctionnement de l'algorithme génétique :
 
-'''python
+```python
 From AlgoGenetique import user_driven_algo_gen
 # ... Definition des paramètres de run_ga (voir ci-dessous)
 run_ga(targets, nb_solutions, crossover_method, mutation_rate, sigma_mutation)
-'''
+```
 
 Ceci lance un algorithme génétique et croise les coordonnées des deux images données dans "targets", puis les fais muter. Le programme renvoie la liste des "nb_solutions" vecteurs générés par cet algorithme.
 Le croisement se fait selon la méthode donnée dans "crossover_method", et les mutations dépendent de "mutation_rate" et "sigma_mutation". Voir la doc de user_driven_algo_gen.py pour plus de détails.
 
 ## Support
 Contactez matthieu.deleglise@insa-lyon.fr pour toute question sur l'algorithme génétique.
+
+...
 
 ## Pistes d'améliorations
 - segmentation du visage pour un meilleur choix des coordonnées à modifier
@@ -70,7 +77,8 @@ Ce code étant open-source, les auteurs sont ouverts à toutes contributions/ré
 - Dans le code de l'algorithme génétique, vous trouverez de simple fonctions de test que vous pouvez lancer pour vérifier que vos modifications des méthodes de crossover et de mutation fonctionnent. 
 - Dans l'autoencodeur, les différents modèles entrainés sont sauvegardés dans des fichiers distincts, vous pouvez donc tenter d'entrainer un nouveau modèle sans risque de perdre le précédent.
 
-Vous pouvez contacter les auteurs par mail (matthieu.deleglise@insa-lyon.fr) en cas de besoin et avant toute contribution (non nécessaire si vous récupérer le code localement sans modifier celui-ci).
+Les requêtes de pull sont les bienvenues. Avant toute modification majeure, Veuillez d'abord ouvrir un ticket
+pour discuter de ce que vous souhaitez modifier.
 
 ## Auteur(e)s et remerciement
 - Amrou Anibou 
