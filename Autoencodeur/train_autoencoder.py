@@ -13,9 +13,11 @@ from utils_autoencoder import (
     data_dir, transform_, search_file, device
 )
 
-max_images = 50000
-train_ratio = 0.7
+max_images = 200000
+train_ratio = 0.85
 external_image_path = "img_align_celeba/200001.jpg"
+
+
 
 def give_param_model(model, best_params, train_dataset, test_dataset):
     """
@@ -50,7 +52,7 @@ def give_param_model(model, best_params, train_dataset, test_dataset):
         "optimizer": optim.RMSprop(model.parameters(), lr=best_params['lr'], weight_decay=best_params['weight_decay']),
         "train_loader": DataLoader(train_dataset, batch_size=best_params['batch_size'], shuffle=True),
         "test_loader": DataLoader(test_dataset, batch_size=1, shuffle=True),
-        "num_epochs": 20,
+        "num_epochs": 3,
     }
 
 def test_model_on_image(model, device, image_path):
@@ -131,12 +133,32 @@ def main():
     if reuse_model:
         model.load_state_dict(torch.load(model_filename, map_location=device))
         print(f"\n Modèle chargé depuis : {model_filename}")
+        # Charger les pertes
+        losses = torch.load("losses.pt", map_location=device)
+        train_losses = losses['train_losses']
+        test_losses = losses['test_losses']
     
     else: 
         data_model = give_param_model(model, best_params, train_dataset, test_dataset)
-        epoch_loss, test_loss = train_model(data_model)
+        train_losses, test_losses = train_model(data_model)
         torch.save(model.state_dict(), model_filename)
+        torch.save({
+        'train_losses': train_losses,
+        'test_losses': test_losses
+        }, "losses.pt")
         print(f"\nModèle sauvegardé sous : {model_filename}")
+
+    # Graphique des pertes
+    plt.figure(figsize=(8, 5))
+    plt.plot(train_losses, label='Train Loss')
+    plt.plot(test_losses, label='Test Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.title('Training and Test Loss over Epochs')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
     # ===== 6. Test sur une image externe =====
     original_img, reconstructed_img = test_model_on_image(model, device, external_image_path)
