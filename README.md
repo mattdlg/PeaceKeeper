@@ -7,9 +7,9 @@ Portrait Robot Numérique
 Ce projet vise à simplifier la création de portraits robots. 
 Pour cela, des images issues de la base de donnée CelebA (https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html, images de visages de célébrités) sont présentés à un utiliseur (la victime) dans une interface graphique. L'utilisateur peut sélectionner deux images afin de les combiner pour en créer de nouvelles. Cette étape est répétée jusqu'à qu'une des combinaisons soit validé par l'utilisateur comme étant assez proche du portrait robot du suspect.
 
-Un Autoencodeur est utilisé pour encoder les images sélectionnées dans un espace latent (compression des pixels en un vecteur de plus petite taille où chaque coordonnée encode une caractéristique particulère de l'image de base). L'Autoencodeur permet aussi de décoder des vecteurs de l'espace latent en images RGB.
+Un Autoencodeur (https://www.ibm.com/fr-fr/think/topics/autoencoder) est utilisé pour encoder les images sélectionnées dans un espace latent (compression des pixels en un vecteur de plus petite taille où chaque coordonnée encode une caractéristique particulère de l'image de base). L'Autoencodeur permet aussi de décoder des vecteurs de l'espace latent en images RGB.
 
-Dans l'objectif de combiner deux images entre elle et de créer de la variabilité, un algorithme génétique est également utilisé pour croiser deux vecteurs entre eux et introduire des mutations dans leurs coordonnées. L'étape de sélection de cette algorithme est directement réalisée à chaque sélection de deux images par l'utilisateur.
+Dans l'objectif de combiner deux images entre elle et de créer de la variabilité, un algorithme génétique (https://igm.univ-mlv.fr/~dr/XPOSE2013/tleroux_genetic_algorithm/fonctionnement.html) est également utilisé pour croiser deux vecteurs entre eux et introduire des mutations dans leurs coordonnées. L'étape de sélection de cette algorithme est directement réalisée à chaque sélection de deux images par l'utilisateur.
 
 ## Badges
 
@@ -26,7 +26,24 @@ Depending on what you are making, it can be a good idea to include screenshots o
 Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
 
 ## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+
+Pour lancer le Programme complet et simuler la création d'un portrait robot :
+
+>>> python
+>>> From Autoencodeur import new_inference
+>>> main()
+
+Pour comprendre la structure des vecteurs de l'espace latent et leur reconstruction en image :
+
+>>> python
+>>> From Autoencodeur import split_latent
+>>> main()
+
+Pour comprendre le fonctionnement de l'algorithme génétique :
+
+>>> python
+>>> From AlgoGenetique import user_driven_algo_gen
+>>> run_ga(targets, nb_solutions, crossover_method, mutation_rate, sigma_mutation)
 
 ## Support
 Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
@@ -42,16 +59,16 @@ For people who want to make changes to your project, it's helpful to have some d
 You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
 
 ## Authors and acknowledgment
-Amrou Anibou 
-Morad Bel Melih
-Matthieu Deléglise
-Julie Durand
-Philippine Fremaux
+- Amrou Anibou 
+- Morad Bel Melih
+- Matthieu Deléglise
+- Julie Durand
+- Philippine Fremaux
 
 Nous remercions le tuteur de ce projet, Monsieur Robin Trombetta, pour son aide et ses conseils tout au long du projet
 
 ## License
-For open source projects, say how it is licensed.
+Ce projet est placé sous les termes de la licence MIT (Copyright 2025).
 
 ## Project status
 Ce projet a été réalisé en suivant la méthode Agile. Actuellement, il est en fin de deuxième sprint. 
