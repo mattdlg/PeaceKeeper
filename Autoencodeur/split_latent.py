@@ -92,26 +92,32 @@ def compute_mean_distance(nb_image_tested):
     partial_dist = mean_dist[mean_dist <= 2.0]
     plot_histogram_distance(partial_dist, nb_images=nb_image_tested)
 
-def main():
+def main(test_method):
 
     model = load_model()
 
     size = np.prod(np.array(model.final_shape))//2
 
     #ATTENTION A REMPLACER PAR TES VALEURS
-    # latent_vectors = np.random.randn(15, size)
-    # latent_vectors = create_random_vectors(size, 30)
-    # latent_vectors = create_black_and_white_vectors(size, 30)
-    start_vector, end_vector = load_two_images(model, "200001.jpg", "200003.jpg")
+    
+    if test_method == "random" :
+        latent_vectors = create_random_vectors(size, 30)
 
-    # plot_histogram_distance(distances = np.abs(start_vector - end_vector), nb_images = 1) # distance coord by coord)
+    elif test_method == "b&w" :
+        latent_vectors = create_black_and_white_vectors(size, 30)
 
-    # latent_vectors = interpolate_vectors(start_vector, end_vector, 30)
-    latent_vectors = explore_one_coord(np.arange(30, 70), 0.25, size, 30)
+    elif test_method == "interpolation" :
+        img1, img2 = 200000 + np.random.randint(1, 2500, 2)
+        start_vector, end_vector = load_two_images(model, str(img1)+".jpg", str(img2)+".jpg")
+        latent_vectors = interpolate_vectors(start_vector, end_vector, 30)
+         # plot_histogram_distance(distances = np.abs(start_vector - end_vector), nb_images = 1) # distance coord by coord)
+
+    elif test_method == "coord":
+        latent_vectors = explore_one_coord(np.arange(30, 70), 0.25, size, 30)
     
     reconstructed_latent_vectors = decode_latent_vectors(model, latent_vectors, device)
     display_reconstructed_images(reconstructed_latent_vectors, nb_cols=5)
 
 if __name__ == "__main__":
     # compute_mean_distance(2000)
-    main()
+    main("interpolation")
