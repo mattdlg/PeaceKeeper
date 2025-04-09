@@ -19,94 +19,100 @@ import numpy as np
 
 class GeneticAlgorithm():
     """
-    Class GeneticAlgorithm
+    Classe GeneticAlgorithm
 
-    This algorithm aims at creating a set of images similar to one or more target(s) picture(s) using 
-    genetic algorithm technics of crossover and mutation. 
-    The rest of the GA steps (initialisation, selection, stop condition)
-    are directly done by the user in a graphical interface (see inference.py)
-    These images are all represented as small arrays, which are the 
-    representation of the images in the latent space of an autoencoder.
+    Cet algorithme vise à créer un ensemble d'images similaires à une ou plusieurs 
+    images cibles en utilisant les techniques d'algorithmes génétiques de croisement et de mutation.
+
+    Les autres étapes de l'algorithme génétique (initialisation, sélection, condition d'arrêt)
+    sont réalisées directement par l'utilisateur dans une interface graphique (voir new_inference.py).
+
+    Ces images sont toutes représentées sous forme de petits tableaux, 
+    qui sont la représentation des images dans l'espace latent d'un autoencodeur.
 
     """
     
     def __init__(self, picture1, picture2, nb_to_retrieve, mutation_rate, sigma_mutation, crossover_method = "square"):
         """
-        Creation of an instance of the GeneticAlgorithm class.
+        Crée une instance de la classe GeneticAlgorithm.
+        Cette instance est initialisée avec deux images cibles,
+        qui seront croisées et mutées pour obtenir une nouvelle
+        génération d'images semblables entre elles et aux images cibles.
 
-        Parameters
+        Paramètres
         ----------
         picture1 : np.array
-           Array of size (m,n,p) encoding an image.
+           Tableau de taille (m,n,p) encodant une image.
         picture2 : np.array
-           Array of size (m,n,p) encoding a second image.
+           Tableau de taille (m,n,p) encodant une autre image.
         nb_to_retrieve : int
-            Number of solutions (images to create) of the Genetic Algorithm we want to obtain at the end.
+            Nombre de solutions (images à crées) de l'algorithme génétique que nous voulons obtenir à la fin.
         crossover_method : string
-            Method used to cross coordinates of the two parents images.
-            Default is "square". Can also be "single-canal", "single-line", 
+            Méthode utilisée pour échanger des coordonnées entre les deux images.
+            La valeur par défault est "square". Peut aussi être "single-canal", "single-line", 
             "single-column", "uniform", "BLX-alpha" or "blending".
         mutation_rate : float ([0;1])
-            Probability of mutation of each coordinate (gene) of an array (chromosome).
+            Probabilité de mutation de chaque coordonnée (gène) d'un tableau (chromosome).
         sigma_mutation : float
-            Standard deviation of the normal distribution defining the random component added during a mutation.
+            Ecart type de la loi normal définissant le composant aléatoire 
+            ajouté aux vecteurs durant une mutation.
 
-        Returns
+        Retours
         -------
         None
 
         """
-        #### Initial images ####
+        #### Images Initiales ####
         self.p1 = picture1
         self.p2 = picture2
 
-        self.dimension = self.p1.shape # dimension of the vector space = "number of gene of one individual"
+        self.dimension = self.p1.shape # Dimension des vecteurs de l'espace latent = "Nombre de gènes d'un individu/chromosome"
 
-        #### Crossover and mutation parameters ####
+        #### Paramètres de crossover et de mutation ####
         self.crossover_method = crossover_method
         self.mutation_rate = mutation_rate
         self.sigma_mutation = sigma_mutation
         
-        self.size_crossover = int(self.dimension[0]/10) # useful only if the array are flattened
-        self.square_size = (1, 1) # Arbitrary size of a square to be exchange if crossover_method is "square"
+        self.size_crossover = int(self.dimension[0]/10) # Seulement utile dans le cas où les vecteurs sont en 1D dans l'espace latent
+        self.square_size = (2, 2) # Taille arbitraire d'un carré à échanger si la crossover_method est "square"
 
-        self.solutions = self.crossover_and_mutations(nb_to_retrieve) # solutions of the GA.
+        self.solutions = self.crossover_and_mutations(nb_to_retrieve) # solutions ou GA.
 
     def crossover_and_mutations(self, nb_to_retrieve):
         """
-        Last step of each loop of a Genetic algorithm :
-        - breeding between parents (crossover) to give a child population, 
-        - mutation on these children
+        Dernière étape de chaque boucle d'un algorithme génétique :
+        - reproduction entre les parents (croisement) pour donner une population d'enfants,
+        - mutation sur ces enfants.
 
-        Parameters
+        Paramètres
         ----------
         nb_to_retrieve : int
-            Number of solutions to create by crossing and mutating initial images. 
+            Nombre de solutions à créer en croisant et mutant les images initiales.
 
-        Make use of : 
+        Utilise :
         self.p1, self.p2, self.dimension
         self.crossover_method, self.square_size
 
-        Returns
+        Retours
         -------
         arr_child : np.array
-            Array of arrays of the new population composed of the children images 
-            created by crossing coordinates of parents and then adding random mutations.
+            Tableau de tableaux représentant la nouvelle population composée des images enfants
+            créées en croisant les coordonnées des parents puis en ajoutant des mutations aléatoires.
 
         """
-        #### Crossovers Parameters ####
-        # WARNING : nb_to_retrieve must be even
-        nb_iteration = nb_to_retrieve//2 # number of crossover event to do between parents to have the good number of children
+        #### Paramètres de Crossovers ####
+        # ATTENTION : nb_to_retrieve doit être pair
+        nb_iteration = nb_to_retrieve//2 # Nombre de reproductions à faire (2 enfants par reproduction)
 
         arr_crossing_points = np.zeros(nb_iteration)
-        if len(self.dimension) == 1 : # the arrays have been flattened 
+        if len(self.dimension) == 1 : # cas où les vecteurs sont en 1D dans l'espace latent
+            # Pour les méthodes "single", choix de nb_iteration coordonnées à échanger entre les parents pour avoir nb_iteration*2 enfants.
             if self.crossover_method == "single-coordinate":
-                arr_crossing_points = np.linspace(500, 502, nb_iteration).astype(np.int64)
-                # arr_crossing_points = np.random.randint(0, self.dimension[0], nb_iteration).astype(np.int64)
+                arr_crossing_points = np.random.randint(0, self.dimension[0], nb_iteration).astype(np.int64)
 
             elif self.crossover_method == "single-point" :
                 arr_crossing_points = np.linspace(0.2, 0.8, nb_iteration)*self.dimension
-                arr_crossing_points = np.rint(arr_crossing_points).astype(np.int64) # single-points
+                arr_crossing_points = np.rint(arr_crossing_points).astype(np.int64) 
         
             elif self.crossover_method == "two-points" :
                 arr_lower_points = np.linspace(0.25, 0.75, nb_iteration)*self.dimension
