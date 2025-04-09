@@ -20,21 +20,22 @@ import numpy as np
 #### Creation of vectors ####
 def create_random_vectors(size, nb_to_create):
     """
-    Create an array containing a given number of 1D vectors
-    all having the same size, whose coordinates are in the 
-    interval [0, 1].
+    Créé un array contenant un nombre donné de vecteurs 1D
+    tous de la même taille, dont les coordonnées sont tous 
+    dans l'intervalle [0, 1].
 
-    Parameters
+    Paramètres
     ----------
     size : int
-        Size of the vectors 
+        Taille des vecteurs
     nb_to_create : int
-        Number of vectors to generate in the array
+        Nombre de vecteurs à générer
 
-    Returns 
+    Retours 
     -------
     vectors : np.array
-        Array containing the generated 1D vectors.
+        Tableau contenant les vecteurs 1D générés.
+        Chaque ligne correspond à un vecteur.
 
     >>> np.random.seed(42)
     >>> create_random_vectors(4, 3)
@@ -48,21 +49,22 @@ def create_random_vectors(size, nb_to_create):
 
 def create_black_and_white_vectors(size, nb_to_create):
     """
-    Create an array containing a given number of 1D vectors
-    all having the same size, and whose coordinates are
-    only 0 or 1.
+    Créé un tableau contenant un nombre donné de vecteurs 1D
+    ayant tous la même taille et dont les coordonnées sont
+    uniquement 0 ou 1.
 
-    Parameters
+    Paramètres
     ----------
     size : int
-        Size of the vectors 
+        Taille des vecteurs
     nb_to_create : int
-        Number of vectors to generate in the array
+        Nombre de vecteurs à générer
 
-    Returns 
+    Retours 
     -------
     vectors : np.array
-        Array containing the generated 1D black and white vectors.
+        Tableau contenant les vecteurs "noir et blanc" générés.
+        Chaque ligne correspond à un vecteur.
 
     >>> np.random.seed(42)
     >>> create_black_and_white_vectors(10,3)
@@ -76,22 +78,27 @@ def create_black_and_white_vectors(size, nb_to_create):
 
 def interpolate_vectors(start_vector, end_vector, nb_to_create):
     """
-    Linear interpolation of some vectors between the two 
-    input vectors.
+    Interpolation linéaire de certains vecteurs entre 
+    les deux vecteurs en entrées.
 
-    Parameters
+    Cette fonction à pour but de générer une succession d'image
+    qui font la transition entre les deux images dont les vecteurs 
+    dans l'espace latent sont donnés en entrée.
+
+    Paramètres
     ----------
     start_vector : np.array
-        Lower bound vector of the linear interpolation interval
+        Vecteur limite basse de l'interval d'interpolation linéaire
     end_vector : np.array
-        Upper bound vector of the linear interpolation interval
+        Vecteur limite haute de l'interval d'interpolation linéaire
     nb_to_create : int
-        Number of vectors to generate in the array
+        Nombre de vecteurs à générer
 
-    Returns 
+    Retours 
     -------
     vectors : np.array
-        Array containing the interpolated 1D  vectors.
+        Tableau contenant les vecteurs interpolés.
+        Chaque ligne correspond à un vecteur.
 
     >>> fst  = np.array([4, 4, 1, 3, 1, 4, 3, 2, 5, 2])
     >>> snd = np.array([1, 1, 3, 4, 1, 5, 5, 5, 4, 3])
@@ -111,27 +118,30 @@ def interpolate_vectors(start_vector, end_vector, nb_to_create):
 
 def explore_one_coord(coord_index, increment, size, nb_to_create):
     """
-    Create an array containing a given number of 1D vectors
-    all having the same size, and whose coordinates are all 0 except 
-    for one which is increased by an arbitrary value 
-    in each vectors of the array compared to the previous one
+    Créer un tableau contenant un nombre donné de vecteurs 1D, 
+    tous de même taille et dont les coordonnées sont toutes nulles, 
+    sauf celles dont l'index est donné en paramètre, augmentées 
+    d'une valeur arbitraire dans chaque vecteur du tableau par rapport au précédent.
 
-    Parameters
+    Cette fonction à pour but de repérer ce qu'un petit groupe de coordonnées
+    de l'espace latent encode dans l'image d'origine.
+
+    Paramètres
     ----------
-    coord_index : int
-        Index of the coordinate to modify in each vector. 
-        Must be in [0, size[
+    coord_index : int ou list
+        Index des coordonnées à modifier dans chaque vecteur.
+        Chaque index doit appartenir à [0, size[.
     increment : float
-        Value to increment the coordinate to modify.
+        Valeur pour incrémenter les coordonnées à modifier.
     size : int
-        Size of the vectors 
+        Taille des vectors.
     nb_to_create : int
-        Number of vectors to generate in the array
+        Nombre de vecteurs à générer.
 
-    Returns 
+    Retours 
     -------
     vectors : np.array
-        Array containing the generated 1D vectors.
+        Tableau contenant les vecteurs 1D générés.
 
     >>> explore_one_coord(5,10,3)
     [[0.   0.   0.   0.   0.   0.   0.   0.   0.   0.  ]
@@ -150,8 +160,13 @@ def explore_one_coord(coord_index, increment, size, nb_to_create):
     return vectors
 
 if __name__ == "__main__":
+
     np.random.seed(42)
-    # list_vectors = create_random_vectors(4, 3)
+    
+    #### Test des fonctions ####
+    list_vectors = create_random_vectors(4, 3)
+    print(list_vectors)
+
     list_vectors = create_black_and_white_vectors(10,3)
     print(list_vectors)
 
