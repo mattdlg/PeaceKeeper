@@ -1,7 +1,7 @@
 # Projet 4BIM-INSA_LYON-Biotech_Bioinfo
 
 ## Nom
-Portrait Robot Numérique
+PeaceKeeper : Générateur de portrait robot numérique
 
 ## Description
 Ce projet vise à simplifier la création de portraits robots. 
