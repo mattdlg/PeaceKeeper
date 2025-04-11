@@ -926,7 +926,7 @@ class GenerationDialog(QtWidgets.QDialog):
         # Appliquer l'algorithme génétique pour générer 6 nouvelles images
         # new_targets = GAm.create_multiple_target_from_pictures([v[0] for v in list_vectors], 6)
         # solutions = GAm.run_multiple_ga(new_targets)
-        solutions = udGA.run_ga(list_vectors, nb_solutions=6, crossover_method="single-coordinate", mutation_rate=0,sigma_mutation=0.2)
+        solutions = udGA.run_ga(list_vectors, nb_solutions=6, crossover_method="single-point", mutation_rate=0,sigma_mutation=0.2)
         # Convertir en tenseur PyTorch
         sol = torch.tensor(solutions, dtype=torch.float32)
         sol = sol.view(solutions.shape[0], list_vectors[0].shape[0])
@@ -992,7 +992,7 @@ class GenerationDialog(QtWidgets.QDialog):
         self.selected_buttons.clear()
         print(
             f"Après maj selected_images, len(img) : {len(self.selected_images)} et len(btn) : {len(self.selected_buttons)}")
-        print(type(self.selected_images[0]))
+        # print(type(self.selected_images[0]))
 
         if len(self.selected_images) != 2:
             msg_box = QtWidgets.QMessageBox(self)
