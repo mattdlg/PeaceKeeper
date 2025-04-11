@@ -1684,7 +1684,7 @@ class MainWindow(QtWidgets.QMainWindow):
         try:
             # Chemin absolu depuis la racine du projet
             base_dir = Path(__file__).parent.parent  # Adaptez le nombre de .parent selon votre structure
-            images_folder = base_dir / "Data bases" / "Celeb A" / "Images" / "selected_images"
+            images_folder = base_dir / "Data Bases" / "Celeb A" / "Images" / "selected_images"
 
             # Vérification du dossier
             if not images_folder.exists():
@@ -1866,9 +1866,9 @@ def dezip_images():
     Notes
     -----
     - Le dossier des images est situé dans :
-      ``Data bases/Celeb A/Images/selected_images``
+      ``Data Bases/Celeb A/Images/selected_images``
     - L'archive zip est située dans :
-      ``Data bases/Celeb A/Images/selected_images.zip``
+      ``Data Bases/Celeb A/Images/selected_images.zip``
 
     Raises
     ------
@@ -1876,7 +1876,7 @@ def dezip_images():
         Si l'archive zip est absente et que le dossier des images est inexistant ou vide.
     """
     # Définition des chemins absolus
-    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Data bases", "Celeb A", "Images"))
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Data Bases", "Celeb A", "Images"))
     folder = os.path.join(base_dir, "selected_images")
     zip_path = os.path.join(base_dir, "selected_images.zip")
 
