@@ -17,6 +17,8 @@ Dans l'objectif de combiner deux images entre elle et de créer de la variabilit
 ![Static Badge](https://img.shields.io/badge/Langage-Python-blue?logo=python)
 ![Static Badge](https://img.shields.io/badge/Tool-Pytorch-blue?logo=pytorch)
 ![Static Badge](https://img.shields.io/badge/Tool-Numpy-blue?logo=numpy)
+![Static Badge](https://img.shields.io/badge/Framework-PyQt6-blue?logo=qt)
+![Static Badge](https://img.shields.io/badge/Optuna-4.2.1+-blue?logo=optuna)
 
 
 ## Visuel
