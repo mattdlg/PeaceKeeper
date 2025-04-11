@@ -7,11 +7,18 @@ import numpy as np
 from PIL import Image
 import random
 from PyQt6 import QtCore, QtGui, QtWidgets, QtMultimedia, QtMultimediaWidgets
+from PyQt6.QtGui import QCursor, QPixmap
+from pathlib import Path
+from typing import Tuple, Optional
+import logging
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from AlgoGenetique import user_driven_algo_gen as udGA
 from utils_autoencoder import load_best_hyperparameters, Autoencoder, device, transform_
-best_params = load_best_hyperparameters("Autoencodeur/best_hyperparameters.pth")
+
+best_params = load_best_hyperparameters("best_hyperparameters.pth")
+
+
 ##############################################################################
 # 1) Fenêtre de Tutoriel (QDialog)
 ##############################################################################
@@ -407,8 +414,9 @@ class GenerationDialog(QtWidgets.QDialog):
 
         # Initialisation du modèle
         self.device = device
-        self.model = Autoencoder(nb_channels=best_params['nb_channels'], nb_layers=best_params['nb_layers']).to(self.device)
-        self.model.load_state_dict(torch.load('Autoencodeur/conv_autoencoder.pth', map_location=self.device))
+        self.model = Autoencoder(nb_channels=best_params['nb_channels'], nb_layers=best_params['nb_layers']).to(
+            self.device)
+        self.model.load_state_dict(torch.load('conv_autoencoder.pth', map_location=self.device))
         self.transforms = transform_
 
         # Charger les images
@@ -482,7 +490,7 @@ class GenerationDialog(QtWidgets.QDialog):
         # Récupérer les chemins des images qui n'ont pas encore été visualisées
         #all_image_paths = glob.glob(os.path.join(self.image_folder, "*"))
 
-        if self.selected_buttons :
+        if self.selected_buttons:
             self.reset_selected_buttons()
 
         remaining_images = [img_path for img_path in self.all_image_paths if img_path not in self.visualized_images]
@@ -560,7 +568,7 @@ class GenerationDialog(QtWidgets.QDialog):
 
         for i in reversed(range(self.images_layout.count())):
             widget = self.images_layout.itemAt(i).widget()
-            if widget :
+            if widget:
                 widget.deleteLater()
 
         self.display_buttons(self.images_layout, self.selected_images, 2, 150)
@@ -605,7 +613,7 @@ class GenerationDialog(QtWidgets.QDialog):
             if isinstance(img_array, str):
                 img_qpixmap = QtGui.QPixmap(img_array)
                 if img_qpixmap.isNull():
-                    img_qpixmap = QtGui.QPixmap(target_size, target_size) #targe_size à la place
+                    img_qpixmap = QtGui.QPixmap(target_size, target_size)  #targe_size à la place
                     img_qpixmap.fill(QtGui.QColor("gray"))
                 #img_qpixmap = img_qpixmap.scaled(target_size, target_size, QtCore.Qt.AspectRatioMode.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation)
             elif isinstance(img_array, np.ndarray):
@@ -744,7 +752,7 @@ class GenerationDialog(QtWidgets.QDialog):
         """
         for i in reversed(range(self.random_img_grid_layout.count())):
             widget = self.random_img_grid_layout.itemAt(i).widget()
-            if widget :
+            if widget:
                 widget.deleteLater()
 
         remaining_images = [img_path for img_path in self.all_image_paths if img_path not in self.visualized_images]
@@ -936,7 +944,6 @@ class GenerationDialog(QtWidgets.QDialog):
             reconstructed = self.model.decode(sol).cpu().numpy().transpose(0, 2, 3, 1)
         print("Les solutions sont reconstruites")
         # print(f"Les images originales sont : {self.selected_images}")
-
 
         if self.button_layout.indexOf(self.final_btn) == -1:  # Vérifie si le bouton est déjà dans le layout
             self.button_layout.addWidget(self.final_btn, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
@@ -1164,6 +1171,7 @@ class GenerationDialog(QtWidgets.QDialog):
 
             layout_parent.removeItem(layout)
 
+
 ##############################################################################
 # 3)Background Vidéo
 ##############################################################################
@@ -1341,8 +1349,15 @@ class HomePage(QtWidgets.QWidget):
         self.main_layout.setSpacing(0)
 
         # Définition du chemin de la vidéo
-        video_path = os.path.join("Elements graphiques", "Background",
-                                  "night-walk-cyberpunk-city-pixel-moewalls-com.mp4")
+        video_dir = Path(__file__).parent.parent / "Elements graphiques" / "Background"
+        video_path = str(video_dir / "night-walk-cyberpunk-city-pixel-moewalls-com.mp4")
+
+        # Avec vérification et fallback
+        if not os.path.exists(video_path):
+            print(f"ERREUR: Fichier vidéo introuvable - {video_path}")
+            # Fallback optionnel
+            video_path = ""  # ou un chemin par défaut
+
         self.background = BackgroundVideoWidget(video_path)
 
         # Stack pour gérer l'empilement
@@ -1551,8 +1566,24 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_generation(self):
         # Ouvre la fenêtre de génération
-        folder = "Data bases/Celeb A/Images/selected_images"  # .. adapte le chemin
-        dialog = GenerationDialog(folder, self)
+        try:
+            # Chemin absolu depuis la racine du projet
+            base_dir = Path(__file__).parent.parent  # Adaptez le nombre de .parent selon votre structure
+            images_folder = base_dir / "Data bases" / "Celeb A" / "Images" / "selected_images"
+
+            # Vérification du dossier
+            if not images_folder.exists():
+                raise FileNotFoundError(f"Dossier images introuvable: {images_folder}")
+
+            # Conversion en string pour compatibilité
+            folder = str(images_folder)
+            dialog = GenerationDialog(folder, self)
+
+        except Exception as e:
+            print(f"ERREUR: {e}")
+            # Fallback - exemple avec dossier par défaut ou gestion d'erreur
+            fallback_folder = str(base_dir / "images_fallback")
+            dialog = GenerationDialog(fallback_folder, self)
         dialog.exec()
 
 
@@ -1592,31 +1623,67 @@ class CursorManager:
     """Gestion centralisée des curseurs personnalisés"""
 
     @staticmethod
-    def create(img_path, hotspot=(15, 15)):
+    def get_cursor_paths(relative_path: Optional[str] = None) -> Tuple[str, str]:
         """
-        Crée un curseur personnalisé à partir d'une image.
+        Charge les chemins absolus des curseurs depuis la racine du projet.
 
-        Parameters
-        ----------
-        img_path : str
-            Chemin vers l'image du curseur
-        hotspot : tuple, optional
-            Position du point de clic (x,y), par défaut (15,15)
+        Args:
+            relative_path: Chemin relatif personnalisé (optionnel)
 
-        Returns
-        -------
-        QCursor
-            Curseur personnalisé ou curseur par défaut en cas d'erreur
+        Returns:
+            Tuple: (chemin_cursor_resized, chemin_pointer_resized)
 
-        Gère les cas où :
-        - Le fichier image n'existe pas
-        - L'image ne peut pas être chargée
+        Raises:
+            FileNotFoundError: Si le dossier des curseurs est introuvable
         """
-        pixmap = QtGui.QPixmap(img_path)
-        if pixmap.isNull():
-            print(f"ERREUR: Impossible de charger {img_path}")
-            return QtGui.QCursor()
-        return QtGui.QCursor(pixmap, *hotspot)
+        try:
+            project_root = Path(__file__).parent.parent
+            cursor_dir = project_root / (relative_path or "Elements graphiques/Curseur/dark-red-faceted-crystal-style")
+
+            if not cursor_dir.exists():
+                raise FileNotFoundError(f"Dossier curseur introuvable: {cursor_dir}")
+
+            default_path = cursor_dir / "cursor_resized.png"
+            pointer_path = cursor_dir / "pointer_resized.png"
+
+            if not default_path.exists():
+                logging.warning(f"Fichier curseur par défaut manquant: {default_path}")
+            if not pointer_path.exists():
+                logging.warning(f"Fichier curseur pointer manquant: {pointer_path}")
+
+            return str(default_path), str(pointer_path)
+
+        except Exception as e:
+            logging.error(f"Erreur chargement chemins curseurs: {e}")
+            raise
+
+    @staticmethod
+    def create(img_path: str, hotspot: Tuple[int, int] = (15, 15)) -> QCursor:
+        """
+        Crée un curseur personnalisé avec gestion d'erreur améliorée.
+
+        Args:
+            img_path: Chemin vers l'image du curseur
+            hotspot: Position du point de clic (x,y)
+
+        Returns:
+            QCursor: Curseur personnalisé ou curseur par défaut si erreur
+        """
+        try:
+            if not Path(img_path).exists():
+                logging.warning(f"Fichier curseur introuvable: {img_path}")
+                return QCursor()
+
+            pixmap = QPixmap(img_path)
+            if pixmap.isNull():
+                logging.error(f"Impossible de charger l'image: {img_path}")
+                return QCursor()
+
+            return QCursor(pixmap, *hotspot)
+
+        except Exception as e:
+            logging.error(f"Erreur création curseur: {e}")
+            return QCursor()
 
     @staticmethod
     def apply_global_style(app, default_path, pointer_path):
@@ -1696,7 +1763,7 @@ def dezip_images():
     # Définition des chemins absolus
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Data bases", "Celeb A", "Images"))
     folder = os.path.join(base_dir, "selected_images")
-    zip_path = os.path.join(base_dir, "selected_images.rar")
+    zip_path = os.path.join(base_dir, "selected_images.zip")
 
     # Vérifier si le dossier existe et contient au moins un fichier
     if os.path.exists(folder) and any(os.scandir(folder)):
@@ -1710,26 +1777,35 @@ def dezip_images():
     else:
         raise FileNotFoundError(f"L'archive zip n'a pas été trouvée : {zip_path}")
 
+
 ##############################################################################
 # 10) Lancement
 ##############################################################################
 def main():
-    """Point d'entrée principal de l'application.
-    """
+    """Point d'entrée principal de l'application."""
     dezip_images()
     app = QtWidgets.QApplication(sys.argv)
     AppStyler.setup_style(app)
 
-    cursor_dir = os.path.join("Elements graphiques", "Curseur", "dark-red-faceted-crystal-style")
-    default_cursor_path = os.path.abspath(os.path.join(cursor_dir, "cursor_resized.png"))
-    pointer_cursor_path = os.path.abspath(os.path.join(cursor_dir, "pointer_resized.png"))
+    try:
+        # Chargement des chemins avec gestion d'erreur
+        default_path, pointer_path = CursorManager.get_cursor_paths()
 
-    CursorManager.apply_global_style(app, default_cursor_path, pointer_cursor_path)
-    window = MainWindow()
-    CursorManager.apply_to_hierarchy(window, CursorManager.create(default_cursor_path))
+        # Application des curseurs
+        CursorManager.apply_global_style(app, default_path, pointer_path)
+        window = MainWindow()
+        CursorManager.apply_to_hierarchy(window, CursorManager.create(default_path))
+
+    except FileNotFoundError as e:
+        logging.error(str(e))
+        # Mode dégradé avec curseurs système
+        window = MainWindow()
+    except Exception as e:
+        logging.critical(f"Erreur critique initialisation: {e}")
+        sys.exit(1)
+
     window.show()
-    ret = app.exec()
-    sys.exit(ret)
+    sys.exit(app.exec())
 
 
 if __name__ == "__main__":
