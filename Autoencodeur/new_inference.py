@@ -1048,7 +1048,7 @@ class GenerationDialog(QtWidgets.QDialog):
         # Appliquer l'algorithme génétique pour générer 6 nouvelles images
         # new_targets = GAm.create_multiple_target_from_pictures([v[0] for v in list_vectors], 6)
         # solutions = GAm.run_multiple_ga(new_targets)
-        solutions = udGA.run_ga(list_vectors, nb_solutions=6, crossover_method="single-coordinate", mutation_rate=0,
+        solutions = udGA.run_ga(list_vectors, nb_solutions=6, crossover_method="single-point", mutation_rate=0,
                                 sigma_mutation=0.2)
         # Convertir en tenseur PyTorch
         sol = torch.tensor(solutions, dtype=torch.float32)
