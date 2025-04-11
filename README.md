@@ -96,3 +96,8 @@ Ce projet est placé sous les termes de la licence MIT (Copyright 2025).
 ## Status du projet
 Ce projet a été réalisé en suivant la méthode Agile. Actuellement, il est en fin de deuxième sprint. 
 Etant seulement à visé scolaire, il ne sera pas maintenu par la suite. 
+
+## FAQ
+Vous trouverez ici les principales questions qui sont posées sur ce projet. Si votre question n'y figure pas, n'hésitez pas à contacter les auteurs pour obtenir une réponse.
+
+...
