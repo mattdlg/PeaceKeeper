@@ -9,14 +9,67 @@ import random
 from PyQt6 import QtCore, QtGui, QtWidgets, QtMultimedia, QtMultimediaWidgets
 from PyQt6.QtGui import QCursor, QPixmap
 from pathlib import Path
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Dict, Any
 import logging
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from AlgoGenetique import user_driven_algo_gen as udGA
 from utils_autoencoder import load_best_hyperparameters, Autoencoder, device, transform_
 
-best_params = load_best_hyperparameters("best_hyperparameters.pth")
+
+##############################################################################
+# 0) Chargement des poids du modèle
+##############################################################################
+
+def load_hyperparameters(filename: str = "best_hyperparameters.pth") -> Dict[str, Any]:
+    """
+    Charge les hyperparamètres du modèle avec gestion automatique des chemins
+
+    Essaie plusieurs emplacements possibles dans cet ordre :
+    1. Chemin relatif direct (compatibilité historique)
+    2. Dans le dossier du script appelant
+    3. Dans le sous-dossier Autoencodeur
+
+    Parameters
+    ----------
+    filename : str, optional
+        Nom du fichier contenant les hyperparamètres (par défaut: "best_hyperparameters.pth")
+
+    Returns
+    -------
+    Dict[str, Any]
+        Dictionnaire des hyperparamètres chargés s'ils sont trouvés, erreur sinon
+
+    """
+    # Liste des chemins à tester par ordre de priorité
+    search_paths = [
+        filename,  # 1. Ancien chemin relatif
+        Path(__file__).parent / filename,  # 2. Dossier courant
+        Path(__file__).parent.parent / "Autoencodeur" / filename,  # 3. Dossier alternatif
+    ]
+
+    last_error = None
+    for path in search_paths:
+        try:
+            path_str = str(path)
+            if os.path.exists(path_str):
+                params = load_best_hyperparameters(path_str)
+                print(f"Chargement réussi depuis : {path_str}")
+                return params
+        except Exception as e:
+            last_error = e
+            continue
+    print(
+        f"- Pour le load des hyperparam: Aucun fichier trouvé aux emplacements :\n"
+        f"    1. {search_paths[0]}\n"
+        f"    2. {search_paths[1]}\n"
+        f"    3. {search_paths[2]}\n"
+        f"- Dernière erreur : {str(last_error)}\n"
+    )
+
+
+# Chargement des meilleurs hyperparam
+best_params = load_hyperparameters()
 
 
 ##############################################################################
@@ -416,11 +469,72 @@ class GenerationDialog(QtWidgets.QDialog):
         self.device = device
         self.model = Autoencoder(nb_channels=best_params['nb_channels'], nb_layers=best_params['nb_layers']).to(
             self.device)
-        self.model.load_state_dict(torch.load('conv_autoencoder.pth', map_location=self.device))
+
+        # self.model.load_state_dict(torch.load('conv_autoencoder.pth', map_location=self.device))
+        try:
+            self.load_model()
+        except FileNotFoundError as e:
+            print(f"ERREUR CRITIQUE: {e}")
+
         self.transforms = transform_
 
         # Charger les images
         self.load_images()
+
+    def load_model(self):
+        """
+        Tente de charger le modèle depuis plusieurs emplacements possibles
+        en suivant un ordre de priorité défini. Si aucun fichier valide n'est trouvé,
+        lève une exception FileNotFoundError avec la liste des chemins testés.
+
+        Ordre de recherche :
+        1. Chemin relatif direct (pour compatibilité avec les anciennes versions)
+        2. Dossier contenant le script appelant
+        3. Sous-dossier Autoencodeur dans le parent du script
+
+        Returns
+        -------
+        None
+
+
+        Raises
+        ------
+        FileNotFoundError
+            Si aucun fichier valide n'est trouvé dans les emplacements testés
+        RuntimeError
+            Si le chargement échoue pour des raisons de compatibilité des poids
+
+        Notes
+        -----
+        - Les messages de debug sont affichés dans la console lors des tentatives
+        - Le map_location est automatiquement géré en fonction de self.device
+        - Format de fichier attendu : .pth (format PyTorch)
+        """
+        # Liste des chemins possibles (ordre de priorité)
+        possible_paths = [
+            'conv_autoencoder.pth',  # 1. Ancien chemin (pour compatibilité)
+            Path(__file__).parent / 'conv_autoencoder.pth',  # 2. Même dossier
+            Path(__file__).parent.parent / 'Autoencodeur' / 'conv_autoencoder.pth',  # 3. Chemin alternatif
+        ]
+
+        for path in possible_paths:
+            path_str = str(path)
+            if os.path.exists(path_str):
+                try:
+                    self.model.load_state_dict(torch.load(path_str, map_location=self.device))
+                    print(f"Poids chargés depuis: {path_str}")
+                    return
+                except Exception as e:
+                    print(f"Erreur lors du chargement depuis {path_str}: {e}")
+                    continue
+
+        # Si aucun chemin n'a fonctionné
+        raise FileNotFoundError(
+            f"Aucun fichier de poids valide trouvé. Chemins testés:\n"
+            f"1. {possible_paths[0]}\n"
+            f"2. {possible_paths[1]}\n"
+            f"3. {possible_paths[2]}"
+        )
 
     def reset_selected_buttons(self):
         """
@@ -934,7 +1048,8 @@ class GenerationDialog(QtWidgets.QDialog):
         # Appliquer l'algorithme génétique pour générer 6 nouvelles images
         # new_targets = GAm.create_multiple_target_from_pictures([v[0] for v in list_vectors], 6)
         # solutions = GAm.run_multiple_ga(new_targets)
-        solutions = udGA.run_ga(list_vectors, nb_solutions=6, crossover_method="single-point", mutation_rate=0,sigma_mutation=0.2)
+        solutions = udGA.run_ga(list_vectors, nb_solutions=6, crossover_method="single-coordinate", mutation_rate=0,
+                                sigma_mutation=0.2)
         # Convertir en tenseur PyTorch
         sol = torch.tensor(solutions, dtype=torch.float32)
         sol = sol.view(solutions.shape[0], list_vectors[0].shape[0])
@@ -999,7 +1114,7 @@ class GenerationDialog(QtWidgets.QDialog):
         self.selected_buttons.clear()
         print(
             f"Après maj selected_images, len(img) : {len(self.selected_images)} et len(btn) : {len(self.selected_buttons)}")
-        # print(type(self.selected_images[0]))
+        print(type(self.selected_images[0]))
 
         if len(self.selected_images) != 2:
             msg_box = QtWidgets.QMessageBox(self)
