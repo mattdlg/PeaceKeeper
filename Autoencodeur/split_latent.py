@@ -257,7 +257,7 @@ if __name__ == "__main__":
 
     #### Test d'exploration ou de distance entre les vecteurs latents ####
     try:
-        str_user = input("Que voulez vous faire ? (test distance ou exploration) : ")
+        str_user = input("Que voulez vous faire ? (test distance ou exploration) : ").lower().strip()
 
         if str_user == "test distance":
             compute_mean_distance(2000)
