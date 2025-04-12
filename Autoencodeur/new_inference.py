@@ -1114,9 +1114,8 @@ class GenerationDialog(QtWidgets.QDialog):
         self.selected_buttons.clear()
         print(
             f"Après maj selected_images, len(img) : {len(self.selected_images)} et len(btn) : {len(self.selected_buttons)}")
-        print(type(self.selected_images[0]))
 
-        if len(self.selected_images) != 2:
+        if len(self.selected_images) != 2 :
             msg_box = QtWidgets.QMessageBox(self)
             msg_box.setIcon(QtWidgets.QMessageBox.Icon.Warning)
             msg_box.setWindowTitle("Erreur")
