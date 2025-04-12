@@ -116,6 +116,46 @@ def interpolate_vectors(start_vector, end_vector, nb_to_create):
         vectors[i] = start_vector + (end_vector - start_vector) * fraction[i]
     return vectors
 
+def single_point_change(start_vector, end_vector, nb_to_create):
+    """
+    Générations de vecteurs 1D par échange de coordonnées entre deux vecteurs.
+    Les coordonnées sont échangées entre les deux vecteurs à partir d'un index.
+
+    Cette fonction à pour but de générer une succession d'image
+    qui font la transition entre les deux images dont les vecteurs 
+    dans l'espace latent sont donnés en entrée.
+
+    Paramètres
+    ----------
+    start_vector : np.array
+        Premier vecteur (coordonnées gardées avant l'index)
+    end_vector : np.array
+        Second vecteur (coordonnées gardées après l'index)
+    nb_to_create : int
+        Nombre de vecteurs à générer
+
+    Retours 
+    -------
+    vectors : np.array
+        Tableau contenant les vecteurs générés.
+        Chaque ligne correspond à un vecteur.
+
+    >>> fst  = np.array([4, 4, 1, 3, 1, 4, 3, 2, 5, 2])
+    >>> snd = np.array([1, 1, 3, 4, 1, 5, 5, 5, 4, 3])
+    >>> single_point_change(fst, snd, 5)
+    [[4. 4. 1. 3. 1. 4. 3. 2. 5. 2.]
+     [4. 4. 1. 3. 1. 4. 3. 5. 4. 3.]
+     [4. 4. 1. 3. 1. 5. 5. 5. 4. 3.]
+     [4. 4. 3. 4. 1. 5. 5. 5. 4. 3.]
+     [1. 1. 3. 4. 1. 5. 5. 5. 4. 3.]]
+
+    """
+    index = np.linspace(start_vector.shape[0], 0, nb_to_create, endpoint=True, dtype=int)
+    vectors = np.zeros((nb_to_create, start_vector.shape[0]))
+    for i in range(nb_to_create) :
+        vectors[i] = np.concatenate((start_vector[:index[i]] , end_vector[index[i]:]))
+    return vectors
+
 def explore_one_coord(coord_index, increment, size, nb_to_create):
     """
     Créer un tableau contenant un nombre donné de vecteurs 1D, 
@@ -164,17 +204,27 @@ if __name__ == "__main__":
     np.random.seed(42)
     
     #### Test des fonctions ####
+    print("---- RANDOM VECTORS ----")
     list_vectors = create_random_vectors(4, 3)
     print(list_vectors)
 
+    print("---- BLACK AND WHITE VECTORS ----")
     list_vectors = create_black_and_white_vectors(10,3)
     print(list_vectors)
 
-
+    print("---- INTERPOLATION ----")
     fst  = np.array([4, 4, 1, 3, 1, 4, 3, 2, 5, 2])
     snd = np.array([1, 1, 3, 4, 1, 5, 5, 5, 4, 3])
     list_vectors = interpolate_vectors(fst, snd, 5)
     print(list_vectors)
 
+    print("---- SINGLE POINT CHANGE ----")
+    fst  = np.array([4, 4, 1, 3, 1, 4, 3, 2, 5, 2])
+    snd = np.array([1, 1, 3, 4, 1, 5, 5, 5, 4, 3])
+    list_vectors = single_point_change(fst, snd, 5)
+    print(list_vectors)
+
+    print("---- EXPLORE ONE COORD ----")
     print(explore_one_coord([2,5,8],1,10,3))
+
 

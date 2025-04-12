@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import os
 from PIL import Image
 
-from explore_latent import create_random_vectors, create_black_and_white_vectors, interpolate_vectors, explore_one_coord
+from explore_latent import create_random_vectors, create_black_and_white_vectors, interpolate_vectors, explore_one_coord, single_point_change
 
 def decode_latent_vectors(model, latent_vectors, device):
     """
@@ -234,17 +234,20 @@ def main(test_method):
         elif test_method == "b&w" :
             latent_vectors = create_black_and_white_vectors(size, 30)
 
-        elif test_method == "interpolation" :
+        elif test_method == "interpolation" or test_method == "single-point" :
             img1, img2 = 200000 + np.random.randint(1, 2500, 2)
             start_vector, end_vector = load_two_images(model, str(img1)+".jpg", str(img2)+".jpg")
-            latent_vectors = interpolate_vectors(start_vector, end_vector, 30)
+            if test_method == "single-point":
+                latent_vectors = single_point_change(start_vector, end_vector, 30)
+            else : 
+                latent_vectors = interpolate_vectors(start_vector, end_vector, 30)
             # plot_histogram_distance(distances = np.abs(start_vector - end_vector), nb_images = 1) # distance coord by coord)
 
         elif test_method == "coord":
-            latent_vectors = explore_one_coord(np.arange(30, 70), 0.25, size, 30)
+            latent_vectors = explore_one_coord(np.arange(40, 60), 0.25, size, 30)
 
         else :
-            raise ValueError("Unknown method, please choose 'random', 'b&w', 'interpolation' or 'coord'.")
+            raise ValueError("Unknown method, please choose 'random', 'b&w', 'interpolation', 'single-point' or 'coord'.")
         
     except  ValueError as e:
         print(f"Erreur : {e}")
@@ -261,8 +264,8 @@ if __name__ == "__main__":
 
         if str_user == "test distance":
             compute_mean_distance(2000)
-        elif str_user == "exploration":
-            main("interpolation")
+        elif str_user == "exploration": 
+            main("single-point")
         else:
             raise ValueError("Unknown method, please choose 'test distance' or 'exploration'")
     except ValueError as e:
