@@ -10,7 +10,7 @@ Auteurs :
     Bel Melih Morad, Anibou Amrou et Frémaux Philippine
 -------------------------------
 Version :
-    1.1 (13/03/2025)
+    1.2 (12/04/2025)
 """
 
 import os
@@ -119,62 +119,6 @@ class CelebADataset(Dataset):
             image = self.transform(image)
 
         return image, 0  # The label is not relevant for autoencoders
-
-
-# ===== 2. Define Image Transformations =====
-"""
-Applique des transformations uniformes sur les images: Redimensionner en 128*128 et normaliser les valeurs
-Les réseaux de neurones sont plus stables et efficaces lorsque les entrées sont normalisées
-Cela facilite la propagation du gradient et empêche les valeurs trop grandes de ralentir l'entraînement
-"""
-image_size = (128, 128)
-transform_ = transforms.Compose([  # Garantit que toutes les images ont exactement la même taille, la même normalisation
-    transforms.Resize(image_size),  # Redimensionne l'image
-    transforms.CenterCrop(image_size),  # S'assurer que toutes les images ont une taille uniforme sans distorsion
-    # Convertir l'image en un tenseur de forme (Canaux, Hauteur, Largeur) avec des valeurs normalisées
-    # entre 0 et 1 (au lieu de 0-255) :
-    transforms.ToTensor(),
-])
-
-# ===== 3. Load Dataset =====
-data_dir = "/Data bases/Celeb A/Images/img_align_celeba"  # <-- Path à update en fonction de là où sont stockés les img
-dataset = CelebADataset(folder=data_dir, transform=transform_, max_images=2000)
-
-print(f"Total number of images used : {len(dataset)}")
-
-# ===== 4. Split Dataset (90% Train, 10% Test) =====
-total_size = len(dataset)
-train_size = int(0.9 * total_size)
-test_size = total_size - train_size
-train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
-
-# ===== 4a. Charger les données d'entraînement et de test par mini-batches avec un DataLoader=====
-"""
-DataLoader charge des mini-batches d’images au lieu d’une seule.
-
-L'utilisation d'un DataLoader pour charger des images par lots (au lieu de une par une) permet d'utiliser
- plus efficacement la mémoire GPU et de paralléliser le calcul
-
-Les gradients calculés sur un mini-batch sont plus représentatifs que ceux calculés sur une seule image, ce qui
- stabilise l'optimisation
-
-Exemple de chargement de batches:
-    Si le dataset d'entrainement contient 1000 images et batch_size = 32 :
-    train_loader va créer 1000 / 32 = 31,25 ≈ 31 batches
-    Il va traiter 31 batches de 32 images + 1 batch final avec 8 images
-    Après un epoch, toutes les images auront été vues une fois 
-"""
-batchSize = 32
-# Chaque itération du training récupérera 32 images à la fois, permet de ne pas charger tout le dataset d'un coup
-
-# Note : Un DataLoader n'est pas une fonction mais une classe.
-# Ils ne sont pas des listes d'images, mais des itérateurs qui retournent des mini-batches
-# de tenseurs (batch_size, 3, 128, 128)
-train_loader = DataLoader(train_dataset, batch_size=batchSize, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=batchSize, shuffle=False)
-
-print(f"Dataset d'entraînement : {train_size} images")
-print(f"Dataset de test : {test_size} images")
 
 
 # ===== 5. Define the Convolutional Autoencoder =====
@@ -347,126 +291,185 @@ class ConvAutoencoder(nn.Module):
         return self.decoder(z)
 
 
-# ===== 6. Model Initialization, Loss Function, and Optimizer =====
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = ConvAutoencoder().to(device)  # ConvAutoencoder() crée une instance du modèle, qui est transféré sur le G/CPU
+if __name__ == '__main__':
+    # ===== 2. Define Image Transformations =====
+    """
+    Applique des transformations uniformes sur les images: Redimensionner en 128*128 et normaliser les valeurs
+    Les réseaux de neurones sont plus stables et efficaces lorsque les entrées sont normalisées
+    Cela facilite la propagation du gradient et empêche les valeurs trop grandes de ralentir l'entraînement
+    """
+    image_size = (128, 128)
+    transform_ = transforms.Compose(
+        [  # Garantit que toutes les images ont exactement la même taille, la même normalisation
+            transforms.Resize(image_size),  # Redimensionne l'image
+            transforms.CenterCrop(image_size),
+            # S'assurer que toutes les images ont une taille uniforme sans distorsion
+            # Convertir l'image en un tenseur de forme (Canaux, Hauteur, Largeur) avec des valeurs normalisées
+            # entre 0 et 1 (au lieu de 0-255) :
+            transforms.ToTensor(),
+        ])
 
-# Define loss function : choice between MSE (L2) or L1
-loss_type = 'MSE'  # or 'L1'
-if loss_type == 'MSE':
-    criterion = nn.MSELoss()
-elif loss_type == 'L1':
-    criterion = nn.L1Loss()
-else:
-    raise ValueError("loss_type must be 'MSE' or 'L1'.")
+    # ===== 3. Load Dataset =====
+    data_dir = "/Data Bases/Celeb A/Images/img_align_celeba"  # <-- Path à update en fonction de là où sont stockés les img
+    dataset = CelebADataset(folder=data_dir, transform=transform_, max_images=2000)
 
-# Define optimizer
-optimizer = optim.Adam(model.parameters(), lr=1e-3)
+    print(f"Total number of images used : {len(dataset)}")
 
-print("Model initialized and ready for training.")
+    # ===== 4. Split Dataset (90% Train, 10% Test) =====
+    total_size = len(dataset)
+    train_size = int(0.9 * total_size)
+    test_size = total_size - train_size
+    train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
 
-# ===== 7. Training Loop =====
-"""
-Training Loop for the Convolutional Autoencoder
-------------------------------------------------
-This section trains the autoencoder using a standard supervised learning approach.  
-The model learns to reconstruct input images by minimizing the reconstruction error 
-(mean squared error).
+    # ===== 4a. Charger les données d'entraînement et de test par mini-batches avec un DataLoader=====
+    """
+    DataLoader charge des mini-batches d’images au lieu d’une seule.
+    
+    L'utilisation d'un DataLoader pour charger des images par lots (au lieu de une par une) permet d'utiliser
+     plus efficacement la mémoire GPU et de paralléliser le calcul
+    
+    Les gradients calculés sur un mini-batch sont plus représentatifs que ceux calculés sur une seule image, ce qui
+     stabilise l'optimisation
+    
+    Exemple de chargement de batches:
+        Si le dataset d'entrainement contient 1000 images et batch_size = 32 :
+        train_loader va créer 1000 / 32 = 31,25 ≈ 31 batches
+        Il va traiter 31 batches de 32 images + 1 batch final avec 8 images
+        Après un epoch, toutes les images auront été vues une fois 
+    """
+    batchSize = 32
+    # Chaque itération du training récupérera 32 images à la fois, permet de ne pas charger tout le dataset d'un coup
 
-Method : 
-    - The model is trained over "num_epochs" iterations (40 here).
-    - Avec chaque epoch, il ajuste ses poids en fonction de la backpropagation.
-    - Après plusieurs époques, il s'améliore progressivement en réduisant l'erreur de reconstruction.
-    - The optimizer updates the weights.
-    - The loss is computed.
+    # Note : Un DataLoader n'est pas une fonction mais une classe.
+    # Ils ne sont pas des listes d'images, mais des itérateurs qui retournent des mini-batches
+    # de tenseurs (batch_size, 3, 128, 128)
+    train_loader = DataLoader(train_dataset, batch_size=batchSize, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=batchSize, shuffle=False)
 
+    print(f"Dataset d'entraînement : {train_size} images")
+    print(f"Dataset de test : {test_size} images")
 
+    # ===== 6. Model Initialization, Loss Function, and Optimizer =====
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = ConvAutoencoder().to(
+        device)  # ConvAutoencoder() crée une instance du modèle, qui est transféré sur le G/CPU
 
-Training is performed on a GPU if available, otherwise on a CPU.
-The model is saved after training.
-"""
+    # Define loss function : choice between MSE (L2) or L1
+    loss_type = 'MSE'  # or 'L1'
+    if loss_type == 'MSE':
+        criterion = nn.MSELoss()
+    elif loss_type == 'L1':
+        criterion = nn.L1Loss()
+    else:
+        raise ValueError("loss_type must be 'MSE' or 'L1'.")
 
-num_epochs = 40  # Number of epochs for training
+    # Define optimizer
+    optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
-for epoch in range(num_epochs):
-    model.train()  # Set model to training mode
-    running_loss = 0.0  # Accumulates total loss for the epoch
+    print("Model initialized and ready for training.")
 
-    for images, _ in train_loader:  # Ignore labels as it's an autoencoder
-        images = images.to(device)  # On met les images sur le même device que le modèle
-        optimizer.zero_grad()  # Reset gradients
-        outputs = model(images)  # Forward pass
-        loss = criterion(outputs, images)  # Compute loss
-        loss.backward()  # Backpropagation (gradient calculation)
-        optimizer.step()  # Update model weights
-        running_loss += loss.item() * images.size(0)  # Accumulate loss
+    # ===== 7. Training Loop =====
+    """
+    Training Loop for the Convolutional Autoencoder
+    ------------------------------------------------
+    This section trains the autoencoder using a standard supervised learning approach.  
+    The model learns to reconstruct input images by minimizing the reconstruction error 
+    (mean squared error).
+    
+    Method : 
+        - The model is trained over "num_epochs" iterations (40 here).
+        - Avec chaque epoch, il ajuste ses poids en fonction de la backpropagation.
+        - Après plusieurs époques, il s'améliore progressivement en réduisant l'erreur de reconstruction.
+        - The optimizer updates the weights.
+        - The loss is computed.
+    
+    
+    
+    Training is performed on a GPU if available, otherwise on a CPU.
+    The model is saved after training.
+    """
 
-    # Compute average loss for the epoch
-    epoch_loss = running_loss / train_size
-    print(f"Epoch [{epoch + 1}/{num_epochs}], Training Loss: {epoch_loss:.4f}")
+    num_epochs = 40  # Number of epochs for training
 
-    # ----- Evaluation on the Test Set -----
-    model.eval()  # Set model to evaluation mode
-    test_loss = 0.0
+    for epoch in range(num_epochs):
+        model.train()  # Set model to training mode
+        running_loss = 0.0  # Accumulates total loss for the epoch
 
-    with torch.no_grad():  # Disable gradient calculations
-        for images, _ in test_loader:
-            images = images.to(device)
-            outputs = model(images)
-            loss = criterion(outputs, images)
-            test_loss += loss.item() * images.size(0)
+        for images, _ in train_loader:  # Ignore labels as it's an autoencoder
+            images = images.to(device)  # On met les images sur le même device que le modèle
+            optimizer.zero_grad()  # Reset gradients
+            outputs = model(images)  # Forward pass
+            loss = criterion(outputs, images)  # Compute loss
+            loss.backward()  # Backpropagation (gradient calculation)
+            optimizer.step()  # Update model weights
+            running_loss += loss.item() * images.size(0)  # Accumulate loss
 
-    # Compute average test loss for the epoch
-    test_loss = test_loss / test_size
-    print(f"Epoch [{epoch + 1}/{num_epochs}], Loss Test: {test_loss:.4f}")
+        # Compute average loss for the epoch
+        epoch_loss = running_loss / train_size
+        print(f"Epoch [{epoch + 1}/{num_epochs}], Training Loss: {epoch_loss:.4f}")
 
-print("Training completed successfully")
+        # ----- Evaluation on the Test Set -----
+        model.eval()  # Set model to evaluation mode
+        test_loss = 0.0
 
-# ===== 7.1. Save Trained Model =====
-torch.save(model.state_dict(), 'conv_autoencoder.pth')
-print("Model saved as 'conv_autoencoder.pth'")
+        with torch.no_grad():  # Disable gradient calculations
+            for images, _ in test_loader:
+                images = images.to(device)
+                outputs = model(images)
+                loss = criterion(outputs, images)
+                test_loss += loss.item() * images.size(0)
 
-# ===== 8. Test on an external image by getting first latent vector then reconstruction =====
-# Specify the path to the external image (ensure it is not in the training or test set)
-external_image_path = "/content/img_align_celeba/200001.jpg"  # <-- Modify if necessary
+        # Compute average test loss for the epoch
+        test_loss = test_loss / test_size
+        print(f"Epoch [{epoch + 1}/{num_epochs}], Loss Test: {test_loss:.4f}")
 
-# Load and preprocess the external image
-external_img = Image.open(external_image_path).convert("RGB")
-external_img_transformed = transform_(external_img)
+    print("Training completed successfully")
 
-# Add a batch dimension to match PyTorch model input requirements
-external_img_batch = external_img_transformed.unsqueeze(0).to(device)
+    # ===== 7.1. Save Trained Model =====
+    torch.save(model.state_dict(), 'conv_autoencoder.pth')
+    print("Model saved as 'conv_autoencoder.pth'")
 
-# Run the model in evaluation mode
-model.eval()
+    # ===== 8. Test on an external image by getting first latent vector then reconstruction =====
+    # Specify the path to the external image (ensure it is not in the training or test set)
+    external_image_path = "/content/img_align_celeba/200001.jpg"  # <-- Modify if necessary
 
-# Obtain a latent vector from an image
-with torch.no_grad():
-    latent_vector = model.encode(external_img_batch)
+    # Load and preprocess the external image
+    external_img = Image.open(external_image_path).convert("RGB")
+    external_img_transformed = transform_(external_img)
 
-print("Latent vector shape:", latent_vector.shape)
+    # Add a batch dimension to match PyTorch model input requirements
+    external_img_batch = external_img_transformed.unsqueeze(0).to(device)
 
-# Reconstruct image
-with torch.no_grad():
-    reconstructed_batch = model.decode(latent_vector)
+    # Run the model in evaluation mode
+    model.eval()
 
-# Remove batch dimension and convert tensor to image format
-reconstructed_img_tensor = reconstructed_batch.squeeze(0).cpu()  # Convert from [C, H, W] to [H, W, C]
-reconstructed_img = reconstructed_img_tensor.numpy().transpose(1, 2, 0)
+    # Obtain a latent vector from an image
+    with torch.no_grad():
+        latent_vector = model.encode(external_img_batch)
 
-# ===== 9. Visualization of the Original and Reconstructed Image =====
-plt.figure(figsize=(10, 5))
+    print("Latent vector shape:", latent_vector.shape)
 
-# Display the original external image
-plt.subplot(1, 2, 1)
-plt.title("Original external image")
-plt.imshow(external_img)
-plt.axis("off")
+    # Reconstruct image
+    with torch.no_grad():
+        reconstructed_batch = model.decode(latent_vector)
 
-# Display the reconstructed image
-plt.subplot(1, 2, 2)
-plt.title("Reconstructed image")
-plt.imshow(reconstructed_img)
-plt.axis("off")
+    # Remove batch dimension and convert tensor to image format
+    reconstructed_img_tensor = reconstructed_batch.squeeze(0).cpu()  # Convert from [C, H, W] to [H, W, C]
+    reconstructed_img = reconstructed_img_tensor.numpy().transpose(1, 2, 0)
 
-plt.show()
+    # ===== 9. Visualization of the Original and Reconstructed Image =====
+    plt.figure(figsize=(10, 5))
+
+    # Display the original external image
+    plt.subplot(1, 2, 1)
+    plt.title("Original external image")
+    plt.imshow(external_img)
+    plt.axis("off")
+
+    # Display the reconstructed image
+    plt.subplot(1, 2, 2)
+    plt.title("Reconstructed image")
+    plt.imshow(reconstructed_img)
+    plt.axis("off")
+
+    plt.show()

@@ -18,6 +18,7 @@ setup(
     python_requires='>=3.8',
     install_requires=[
         'Pillow',
+        'PyQt6',
         'torch',
         'torchvision',
         'matplotlib',
