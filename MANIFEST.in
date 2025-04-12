@@ -1,0 +1,9 @@
+include Autoencodeur/best_hyperparameters.pth
+include Autoencodeur/conv_autoencoder.pth
+include Autoencodeur/losses.pt
+include Autoencodeur/face_autoencoder.db
+include Data Bases/Celeb A/Images/selected_images.zip
+recursive-include Autoencodeur/Resultats_exploration_espace_latent *
+recursive-include Autoencodeur/Evolution Modèle *
+
+
