@@ -13,6 +13,7 @@ from typing import Tuple, Optional, Dict, Any
 import logging
 from datetime import datetime
 from shutil import copyfile
+import subprocess
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from AlgoGenetique import user_driven_algo_gen as udGA
@@ -1240,6 +1241,8 @@ class GenerationDialog(QtWidgets.QDialog):
                 Méthode qui retourne le dossier dans lequel sauvegarder le portrait définitif.
             self.show_success_message : method
                 Affiche le message de succès de la sauvegarde.
+            self.git_add_commit_push : method
+                Add, commit et push le portrait définitif dans le dossier 'ConfirmedSuspects'.
 
             Returns
             -------
@@ -1267,6 +1270,9 @@ class GenerationDialog(QtWidgets.QDialog):
             img.save(save_path)
         else:
             print("Format d'image non supporté pour l'enregistrement")
+            return
+
+        self.git_add_commit_push(save_path, f"Ajout d’un portrait suspect : {filename}")
 
         QtCore.QTimer.singleShot(2000, lambda: self.show_success_message(filename, output_dir)) # délai d'affichage du message de 2s
 
@@ -1339,6 +1345,30 @@ class GenerationDialog(QtWidgets.QDialog):
         # Si ConfirmedSuspects n'est pas trouvé
         print("ConfirmedSuspects introuvable")
         return None
+
+    def git_add_commit_push(self, file_path, message):
+        """
+        Add, commit et push le portrait définitif dans le dossier 'ConfirmedSuspects'.
+
+        Paramètres
+        ----------
+        file_path : str
+            Chemin jusqu'au fichier image
+        message : str
+            Commentaire du commit
+
+        Retours
+        -------
+        None
+            Les commandes git s'executent directement.
+        """
+        try:
+            subprocess.run(["git", "add", file_path], check=True)
+            subprocess.run(["git", "commit", "-m", message], check=True)
+            subprocess.run(["git", "push"], check=True)
+            print(f"Fichier {file_path} ajouté et poussé avec succès.")
+        except subprocess.CalledProcessError as e:
+            print(f"[Git] Une erreur est survenue : {e}")
 
     def remove_layout(self, layout_parent, layout):
         """
