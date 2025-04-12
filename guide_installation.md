@@ -15,13 +15,21 @@ python3 -m venv env1
 source env1/bin/activate
 ```
 
+Sur windows, la commande pour aciver l'environnement virtuel est : 
+
+```bash
+env1\Scripts\activate
+```
+
 3. Installez l'application avec la commande : 
 
 ```bash
 python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps example-package-YOUR-USERNAME-HERE
 ```
 
-4. Vous devriez avoir un output de la forme : 
+Remplacez YOUR-USERNAME-HERE par votre identifiant utilisateur PyPI.
+
+4. Vous devriez obtenir un output de la forme : 
 
 ```bash
 Collecting example-package-YOUR-USERNAME-HERE
