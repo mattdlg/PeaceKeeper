@@ -1,4 +1,4 @@
-# ignore sphinx docs
+
 **/docs
 **/test.py
 **/Data Base/selected_images
