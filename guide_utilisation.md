@@ -2,16 +2,29 @@
 
 Si vous n'avez pas encore installer le logiciel sur votre machine, assurez vous de consulter le guide d'installation (guide_installation.md) avant toute tentative d'utilisation.
 
-1. Dans un terminal, lancer python à l'aide de la commande :
+1. Dans un terminal, créer un nouveau fichier python :
+
+Linux :
+```bash
+$ touch PeaceKeeper.py
+```
+
+Windows : 
+```cmd
+>type nul > PeaceKeeper.py
+```
+
+2. Ouvrer le fichier créer dans votre éditeur de code favorie, par exemple :
 
 ```bash
-$ python ou $ python3
+$ code PeaceKeeper.py
 ```
+(ouvre le fichier Dans Visual Code Studio)
 
 2. Importer le code nécessaire à l'exécution du logiciel :
 
 ```python
-From PeaceKeeper import new_inference
+From projet_4bim_test_1_agnc.Autoencodeur import new_inference
 ```
 
 3. Lancer la fonction principale de new_inference 
@@ -20,7 +33,13 @@ From PeaceKeeper import new_inference
 new_inference.main()
 ```
 
-Une interface graphique permettant la création d'un portrait robot numérique s'ouvre suite à l'appel de cette fonction. Cette interface affiche un menu principal depuis lequel l'utilisateur contrôlera l'application
+4. De retour dans un terminal, lancer le fichier ainsi construit.
+
+```bash
+$ python3 ./PeaceKeeper.py
+```
+
+Une interface graphique permettant la création d'un portrait robot numérique s'ouvre suite à l'exécution du fichier. Cette interface affiche un menu principal depuis lequel l'utilisateur contrôlera l'application
 
 4. A partir de cette interface, plusieurs actions sont possibles :
 - Quitter l'application à l'aide du bouton "quitter"
