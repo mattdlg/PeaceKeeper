@@ -1,1 +1,1 @@
-from Autoencodeur.new_inference import main
+from .new_inference import main
