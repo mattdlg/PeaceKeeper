@@ -14,10 +14,15 @@ import logging
 from datetime import datetime
 from shutil import copyfile
 import subprocess
+from AlgoGenetique import user_driven_algo_gen as udGA
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from AlgoGenetique import user_driven_algo_gen as udGA
-from utils_autoencoder import load_best_hyperparameters, Autoencoder, device, transform_
+
+
+try:
+    from Autoencodeur.utils_autoencoder import load_best_hyperparameters, Autoencoder, device, transform_
+except ImportError:
+    from utils_autoencoder import load_best_hyperparameters, Autoencoder, device, transform_
 
 
 ##############################################################################
@@ -1122,7 +1127,7 @@ class GenerationDialog(QtWidgets.QDialog):
         print(
             f"Après maj selected_images, len(img) : {len(self.selected_images)} et len(btn) : {len(self.selected_buttons)}")
 
-        if len(self.selected_images) != 2 :
+        if len(self.selected_images) != 2:
             msg_box = QtWidgets.QMessageBox(self)
             msg_box.setIcon(QtWidgets.QMessageBox.Icon.Warning)
             msg_box.setWindowTitle("Erreur")
@@ -1274,7 +1279,8 @@ class GenerationDialog(QtWidgets.QDialog):
 
         self.git_add_commit_push(save_path, f"Ajout d’un portrait suspect : {filename}")
 
-        QtCore.QTimer.singleShot(2000, lambda: self.show_success_message(filename, output_dir)) # délai d'affichage du message de 2s
+        QtCore.QTimer.singleShot(2000, lambda: self.show_success_message(filename,
+                                                                         output_dir))  # délai d'affichage du message de 2s
 
     def show_success_message(self, filename, output_dir):
         """
@@ -1797,7 +1803,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Ouvre la fenêtre de génération
         try:
             # Chemin absolu depuis la racine du projet
-            base_dir = Path(__file__).parent.parent  # Adaptez le nombre de .parent selon votre structure
+            base_dir = Path(__file__).parent.parent  # nombre de .parent à adapter
             images_folder = base_dir / "Data Bases" / "Celeb A" / "Images" / "selected_images"
 
             # Vérification du dossier
