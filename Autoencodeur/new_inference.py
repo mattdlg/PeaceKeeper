@@ -234,62 +234,63 @@ class TutorielDialog(QtWidgets.QDialog):
 class GenerationDialog(QtWidgets.QDialog):
     """Class GenerationDialog
 
-    This class allows viewing of images, user selection and reconstruction
-    with the genetic algorithm when the user clicks "Generation".
+    Cette classe permet d’afficher des images, de laisser l’utilisateur en sélectionner,
+    et de lancer la reconstruction avec l’algorithme génétique lorsque l’utilisateur
+    clique sur “Génération”.
     """
 
     def __init__(self, image_folder, parent=None):
         """
-        Creation of an instance of the GenerationDialog class.
+    Création d'une instance de la classe GenerationDialog.
 
-        Parameters
-        ----------
-        image_folder : str
-            Path to the images directory.
-        parent : QWidget, optional
-            Parent widget (default is None).
+    Paramètres
+    ----------
+    image_folder : str
+        Chemin vers le dossier contenant les images.
+    parent : QWidget, optionnel
+        Widget parent (par défaut None).
 
-         Attributes
-        ----------
-        image_folder : str
-            Path to the images directory.
-        all_image_paths : list
-            Liste contenant les chemins d'accès des fichiers présents dans le dossier Images.
-        autoencoder : AutoencoderModel
-            Instance used for image encoding and decoding.
-        selected_images : list
-            Stores paths of images selected by the user.
-        selected_buttons : list
-            Stores references to the clicked QPushButton instances.
-        visualized_images : set
-            Images already shown to the user.
-        button_image_map : dict
-            Links each button to its corresponding image.
-        main_layout : QVBoxLayout
-            The main vertical layout of the dialog window.
-        initial_section_layout : QVBoxLayout
-            Layout containing 10 clickable image buttons.
-        original_layout : QVBoxLayout
-            Layout used to display the two selected images buttons.
-        reconstructed_section_layout : QVBoxLayout
-            Layout used to display 6 new portraits with variations.
-        random_img_section_layout : QVBoxLayout
-            Layout used to display 4 randoms images.
-        final_image_layout : QHBoxLayout
-            Layout used to display the final portrait.
-        button_layout : QHBoxLayout
-            Layout for action buttons such as "Validate", "New Images", "Final Portrait", and "Close".
-        self.transforms : torchvision.transforms.Compose
-            A composition of preprocessing transformations applied to input images before
-            passing them through the model. Includes resizing, center cropping, and normalization
-            to tensor format.
-        self.device : torch.device
-            Specifies the device on which tensors and the autoencoder model will be allocated.
-            Automatically selects 'cuda' if a GPU is available; otherwise defaults to 'cpu'.
-        self.model : Autoencoder
-            The convolutional autoencoder model used to encode and decode images.
-            It is initialized with the best hyperparameters.
-        """
+    Attributs
+    ---------
+    image_folder : str
+        Chemin vers le dossier contenant les images.
+    all_image_paths : list
+        Liste contenant les chemins d'accès des fichiers présents dans le dossier d'images.
+    autoencoder : AutoencoderModel
+        Instance utilisée pour l'encodage et le décodage des images.
+    selected_images : list
+        Contient les chemins des images sélectionnées par l'utilisateur.
+    selected_buttons : list
+        Contient les références des boutons QPushButton cliqués.
+    visualized_images : set
+        Ensemble des images déjà affichées à l'utilisateur.
+    button_image_map : dict
+        Associe chaque bouton à son image correspondante.
+    main_layout : QVBoxLayout
+        Layout vertical principal de la fenêtre de dialogue.
+    initial_section_layout : QVBoxLayout
+        Layout contenant les 10 boutons d’image cliquables.
+    original_layout : QVBoxLayout
+        Layout utilisé pour afficher les deux boutons des images sélectionnées.
+    reconstructed_section_layout : QVBoxLayout
+        Layout utilisé pour afficher 6 nouveaux portraits avec des variations.
+    random_img_section_layout : QVBoxLayout
+        Layout utilisé pour afficher 4 images aléatoires.
+    final_image_layout : QHBoxLayout
+        Layout utilisé pour afficher le portrait final.
+    button_layout : QHBoxLayout
+        Layout pour les boutons d’action tels que “Valider”, “Nouvelles Images”, “Portrait Final” et “Fermer”.
+    self.transforms : torchvision.transforms.Compose
+        Composition de transformations de prétraitement appliquées aux images d'entrée avant de les passer dans le modèle.
+        Inclut le redimensionnement, le recadrage centré, et la normalisation vers le format tenseur.
+    self.device : torch.device
+        Spécifie l’appareil (CPU ou GPU) sur lequel les tenseurs et le modèle autoencodeur seront alloués.
+        Sélectionne automatiquement 'cuda' si un GPU est disponible ; sinon utilise 'cpu'.
+    self.model : Autoencoder
+        Le modèle d’autoencodeur convolutif utilisé pour encoder et décoder les images.
+        Il est initialisé avec les meilleurs hyperparamètres.
+    """
+
         super().__init__(parent)
         self.setWindowTitle("Variation des portraits")
 
@@ -300,7 +301,7 @@ class GenerationDialog(QtWidgets.QDialog):
         self.visualized_images = set()  # Ensemble pour garder trace des images déjà affichées
         self.button_image_map = {}  # Dictionnaire pour lier les boutons aux images
 
-        # Configuration of the window
+        # Configuration de la fenêtre
         self.setWindowFlags(QtCore.Qt.WindowType.FramelessWindowHint | QtCore.Qt.WindowType.Dialog)
         self.setModal(True)
         self.setStyleSheet("background-color: #000000; border: none;")
@@ -309,17 +310,15 @@ class GenerationDialog(QtWidgets.QDialog):
         screen_geometry = QtWidgets.QApplication.primaryScreen().geometry()
         self.setGeometry(screen_geometry)
 
-        # Principal Layout
-        #self.main_layout = QtWidgets.QVBoxLayout(self)
+        # Layout principal
         self.main_layout = QtWidgets.QVBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
-        print("Layout principal initialisé avec succès !")
 
-        # Create a layout to display 10 images
+        # Créer un layout pour afficher 10 images
         self.initial_section_layout = QtWidgets.QVBoxLayout()
         black_block = QtWidgets.QWidget()
         black_block.setStyleSheet("background-color: black;")
-        black_block.setFixedHeight(80)  # Hauteur du bloc noir, ajustable selon le besoin
+        black_block.setFixedHeight(80)
         self.initial_section_layout.addWidget(black_block)
         self.title_label_choice = QtWidgets.QLabel("Veuillez sélectionner 2 portraits")
         self.title_label_choice.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -331,9 +330,8 @@ class GenerationDialog(QtWidgets.QDialog):
         self.initial_layout.setContentsMargins(0, 70, 0, 50)
         self.initial_section_layout.addLayout(self.initial_layout)
         self.main_layout.addLayout(self.initial_section_layout)
-        # self.main_layout.addStretch(1)  # Ajoute un espace flexible entre les deux layouts
 
-        # Layout to display selected images
+        # Layout pour afficher les images sélectionnées
         self.original_layout = QtWidgets.QVBoxLayout()
         self.title_label = QtWidgets.QLabel("Images sélectionnées")
         self.title_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -342,12 +340,10 @@ class GenerationDialog(QtWidgets.QDialog):
         self.original_layout.addWidget(self.title_label)
         self.images_layout = QtWidgets.QGridLayout()
         self.images_layout.setContentsMargins(0, 0, 0, 0)
-        #self.images_layout.setSpacing(150)
         self.original_layout.addLayout(self.images_layout)
 
-        # Layout to display images generated by genetic algorithm
+        # Layout pour afficher les images reconstruites par l'algorithme génétique
         self.reconstructed_section_layout = QtWidgets.QVBoxLayout()
-        #self.reconstructed_section_layout.setSpacing(5)
         self.reconstructed_section_layout.setContentsMargins(0, 0, 0, 0)
         self.title_label_choice = QtWidgets.QLabel("Veuillez sélectionner 2 portraits")
         self.title_label_choice.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -358,17 +354,14 @@ class GenerationDialog(QtWidgets.QDialog):
         self.reconstructed_layout.setContentsMargins(0, 20, 0, 20)
         self.reconstructed_section_layout.addLayout(self.reconstructed_layout)
 
-        # Créer un layout vertical pour les 2 premiers
+        # Créer un layout vertical pour les 2 premiers layout
         self.left_layout = QtWidgets.QVBoxLayout()
         self.left_layout.addLayout(self.original_layout)
-        #self.left_layout.addStretch(1)
         self.left_layout.addLayout(self.reconstructed_section_layout)
 
-        # Layout to display new randoms images
+        # Layout pour afficher des nouvelles images encore jamais vu par l'utilisateur
         self.random_img_section_layout = QtWidgets.QVBoxLayout()
-        #self.random_img_section_layout.setSpacing(5)
         self.random_img_section_layout.setContentsMargins(0, 0, 0, 0)
-        #self.random_img_section_layout.setFixedWidth(300)
         self.title_random_img_section = QtWidgets.QLabel("Nouvelles images")
         self.title_random_img_section.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.title_random_img_section.setStyleSheet(
@@ -381,10 +374,9 @@ class GenerationDialog(QtWidgets.QDialog):
         # Créer un layout horizontal pour ajouter left_layout et random_img_section_layout
         self.all_images_as_btn_layout = QtWidgets.QHBoxLayout()
         self.all_images_as_btn_layout.addLayout(self.left_layout)
-        #self.all_images_as_btn_layout.addStretch(1)
         self.all_images_as_btn_layout.addLayout(self.random_img_section_layout)
 
-        # Layout to dispaly definitive portrait
+        # Layout pour afficher le portrait robot définitif
         self.final_reconstruction_layout = QtWidgets.QVBoxLayout()
         black_block2 = QtWidgets.QWidget()
         black_block2.setStyleSheet("background-color: black;")
@@ -398,13 +390,13 @@ class GenerationDialog(QtWidgets.QDialog):
         self.final_image_layout = QtWidgets.QHBoxLayout()
         self.final_reconstruction_layout.addLayout(self.final_image_layout)
 
-        # Layout for buttons
+        # Layout pour les boutons
         self.button_layout = QtWidgets.QHBoxLayout()
         self.button_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.button_layout.setSpacing(10)
         self.button_layout.setContentsMargins(0, 0, 0, 0)
 
-        # Add 'Fermer' button
+        # Ajout du bouton 'Fermer'
         self.close_btn = QtWidgets.QPushButton("Fermer")
         self.close_btn.setStyleSheet("""
             QPushButton {
@@ -421,7 +413,7 @@ class GenerationDialog(QtWidgets.QDialog):
         self.close_btn.clicked.connect(self.accept)
         self.button_layout.addWidget(self.close_btn, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
 
-        # Add 'Valider' button
+        # Ajout du bouton 'Valider'
         self.validate_btn = QtWidgets.QPushButton("Valider")
         self.validate_btn.setStyleSheet("""
                                 QPushButton {
@@ -438,7 +430,7 @@ class GenerationDialog(QtWidgets.QDialog):
         self.validate_btn.clicked.connect(self.validate_selection)
         self.button_layout.addWidget(self.validate_btn, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
 
-        # Add "Nouvelles images" button
+        # Ajout du bouton "Nouvelles images"
         self.load_new_img = QtWidgets.QPushButton("Nouvelles images")
         self.load_new_img.setStyleSheet(""" QPushButton {
                                 border: 2px solid #fff;
@@ -454,7 +446,7 @@ class GenerationDialog(QtWidgets.QDialog):
         self.load_new_img.clicked.connect(self.load_images)
         self.button_layout.addWidget(self.load_new_img, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
 
-        # Add "Portrait définitif" button
+        # Ajout du bouton "Portrait définitif"
         self.final_btn = QtWidgets.QPushButton("Portrait définitif")
         self.final_btn.setStyleSheet("""
                     QPushButton {
@@ -477,7 +469,6 @@ class GenerationDialog(QtWidgets.QDialog):
         self.model = Autoencoder(nb_channels=best_params['nb_channels'], nb_layers=best_params['nb_layers']).to(
             self.device)
 
-        # self.model.load_state_dict(torch.load('conv_autoencoder.pth', map_location=self.device))
         try:
             self.load_model()
         except FileNotFoundError as e:
@@ -553,9 +544,9 @@ class GenerationDialog(QtWidgets.QDialog):
         Makes use of
         ------------
         selected_images : list
-            Stores paths of images selected by the user.
+            Contient le chemin des images sélectionnées par l'utilisateur.
         selected_buttons : list
-            Stores references to the clicked QPushButton instances.
+            Contient les références aux QPushButton cliqués (associés aux images).
 
         Returns
         -------
@@ -571,45 +562,37 @@ class GenerationDialog(QtWidgets.QDialog):
 
     def load_images(self):
         """
-        Selects up to 10 images that have not yet been visualized from the specified folder.
-        Each image is displayed as a button using method 'display_buttons'.
-        Once an image is loaded, it is marked as visualized.
-        If no unviewed images remain, a warning message box is displayed to the user.
+        Sélectionne jusqu’à 10 images qui n'ont pas encore été visualisées depuis le dossier spécifié.
+        Chaque image est affichée sous forme de bouton grâce à la méthode 'display_buttons'.
+        Une fois une image chargée, elle est marquée comme visualisée.
+        Si aucune image non visualisée ne reste, une boîte de message d'avertissement est affichée à l’utilisateur.
 
-        Images are resized for consistency and buttons are added to a 5x2 grid. Each button allows
-        the user to select images for further interaction.
+        Les images sont redimensionnées pour assurer une cohérence visuelle et les boutons sont ajoutés à une grille 5x2.
+        Chaque bouton permet à l’utilisateur de sélectionner des images pour des interactions ultérieures.
 
-        Parameters
+        Paramètres
         ----------
         None
 
-        Makes use of
-        ------------
-        self.selected_buttons : list
-            Stores references to the clicked QPushButton instances.
-        self.image_folder : str
-            Path to the images directory.
-        self.visualized_images : set
-            Images already shown to the user.
-        self.initial_layout : QtWidgets.QGridLayout
-            Layout in which the image buttons are added.
-        self.display_buttons : method
-            Method used to add images as buttons to a given layout.
-        self.reset_selected_buttons : method
-            Réinitialisation de la liste des images et retire l'effet d'ombrage de ces images.
-
-        Returns
+        Utilise
         -------
+        self.selected_buttons : list
+            Contient les références des instances de QPushButton cliquées.
+        self.image_folder : str
+            Chemin vers le dossier contenant les images.
+        self.visualized_images : set
+            Ensemble des images déjà affichées à l'utilisateur.
+        self.initial_layout : QtWidgets.QGridLayout
+            Layout dans lequel les boutons des images sont ajoutés.
+        self.display_buttons : méthode
+            Méthode utilisée pour ajouter les images sous forme de boutons dans un layout donné.
+        self.reset_selected_buttons : méthode
+            Réinitialise la liste des images sélectionnées et retire l’effet d’ombre sur ces images.
+
+        Retourne
+        --------
         None
         """
-        print("Début du chargement des images...")
-
-        # Récupérer les chemins des images
-        # image_paths = glob.glob(os.path.join(self.image_folder, "*"))[:10]
-        # Récupérer les chemins des images qui n'ont pas encore été visualisées
-        #image_paths = [img_path for img_path in glob.glob(os.path.join(self.image_folder, "*"))if img_path not in self.visualized_images][:10]
-        # Récupérer les chemins des images qui n'ont pas encore été visualisées
-        #all_image_paths = glob.glob(os.path.join(self.image_folder, "*"))
 
         if self.selected_buttons:
             self.reset_selected_buttons()
@@ -617,8 +600,6 @@ class GenerationDialog(QtWidgets.QDialog):
         remaining_images = [img_path for img_path in self.all_image_paths if img_path not in self.visualized_images]
 
         if not remaining_images:
-            print("Aucune image trouvée !")
-            # QtWidgets.QMessageBox.warning(self, "Avertissement", "Impossible de générer de nouvelles images, toutes les images ont été visualisées")
             msg_box = QtWidgets.QMessageBox(self)
             msg_box.setIcon(QtWidgets.QMessageBox.Icon.Warning)
             msg_box.setWindowTitle("Avertissement")
@@ -650,10 +631,9 @@ class GenerationDialog(QtWidgets.QDialog):
             msg_box.exec()
             return
 
-        # Selects 10 random images from those not viewed (or less if fewer than 10 remaining)
+        # Sélectionne 10 images randoms encore jamais visualisées.
         image_paths = random.sample(remaining_images, min(10, len(remaining_images)))
 
-        # Add images as a button in the grid
         for i, img_path in enumerate(image_paths):
             self.visualized_images.add(img_path)
 
@@ -661,31 +641,30 @@ class GenerationDialog(QtWidgets.QDialog):
 
     def display_original_images(self):
         """
-        Display the 2 selected images in the layout.
+        Affiche les 2 images sélectionnées dans le layout.
 
-        Clears the current content of the layout used for displaying previous selected images
-        (only images, not the label "Images sélectionnées"),
-        then shows the images selected by the user. The layout is updated
-        with those images, organized in a 2-column format using the method 'display_buttons'.
+        Efface le contenu actuel du layout utilisé pour afficher les images précédemment sélectionnées
+        (seulement les images, pas le label "Images sélectionnées"),
+        puis affiche les nouvelles images sélectionnées par l’utilisateur. Le layout est ensuite mis à jour
+        avec ces images, organisées en deux colonnes à l’aide de la méthode 'display_buttons'.
 
-        Parameters
+        Paramètres
         ----------
         None
 
-        Makes use of
-        ------------
-        self.selected_images : list
-            Stores references to the clicked QPushButton instances.
-        self.images_layout : QtWidgets.QGridLayout
-            Layout in which the image buttons are added.
-        self.display_buttons : method
-            Method used to add images as buttons to a given layout.
-
-        Returns
+        Utilise
         -------
+        self.selected_images : list
+            Contient les références des instances de QPushButton cliquées.
+        self.images_layout : QtWidgets.QGridLayout
+            Layout dans lequel les boutons des images sont ajoutés.
+        self.display_buttons : méthode
+            Méthode utilisée pour ajouter les images sous forme de boutons dans un layout donné.
+
+        Retourne
+        --------
         None
         """
-        print(f"Images sélectionnées : {self.selected_images}")
 
         for i in reversed(range(self.images_layout.count())):
             widget = self.images_layout.itemAt(i).widget()
@@ -696,50 +675,47 @@ class GenerationDialog(QtWidgets.QDialog):
 
     def display_buttons(self, layout, data_img, nb_col, target_size):
         """
-        Display a list of images as clickable buttons in the given layout.
+        Affiche une liste d’images sous forme de boutons cliquables dans le layout spécifié.
 
-        Handles both image file paths for the first visualisation (as strings, invalid images are replaced with a gray placeholder)
-        and NumPy arrays (reconstructed images).
-        For each image, a QPushButton is created with the image as its icon. These buttons are arranged
-        in the specified layout using a grid format with a defined number of columns. Each button is linked
-        to a callback function for image selection and is stored in the 'button_image_map' dictionary
-        to maintain its associated image data.
+        Gère à la fois les chemins de fichiers image pour une première visualisation (en tant que chaînes de caractères,
+        les images invalides étant remplacées par un espace réservé gris), et les tableaux NumPy (pour les images reconstruites).
+        Pour chaque image, un QPushButton est créé avec l’image comme icône. Ces boutons sont ensuite organisés
+        dans le layout spécifié selon une grille avec un nombre de colonnes défini. Chaque bouton est relié
+        à une fonction de rappel permettant la sélection d’image, et est stocké dans le dictionnaire 'button_image_map'
+        afin de conserver l’image associée à chaque bouton.
 
-        Parameters
+        Paramètres
         ----------
         layout : QGridLayout
-            The layout in which the image buttons will be added.
+            Layout dans lequel les boutons des images seront ajoutés.
         data_img : list
-            A list of images to display. Each item can be a file path or a NumPy array.
+            Liste d’images à afficher. Chaque élément peut être un chemin de fichier ou un tableau NumPy.
         nb_col : int
-            Number of columns to arrange the image buttons in the layout.
+            Nombre de colonnes à utiliser pour organiser les boutons dans le layout.
         target_size : int
-            Target size of the image buttons in the layout.
+            Taille cible des images dans le layout.
 
-        Makes use of
-        ------------
-        self.button_image_map : dict
-            Links each button to its corresponding image.
-        self.select_image_from_generated : method
-            Method used to update selected images by user.
-
-        Returns
+        Utilise
         -------
+        self.button_image_map : dict
+            Associe chaque bouton à son image correspondante.
+        self.select_image_from_generated : méthode
+            Méthode utilisée pour mettre à jour les images sélectionnées par l'utilisateur.
+
+        Retourne
+        --------
         None
-            This method modifies the layout.
+            Cette méthode modifie directement le layout.
         """
 
-        # Add images as buttons
         for i, img_array in enumerate(data_img):
             if isinstance(img_array, str):
                 img_qpixmap = QtGui.QPixmap(img_array)
                 if img_qpixmap.isNull():
-                    img_qpixmap = QtGui.QPixmap(target_size, target_size)  #targe_size à la place
+                    img_qpixmap = QtGui.QPixmap(target_size, target_size)
                     img_qpixmap.fill(QtGui.QColor("gray"))
-                #img_qpixmap = img_qpixmap.scaled(target_size, target_size, QtCore.Qt.AspectRatioMode.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation)
             elif isinstance(img_array, np.ndarray):
                 img_pil = Image.fromarray((img_array * 255).astype(np.uint8))
-                #img_pil = img_pil.resize((target_size, target_size), Image.Resampling.LANCZOS)
                 img_qpixmap = QtGui.QPixmap.fromImage(QtGui.QImage(
                     img_pil.tobytes("raw", "RGB"),
                     img_pil.width, img_pil.height, img_pil.width * 3, QtGui.QImage.Format.Format_RGB888
@@ -749,44 +725,43 @@ class GenerationDialog(QtWidgets.QDialog):
             img_width = img_qpixmap.width()
             img_height = img_qpixmap.height()
 
-            # Creation of button
+            # Création du bouton
             btn = QtWidgets.QPushButton(self)
             btn.setFixedSize(img_width, img_height)
             btn.setIcon(QtGui.QIcon(img_qpixmap))
             btn.setIconSize(QtCore.QSize(img_width, img_height))
             btn.setStyleSheet("border: none;")
             btn.clicked.connect(lambda checked, p=img_array, b=btn: self.select_image_from_generated(b))
-            # btn.clicked.connect(lambda checked: self.on_button_click(checked, img_array, btn))
-            # btn.clicked.connect(lambda checked, p=img_array, b=btn: self.say_hello(p, b))
 
-            # Associate the button to its numpy in the dictionary
+            # Association de l'image à son bouton dans le dictionnaire
             self.button_image_map[btn] = img_array
 
             layout.addWidget(btn, i // nb_col, i % nb_col)
 
     def display_images(self, layout, img_size):
         """
-        Display selected images in the specified layout.
-        This method iterates over 'self.selected_images', which can contain either
-        file paths (str) or NumPy arrays representing images.
+        Affiche les images sélectionnées dans le layout spécifié.
+        Cette méthode parcourt 'self.selected_images', qui peut contenir soit
+        des chemins de fichiers (str), soit des tableaux NumPy représentant des images.
 
-        Parameters
+        Paramètres
         ----------
         layout : QGridLayout
-            The layout where the images will be displayed.
+            Layout dans lequel les images seront affichées.
         img_size : int
-            The target size (img_size=width=height) for the displayed images.
+            Taille cible (img_size = largeur = hauteur) pour les images affichées.
 
-        Makes use of
-        ------------
-        self.selected_images : list
-            Stores paths of images selected by the user.
-
-        Returns
+        Utilise
         -------
+        self.selected_images : list
+            Contient les chemins des images sélectionnées par l’utilisateur.
+
+        Retourne
+        --------
         None
-            The method modifies the given layout by adding images.
+            La méthode modifie le layout donné en y ajoutant les images.
         """
+
         for img_data in self.selected_images:
             label = QtWidgets.QLabel()
             label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -807,28 +782,28 @@ class GenerationDialog(QtWidgets.QDialog):
 
     def display_generated_images(self, generated_images):
         """
-        This method is called after running the genetic algorithm to generate new
-        image variations. It first removes previously displayed images QPushButtons.
-        Then, it displays the new images using the 'display_buttons' method in a 3-column grid layout.
+        Cette méthode est appelée après l’exécution de l’algorithme génétique pour générer
+        de nouvelles variations d’images. Elle commence par supprimer les anciens QPushButtons d’images affichées.
+        Ensuite, elle affiche les nouvelles images à l’aide de la méthode 'display_buttons' dans un layout en grille à 3 colonnes.
 
-        Parameters
+        Paramètres
         ----------
         generated_images : list
-            A list of images with variations from the selected images
+            Liste d’images représentant des variations à partir des images sélectionnées.
 
-        Makes use of
-        ------------
-        self.reconstructed_layout : QGridLayout
-            Layout where the new generated images will be displayed.
-        self.validate_btn : QPushButton
-            The validation button to sumbmit user choice.
-        self.display_buttons : method
-            Method used to add images as buttons to the reconstructed layout.
-
-        Returns
+        Utilise
         -------
+        self.reconstructed_layout : QGridLayout
+            Layout où les nouvelles images générées seront affichées.
+        self.validate_btn : QPushButton
+            Bouton de validation permettant de soumettre le choix de l’utilisateur.
+        self.display_buttons : méthode
+            Méthode utilisée pour ajouter les images sous forme de boutons dans le layout reconstruit.
+
+        Retourne
+        --------
         None
-            The method modifies the reconstructed layout .
+            La méthode modifie le layout reconstruit.
         """
 
         # Nettoyer l'affichage actuel
@@ -836,41 +811,40 @@ class GenerationDialog(QtWidgets.QDialog):
         for i in reversed(range(self.reconstructed_layout.count())):
             widget = self.reconstructed_layout.itemAt(i).widget()
             if widget and isinstance(widget, QtWidgets.QPushButton):
-                # A tester mais je pense qu'on peut enlever
                 if widget not in [self.validate_btn]:
                     widget.deleteLater()
-                    # print("Bouton supprimé dans reconstructed_layout")
 
         self.display_buttons(self.reconstructed_layout, generated_images, 3, 150)
 
     def display_new_randoms_images(self):
         """
-        Affiche 4 images randoms encore jamais vu par l'utilisateur.
+        Affiche 3 images randoms encore jamais vu par l'utilisateur.
 
         Nettoie le contenu actuel du layout (uniquement les précédentest images).
         Ces images sont des boutons cliquables.
         Le layout est mis à jour avec 3 images organisées en format colonne,
         en utilisant la méthode 'display_buttons'.
 
-        Parameters
+        Paramètres
         ----------
         None
 
-        Makes use of
-        ------------
-        self.random_img_grid_layout : list
-            Layout in which the image buttons are added.
-        self.display_buttons : method
-            Method used to add images as buttons to a given layout.
-        self.all_image_paths : list
-            Liste contenant les chemins d'accès des fichiers présents dans le dossier Images.
-        self.visualized_images : set
-            Images already shown to the user.
-
-        Returns
+        Utilise
         -------
+        self.random_img_grid_layout : list
+            Layout dans lequel les boutons d’images sont ajoutés.
+        self.display_buttons : méthode
+            Méthode utilisée pour ajouter les images sous forme de boutons dans un layout donné.
+        self.all_image_paths : list
+            Liste contenant les chemins d’accès des fichiers présents dans le dossier Images.
+        self.visualized_images : set
+            Ensemble des images déjà affichées à l’utilisateur.
+
+        Retourne
+        --------
         None
         """
+
         for i in reversed(range(self.random_img_grid_layout.count())):
             widget = self.random_img_grid_layout.itemAt(i).widget()
             if widget:
@@ -878,9 +852,9 @@ class GenerationDialog(QtWidgets.QDialog):
 
         remaining_images = [img_path for img_path in self.all_image_paths if img_path not in self.visualized_images]
 
+
         if not remaining_images:
             print("Toutes les img ont été affichées")
-            # ajouter qqchose pour afficher une img grise
             return
 
         image_paths = random.sample(remaining_images, min(3, len(remaining_images)))
@@ -892,44 +866,43 @@ class GenerationDialog(QtWidgets.QDialog):
 
     def display_definitive_portrait(self):
         """
-        Display the definitive portrait based on the selected image.
+        Affiche le portrait définitif basé sur l’image sélectionnée.
 
-        This method first checks if exactly one image has been selected. If not, it
-        shows a warning message box to ask the user to select exactly one image.
-        If one image is selected, it clears the principal layout
-        (removes unnecessary buttons) and updates the final reconstruction layout
-        to show the final portrait.
+        Cette méthode vérifie d’abord si une seule image a été sélectionnée. Si ce n’est pas le cas,
+        elle affiche une boîte de message d’avertissement demandant à l’utilisateur de sélectionner une seule image.
+        Si une image est bien sélectionnée, elle nettoie le layout principal
+        (en supprimant les boutons inutiles) et met à jour le layout de reconstruction final
+        pour afficher le portrait définitif.
 
-        Parameters
+        Paramètres
         ----------
         None
 
-        Makes use of
-        ------------
-        self.selected_images : list
-            Stores references to the clicked QPushButton instances.
-            Length of list should be equal to one here.
-        self.selected_buttons : list
-            A list of selected buttons, cleared at the beginning of the method.
-        self.button_layout : QHBoxLayout
-            Layout for action buttons.
-        self.main_layout : QVBoxLayout
-            The main vertical layout of the dialog window.
-        self.final_reconstruction_layout : QVBoxLayout
-            The layout used to display the final portrait.
-        self.display_images : method
-            Displays the images on the layout with a specified size.
-        self.save_definitive_portrait : method
-            Sauvegarde l'image du portrait définitif sélectionné par l'utilisateur dans le dossier spécifié.
-
-        Returns
+        Utilise
         -------
+        self.selected_images : list
+            Contient les références des instances de QPushButton cliquées.
+            La liste doit contenir exactement un élément ici.
+        self.selected_buttons : list
+            Liste des boutons sélectionnés, réinitialisée au début de la méthode.
+        self.button_layout : QHBoxLayout
+            Layout contenant les boutons d’action.
+        self.main_layout : QVBoxLayout
+            Layout vertical principal de la fenêtre de dialogue.
+        self.final_reconstruction_layout : QVBoxLayout
+            Layout utilisé pour afficher le portrait final.
+        self.display_images : méthode
+            Affiche les images dans le layout avec une taille spécifiée.
+        self.save_definitive_portrait : méthode
+            Sauvegarde l’image du portrait définitif sélectionné par l’utilisateur dans le dossier spécifié.
+
+        Retourne
+        --------
         None
-            The method modifies the final reconstruction layout and the user interface directly.
+            La méthode modifie directement le layout de reconstruction final et l’interface utilisateur.
         """
+
         self.selected_buttons.clear()
-        print(
-            f"Après maj selected_images, len(img) : {len(self.selected_images)} et len(btn) : {len(self.selected_buttons)}")
 
         if len(self.selected_images) != 1:
             msg_box = QtWidgets.QMessageBox(self)
@@ -962,7 +935,6 @@ class GenerationDialog(QtWidgets.QDialog):
                             """)
             msg_box.exec()
             return
-        print("Il y a bien qu'une seule image sélectionnée !")
 
         self.button_layout.removeWidget(self.validate_btn)
         self.validate_btn.deleteLater()
@@ -973,8 +945,6 @@ class GenerationDialog(QtWidgets.QDialog):
         self.remove_layout(self.main_layout, self.reconstructed_section_layout)
         self.remove_layout(self.main_layout, self.random_img_section_layout)
         self.main_layout.addLayout(self.final_reconstruction_layout)
-        #self.final_reconstruction_layout.addStretch(1)
-        #self.main_layout.addStretch(1)
         self.main_layout.addLayout(self.button_layout)
         self.display_images(self.final_image_layout, 400)
 
@@ -982,149 +952,130 @@ class GenerationDialog(QtWidgets.QDialog):
 
     def generate_new_images(self, selected_images):
         """
-        Generate 6 new images from the two selected images using a genetic algorithm.
+        Génère 6 nouvelles images à partir des deux images sélectionnées en utilisant un algorithme génétique.
 
-        This method processes the selected images by first encoding them into latent vectors
-        using an autoencoder model. Then, it applies a genetic algorithm to create 6 new images
-        based on these encoded vectors. Finally, the new images are decoded (reconstructed).
-        Finally, the new images are displayed thanks to 'display_generated_images' method.
+        Cette méthode traite les images sélectionnées en les encodant d’abord en vecteurs latents
+        à l’aide d’un modèle d’autoencodeur. Ensuite, elle applique un algorithme génétique pour créer
+        6 nouvelles images à partir de ces vecteurs encodés. Enfin, les nouvelles images sont décodées (reconstruites)
+        et affichées grâce à la méthode 'display_generated_images'.
 
-        Parameters
+        Paramètres
         ----------
         selected_images : list
-            A list containing paths to the selected images (as strings) or numpy arrays
-            representing the selected images. These images will be used to generate new ones.
+            Liste contenant les chemins des images sélectionnées (sous forme de chaînes de caractères)
+            ou des tableaux NumPy représentant les images sélectionnées. Ces images seront utilisées pour générer les nouvelles.
 
-        Makes use of
-        ------------
-        self.transforms : torchvision.transforms.Compose
-            A composition of preprocessing transformations applied to input images before
-            passing them through the model. Includes resizing, center cropping, and normalization
-            to tensor format.
-        self.device : torch.device
-            Specifies the device on which tensors and the autoencoder model will be allocated.
-            Automatically selects 'cuda' if a GPU is available; otherwise defaults to 'cpu'.
-        self.model : Autoencoder
-            The convolutional autoencoder model used to encode and decode images.
-            It is initialized with the best hyperparameters.
-        self.selected_images : list
-            Stores references to the clicked QPushButton instances
-            (will be used as input to the genetic algorithm).
-        self.button_layout : QHBoxLayout
-            Layout for action buttons.
-        self.final_btn : QPushButton
-            The "Portrait définitif" button, which is displayed once the new images are generated
-            to choose the final portrait image.
-        self.display_original_images : method
-            Displays the images selected by the user.
-        self.display_generated_images : method
-            Displays the new images generated by the genetic algorithm.
-
-        Returns
+        Utilise
         -------
+        self.transforms : torchvision.transforms.Compose
+            Une composition de transformations de prétraitement appliquées aux images avant
+            de les passer dans le modèle. Comprend redimensionnement, recadrage centré et normalisation
+            au format tensor.
+        self.device : torch.device
+            Spécifie l’appareil sur lequel les tenseurs et le modèle d’autoencodeur seront alloués.
+            Sélectionne automatiquement 'cuda' si un GPU est disponible, sinon utilise 'cpu'.
+        self.model : Autoencoder
+            Le modèle d’autoencodeur convolutionnel utilisé pour encoder et décoder les images.
+            Il est initialisé avec les meilleurs hyperparamètres.
+        self.selected_images : list
+            Contient les références des instances de QPushButton cliquées
+            (utilisées comme entrée pour l’algorithme génétique).
+        self.button_layout : QHBoxLayout
+            Layout contenant les boutons d’action.
+        self.final_btn : QPushButton
+            Le bouton "Portrait définitif", affiché une fois les nouvelles images générées,
+            permettant de choisir l’image finale.
+        self.display_original_images : méthode
+            Affiche les images sélectionnées par l’utilisateur.
+        self.display_generated_images : méthode
+            Affiche les nouvelles images générées par l’algorithme génétique.
+
+        Retourne
+        --------
         None
-            The method modifies the user interface by displaying both the selected images and
-            the generated images.
+            La méthode modifie l’interface utilisateur en affichant à la fois les images sélectionnées
+            et les images générées.
         """
 
-        # Charger et encoder les images sélectionnées
         list_vectors = []
-
-        """
-        for img_path in selected_images:
-            img = Image.open(img_path).convert("RGB")
-        """
 
         for img_data in selected_images:
             # Si c'est un chemin de fichier (les 10 images générées initialement):
             if isinstance(img_data, str):
                 img = Image.open(img_data).convert("RGB")
-                # print("Les images sont converties en RGB")
             # Si c'est une liste de numpy array (les images regénérées),
             # convertir en PIL.Image
             elif isinstance(img_data, np.ndarray):
-                # Vérifier si c'est la bonne conversion
                 img = Image.fromarray((img_data * 255).astype(np.uint8))
             else:
                 print(f"Type de donnée inattendu : {type(img_data)}")
-                continue  # On saute cet élément s'il est invalide
+                continue
 
             tensor_img = self.transforms(img).unsqueeze(0).to(self.device)
-            #tensor_img = self.autoencoder.transforms(img).unsqueeze(0).to(self.autoencoder.device)
 
             with torch.no_grad():
                 latent_vector = self.model.encode(tensor_img)
                 list_vectors.append(latent_vector[0].cpu().numpy())
 
         # Appliquer l'algorithme génétique pour générer 6 nouvelles images
-        # new_targets = GAm.create_multiple_target_from_pictures([v[0] for v in list_vectors], 6)
-        # solutions = GAm.run_multiple_ga(new_targets)
         solutions = udGA.run_ga(list_vectors, nb_solutions=6, crossover_method="single-point", mutation_rate=0.3,
                                 sigma_mutation=0.25)
         # Convertir en tenseur PyTorch
         sol = torch.tensor(solutions, dtype=torch.float32)
         sol = sol.view(solutions.shape[0], list_vectors[0].shape[0])
-        #sol = torch.tensor(solutions, dtype=torch.float32).view(solutions.shape[0], 128, 8, 8)
 
         with torch.no_grad():
             reconstructed = self.model.decode(sol).cpu().numpy().transpose(0, 2, 3, 1)
-        print("Les solutions sont reconstruites")
-        # print(f"Les images originales sont : {self.selected_images}")
 
         if self.button_layout.indexOf(self.final_btn) == -1:  # Vérifie si le bouton est déjà dans le layout
             self.button_layout.addWidget(self.final_btn, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
 
-        # Display selected images and images generated by GA as buttons
-        print(self.selected_images)
+        # Affiche les images sléectionnées, les images générées par GA et les images randoms
         self.display_original_images()
         self.selected_images.clear()
         self.display_generated_images(reconstructed)
         self.display_new_randoms_images()
-        print("L'étape de visualisation est réussit")
 
     def validate_selection(self):
         """
-        Validates the selection of two images and displays the reconstructed image
-        of the first selected image.
+        Valide la sélection de deux images et affiche l’image reconstruite de la première image sélectionnée.
 
-        This method ensures that exactly two images have been selected by the user.
-        Once the selection is validated, the main layout is updated by removing
-        the initial layout with 10 images and displaying the reconstructed version
-        with layout containing selected images and images generated by GA.
-        'generate_new_images' is called.
+        Cette méthode s’assure que exactement deux images ont été sélectionnées par l’utilisateur.
+        Une fois la sélection validée, le layout principal est mis à jour en supprimant
+        le layout initial avec 10 images et en affichant la version reconstruite
+        avec un layout contenant les images sélectionnées et les images générées par l'algorithme génétique (GA).
+        La méthode 'generate_new_images' est appelée.
 
-        Parameters
+        Paramètres
         ----------
         None
 
-        Makes use of
-        ------------
-        self.selected_images : list
-            Stores references to the clicked QPushButton instances.
-            Length of list should be equal to two here.
-        self.main_layout : QVBoxLayout
-            The main layout of the window.
-        self.reconstructed_section_layout : QVBoxLayout
-            Layout used to display 6 new portraits with variations.
-        self.button_layout : QHBoxLayout
-            Layout for action buttons, which is updated during the validation process.
-        self.load_new_img : QPushButton
-            A button to generate 10 new portraits.
-            It is removed if it was present.
-        self.original_layout : QVBoxLayout
-            Layout used to display the two selected images buttons.
-        self.generate_new_images : method
-            A method used to generate and display images thanks to GA based on the selected ones.
-
-        Returns
+        Utilise
         -------
+        self.selected_images : list
+            Contient les références des instances de QPushButton cliquées.
+            La liste doit contenir exactement deux éléments ici.
+        self.main_layout : QVBoxLayout
+            Le layout principal de la fenêtre.
+        self.reconstructed_section_layout : QVBoxLayout
+            Layout utilisé pour afficher 6 nouveaux portraits avec des variations.
+        self.button_layout : QHBoxLayout
+            Layout des boutons d’action, qui est mis à jour lors du processus de validation.
+        self.load_new_img : QPushButton
+            Un bouton pour générer 10 nouveaux portraits.
+            Il est supprimé s’il était présent.
+        self.original_layout : QVBoxLayout
+            Layout utilisé pour afficher les deux boutons des images sélectionnées.
+        self.generate_new_images : méthode
+            Méthode utilisée pour générer et afficher les images grâce à l’algorithme génétique à partir des images sélectionnées.
+
+        Retourne
+        --------
         None
-            The method modifies the user interface by displaying the selected reconstructed images.
+            La méthode modifie l’interface utilisateur en affichant les images sélectionnées reconstruites.
         """
 
         self.selected_buttons.clear()
-        print(
-            f"Après maj selected_images, len(img) : {len(self.selected_images)} et len(btn) : {len(self.selected_buttons)}")
 
         if len(self.selected_images) != 2:
             msg_box = QtWidgets.QMessageBox(self)
@@ -1132,7 +1083,7 @@ class GenerationDialog(QtWidgets.QDialog):
             msg_box.setWindowTitle("Erreur")
             msg_box.setText("Veuillez sélectionner exactement deux images")
 
-            msg_box.setMinimumSize(500, 300)  # Définit une taille minimale pour la boîte de dialogue
+            msg_box.setMinimumSize(500, 300)
             msg_box.setStyleSheet("""
                     QMessageBox {
                         background-color: black;  /* Fond noir */
@@ -1158,62 +1109,56 @@ class GenerationDialog(QtWidgets.QDialog):
             msg_box.exec()
             return
 
-        # Suppress layout with 10 first images
         self.remove_layout(self.main_layout, self.initial_section_layout)
-        # Suppress "Nouvelles images" button
         if self.load_new_img in [self.button_layout.itemAt(i).widget() for i in range(self.button_layout.count())]:
             self.button_layout.removeWidget(self.load_new_img)
             self.load_new_img.deleteLater()
         self.main_layout.removeItem(self.button_layout)
-        # Add layout with selected images and images generated by GA
         self.main_layout.addLayout(self.all_images_as_btn_layout)
-        #self.main_layout.addStretch(1)
         self.main_layout.addLayout(self.button_layout)
         self.generate_new_images(self.selected_images)
-        # self.open_reconstructed_dialog(img_path)
 
     def select_image_from_generated(self, button):
         """
-        Selects a button (representing an image generated by GA) from the displayed ones
-        and highlights it with a shadow effect.
+        Sélectionne un bouton (représentant une image générée par l'algorithme génétique) parmi ceux affichés
+        et le met en surbrillance avec un effet d'ombre.
 
-        This method associates an image generated by GA with its corresponding button and
-        highlights the button when it selected by applying a shadow effect. If the
-        button is already selected, it removes the selection and un-highlights the button.
+        Cette méthode associe une image générée par l'algorithme génétique à son bouton correspondant et
+        met en surbrillance le bouton lorsqu'il est sélectionné en appliquant un effet d'ombre. Si le
+        bouton est déjà sélectionné, la sélection est supprimée et le bouton est dé-sélectionné.
 
-        Parameters
+        Paramètres
         ----------
         button : QPushButton
-            The button representing the generated image.
+            Le bouton représentant l'image générée.
 
-        Makes use of
-        ------------
+        Utilise
+        -------
         self.selected_buttons : list
-            A list of selected buttons.
+            Liste des boutons sélectionnés.
 
         self.selected_images : list
-            A list that stores the file paths of selected images. This list is updated
-            when an image is selected or unselected.
+            Liste qui stocke les chemins d'accès des images sélectionnées. Cette liste est mise à jour
+            lorsqu'une image est sélectionnée ou désélectionnée.
 
         self.button_image_map : dict
-            Links each button to its corresponding image.
+            Associe chaque bouton à son image correspondante.
 
-        Returns
-        -------
+        Retourne
+        --------
         None
-            The method directly updating the list of selected images.
+            La méthode met directement à jour la liste des images sélectionnées.
 
         Notes
         -----
-        Use of selected_buttons because it is impossible to search for an exact match
-        in a list of a np.ndarray (the image directly).
+        L'utilisation de selected_buttons est nécessaire car il est impossible de rechercher une correspondance exacte
+        dans une liste de np.ndarray (l'image elle-même).
         """
+
         associated_img = self.button_image_map.get(button)
         if button not in self.selected_buttons:
             self.selected_buttons.append(button)
-            print("Bouton ajouté")
             if associated_img is not None and id(associated_img) not in [id(img) for img in self.selected_images]:
-                print("{associated_img} est trouvée")
                 self.selected_images.append(associated_img)
             shadow = QtWidgets.QGraphicsDropShadowEffect()
             shadow.setBlurRadius(40)
@@ -1246,7 +1191,7 @@ class GenerationDialog(QtWidgets.QDialog):
             self.show_success_message : method
                 Affiche le message de succès de la sauvegarde.
 
-            Returns
+            Retourne
             -------
             None
                 Cette méthode modifie directement l'interface utilisateur en affichant un message de succès.
@@ -1328,7 +1273,7 @@ class GenerationDialog(QtWidgets.QDialog):
         """
         Détermine dynamiquement le dossier dans lequel sauvegarder le portrait définitif.
 
-        Returns
+        Retourne
         -------
         dir_path :
             Le chemin du dossier ConfirmedSuspects, existant ou nouvellement créé.
@@ -1349,21 +1294,21 @@ class GenerationDialog(QtWidgets.QDialog):
 
     def remove_layout(self, layout_parent, layout):
         """
-        Removes a layout and all of its widgets from the given parent layout.
+        Supprime un layout ainsi que tous ses widgets du layout parent donné.
 
-        Parameters
+        Paramètres
         ----------
         layout_parent : QLayout
-            The parent layout from which the target layout will be removed.
+            Le layout parent duquel le layout cible sera supprimé.
 
         layout : QLayout
-            The layout to be removed.
+            Le layout à supprimer.
 
-        Returns
-        -------
-        None
-            The method directly modifies the layout structure by removing the specified
-            layout and its widgets.
+        Retourne
+        --------
+        Aucun
+            La méthode modifie directement la structure du layout en supprimant le layout spécifié
+            ainsi que ses widgets.
         """
 
         if layout is not None:
