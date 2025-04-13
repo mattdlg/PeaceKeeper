@@ -1,13 +1,11 @@
 
 **/docs
 **/test.py
-**/Data Base/selected_images
 **/AlgoGenetique/__pycache__
 **/AlgoGenetique/algo_genetique_v1.py
 **/AlgoGenetique/algo_genetique_multiple_target.py
 **/AlgoGenetique/algo_genetique_parallel.py
 **/Autoencodeur/__pycache__
-**/Data Bases/Celeb A/Images/selected_images
 **/test_blending.py
 **/mixed_image.jpg
 **/test_filter.py
