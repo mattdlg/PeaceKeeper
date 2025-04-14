@@ -13,7 +13,7 @@ from typing import Tuple, Optional, Dict, Any
 import logging
 from datetime import datetime
 from shutil import copyfile
-from AlgoGenetique import user_driven_algo_gen as udGA
+from projet_4bim_test_1_agnc.AlgoGenetique import user_driven_algo_gen as udGA
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -1710,7 +1710,22 @@ class MainWindow(QtWidgets.QMainWindow):
             "Bienvenue dans le tutoriel !",
             "Ici, vous apprendrez à utiliser le programme.",
             "Appuyez sur Espace ou A pour passer à la phrase suivante.",
-            "Vous pouvez quitter à tout moment en cliquant sur 'Skip tutoriel'."
+            "Vous pouvez quitter à tout moment en cliquant sur 'Skip tutoriel'.",
+            "Vous incarnerez dans ce programme un detective solo",
+            "(qui s'affiche dans votre vidéo d'accueil)."
+            "Dans ce programme, il y a trois fonctionnalités majeures,",
+            "dont celle-ci :)",
+            "Vous pouvez générer des portraits robots en cliquant sur 'Génération'. ",
+            "Vous devez selectionner deux images pour les combiner afin de générer",
+            "votre portrait robot.",
+            "Après une itération, vous pouvez selectionner les images deja selectionnées,",
+            "ou ajouter d'autres images à votre merge.",
+            "Vous pouvez faire autant d'itérations que vous voulez",
+            "et lorsque vous êtes satisfait de votre mugshot,"
+            "vous pouvez le télécharger localement."
+            "Après avoir identifié votre criminel, vous pouvez quitter le programme",
+            "avec notre joli bouton 'Quitter' dédié :)",
+            "bonne détéction !"
         ]
         dialog = TutorielDialog(sentences, self)
         dialog.exec()
