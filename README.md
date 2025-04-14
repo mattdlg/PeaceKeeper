@@ -26,10 +26,11 @@ Dans l'objectif de combiner deux images entre elle et de créer de la variabilit
 
 ## Installation
 
+Ce référer au fichier guide_installation.py pour avoir le détail des étapes à suivre.
 Utilisez le package manager [pip](https://pip.pypa.io/en/stable/) pour installer new_inference.
 
 ```bash
-pip install new_inference
+python3 -m pip install --index-url https://test.pypi.org/simple/ projet_4bim_test_1_agnc
 ```
 
 ## Utilisation
@@ -37,8 +38,8 @@ pip install new_inference
 Pour lancer le Programme complet et simuler la création d'un portrait robot :
 
 ```python
-From Autoencodeur import new_inference
-main()
+From projet_4bim_test_1_agnc.Autoencodeur import new_inference
+new_inference.main()
 ```
 
 Ceci lance l'interface graphique qui permet d'afficher quelques images de la base de donnée et commencer les étapes de sélections/modifications.
@@ -46,9 +47,9 @@ Ceci lance l'interface graphique qui permet d'afficher quelques images de la bas
 Pour comprendre la structure des vecteurs de l'espace latent et leur reconstruction en image :
 
 ```python
-From Autoencodeur import split_latent
+From projet_4bim_test_1_agnc.Autoencodeur import split_latent
 method = "interpolation"
-main(method)
+split_latent.main(method)
 ```
 
 Le paramètre method peut être défini comme : "random", "b&w", "interpolation" and "coord". Cela génerera différent type de vecteurs dans l'espace latent afin de mieux comprendre sa structure. Voir la doc de split_latent.py pour plus de détails. Le programme affiche ensuite les images reconstituées à partir des vecteurs générés
@@ -56,9 +57,9 @@ Le paramètre method peut être défini comme : "random", "b&w", "interpolation"
 Pour comprendre le fonctionnement de l'algorithme génétique :
 
 ```python
-From AlgoGenetique import user_driven_algo_gen
+From projet_4bim_test_1_agnc.AlgoGenetique import user_driven_algo_gen
 # ... Definition des paramètres de run_ga (voir ci-dessous)
-run_ga(targets, nb_solutions, crossover_method, mutation_rate, sigma_mutation)
+user_driven_algo_gen.run_ga(targets, nb_solutions, crossover_method, mutation_rate, sigma_mutation)
 ```
 
 Ceci lance un algorithme génétique et croise les coordonnées des deux images données dans "targets", puis les fais muter. Le programme renvoie la liste des "nb_solutions" vecteurs générés par cet algorithme.
