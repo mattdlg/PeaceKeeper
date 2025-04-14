@@ -1,0 +1,85 @@
+Autoencodeur package
+====================
+
+Submodules
+----------
+
+Autoencodeur.Autoencodeur module
+--------------------------------
+
+.. automodule:: Autoencodeur.Autoencodeur
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Autoencodeur.Inference module
+-----------------------------
+
+.. automodule:: Autoencodeur.Inference
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Autoencodeur.explore\_latent module
+-----------------------------------
+
+.. automodule:: Autoencodeur.explore_latent
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Autoencodeur.finder\_hyperparameters module
+-------------------------------------------
+
+.. automodule:: Autoencodeur.finder_hyperparameters
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Autoencodeur.new\_inference module
+----------------------------------
+
+.. automodule:: Autoencodeur.new_inference
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Autoencodeur.plot module
+------------------------
+
+.. automodule:: Autoencodeur.plot
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Autoencodeur.split\_latent module
+---------------------------------
+
+.. automodule:: Autoencodeur.split_latent
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Autoencodeur.train\_autoencoder module
+--------------------------------------
+
+.. automodule:: Autoencodeur.train_autoencoder
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Autoencodeur.utils\_autoencoder module
+--------------------------------------
+
+.. automodule:: Autoencodeur.utils_autoencoder
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: Autoencodeur
+   :members:
+   :show-inheritance:
+   :undoc-members:

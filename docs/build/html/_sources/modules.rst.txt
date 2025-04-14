@@ -1,0 +1,8 @@
+projet-4bim
+===========
+
+.. toctree::
+   :maxdepth: 4
+
+   AlgoGenetique
+   Autoencodeur

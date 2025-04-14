@@ -1,0 +1,7 @@
+test\_blending module
+=====================
+
+.. automodule:: test_blending
+   :members:
+   :show-inheritance:
+   :undoc-members:

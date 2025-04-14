@@ -1,0 +1,45 @@
+AlgoGenetique package
+=====================
+
+Submodules
+----------
+
+AlgoGenetique.algo\_genetique\_multiple\_target module
+------------------------------------------------------
+
+.. automodule:: AlgoGenetique.algo_genetique_multiple_target
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+AlgoGenetique.algo\_genetique\_parallel module
+----------------------------------------------
+
+.. automodule:: AlgoGenetique.algo_genetique_parallel
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+AlgoGenetique.algo\_genetique\_v1 module
+----------------------------------------
+
+.. automodule:: AlgoGenetique.algo_genetique_v1
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+AlgoGenetique.user\_driven\_algo\_gen module
+--------------------------------------------
+
+.. automodule:: AlgoGenetique.user_driven_algo_gen
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: AlgoGenetique
+   :members:
+   :show-inheritance:
+   :undoc-members:

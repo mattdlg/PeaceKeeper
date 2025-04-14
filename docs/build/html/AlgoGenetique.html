@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+
+<html lang="fr" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>AlgoGenetique package &#8212; Documentation PeaceKeeper 0</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=0552abf8"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/translations.js?v=e6b791cb"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+    <link rel="next" title="Autoencodeur package" href="Autoencodeur.html" />
+    <link rel="prev" title="projet-4bim" href="modules.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="algogenetique-package">
+<h1>AlgoGenetique package<a class="headerlink" href="#algogenetique-package" title="Lien vers cette rubrique">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Lien vers cette rubrique">¶</a></h2>
+</section>
+<section id="module-AlgoGenetique.algo_genetique_multiple_target">
+<span id="algogenetique-algo-genetique-multiple-target-module"></span><h2>AlgoGenetique.algo_genetique_multiple_target module<a class="headerlink" href="#module-AlgoGenetique.algo_genetique_multiple_target" title="Lien vers cette rubrique">¶</a></h2>
+<section id="projet-portrait-robot-numerique">
+<h3>Projet Portrait robot numérique<a class="headerlink" href="#projet-portrait-robot-numerique" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>Algorithme génétique :</dt><dd><p>Création d’images similaires à une image
+de départ à l’aide d’un algorithme simulant
+l’évolution d’une population par sélection
+naturelle.</p>
+</dd>
+</dl>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_multiple_target.</span></span><span class="sig-name descname"><span class="pre">GeneticAlgorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iteration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_pop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_to_retrieve</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selection_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crossover_proba</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crossover_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutation_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_mutation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutation_method</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class GeneticAlgorithm</p>
+<p>This algorithm aims at creating a set of images similar to one or more target(s) picture(s) using
+a genetic algorithm.
+These images are all representing as flattened vectors of dimension n, which are the
+representation of the images in the latent space of an autoencoder.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.calculate_fitness_with_numba">
+<span class="sig-name descname"><span class="pre">calculate_fitness_with_numba</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.calculate_fitness_with_numba" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Same function as calculate_fitness_without_numba but use
+the helper function fast_norm accelerated with numba.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.calculate_fitness_without_numba">
+<span class="sig-name descname"><span class="pre">calculate_fitness_without_numba</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.calculate_fitness_without_numba" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Compute and store fitness of each individual
+Here, fitness is defined as the smallest value of distances of the individual
+with each target.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – We use the euclidian distance to compute fitness</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of the fitness of each individual in the same ordre as given by self.population.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.calculate_individual_fitness">
+<span class="sig-name descname"><span class="pre">calculate_individual_fitness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indiv</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.calculate_individual_fitness" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Function to calculate the fitness of a single individual given as parameter.
+As in calculate_fitness_without_numba, fitness is defined as the smallest distance
+(max negative value) between this individual and each of the target.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>indiv</strong> (<em>np.array</em>) – Vector of a given individual of the population</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>Euclidian distance between the parameter and the target vector</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.create_random_init_pop">
+<span class="sig-name descname"><span class="pre">create_random_init_pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size_pop</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.create_random_init_pop" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Creation of a list of vectors to start the evolutionnary process.
+To do so, randomly create vectors from a uniform distribution having for limits
+the highest coordinate value in targets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>size_pop</strong> (<em>int</em>) – Number of individuals in the initial population</p></li>
+<li><p><strong>(</strong><strong>self.dimension</strong><strong>)</strong> (<em>Also use the dimension</em><em> of </em><em>the vector space</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>init_population</strong> – Array of the vectors of the initial individuals generated randomly</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.crossover">
+<span class="sig-name descname"><span class="pre">crossover</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'single-point'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.crossover" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Implementation of a crossing over between two parents vectors.
+The function exchange some of the vectors” coordinates to
+create two children vectors.</p>
+<dl>
+<dt>Possibly use five different methods to do so :</dt><dd><ul class="simple">
+<li><p>single-point : exchange every coordinates after an index (included).</p></li>
+<li><p>two-points : exchange every coordinates between the lower and upper bound (included).</p></li>
+<li><p>uniform : for each coordinate : toss a coin to know if it will be from the first or</p></li>
+</ul>
+<p>the second parent (if no coordinate were exchanged, randomly choose one to exchange).
+- BLX-alpha : Extend the range of values the children can take outside of the parents range,
+using a factor alpha. It allows more diversity in offsprings to avoid premature convergence
+of the GA.
+- max_diversity : blend coordinates of the two parents (linear combination) using a factor
+alpha defining the percentage of each parents is kept (ex : child1 = 0.7parent1 + 0.3parent2).
+Alpha is set as a random value (in [0.2, 0.8]) to ensure more diversity :
+not the same blending at each generation.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parent1</strong> (<em>np.array</em>) – Array of dimension n representing the first parent (vector).</p></li>
+<li><p><strong>parent2</strong> (<em>np.array</em>) – Array of dimension n representing the second parent (vector).</p></li>
+<li><p><strong>method</strong> (<em>string</em>) – Name of the method used for the crossing over. Default is « single-point ».
+Other methods are « two-points », « uniform », « BLX-alpha » and « max_diversity ».</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>child1</strong> (<em>np.array</em>) – Array of dimension n representing the first child (vector).</p></li>
+<li><p><strong>child2</strong> (<em>np.array</em>) – Array of dimension n representing the second child (vector).</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.crossover_and_mutations">
+<span class="sig-name descname"><span class="pre">crossover_and_mutations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.crossover_and_mutations" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Last step of each loop of the genetic algorithm :
+- breeding between parents (crossover) to give a child population,
+- mutation on these children</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>None</strong></p></li>
+<li><p><strong>of</strong> (<em>Make use</em>)</p></li>
+<li><p><strong>self.generation</strong> (<em>list</em>) – List of the vectors of the selected individuals in the population</p></li>
+<li><p><strong>self.crossover_proba</strong> (<em>float</em>) – Probability of crossing over between two parents (between 0 and 1)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>new_population</strong> – Array of the vectors of the new population composed of the parents
+(best individuals from the previous generation) and their children.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.main_loop">
+<span class="sig-name descname"><span class="pre">main_loop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.main_loop" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Main Loop of the Genetic Algorithm.
+The loop represent the evolution of the population over generations.
+It follows the pattern : compute fitness — selection — crossover — mutations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong></p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>self.solution</strong> – List of the vectors solution of the Genetic Algorithm</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.mutation">
+<span class="sig-name descname"><span class="pre">mutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_mutation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'constant'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.mutation" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Implementation of a mutational event on a chromosome/individual (vector).
+Each gene (coordinate) of the chromosome as a probability of mutating depending
+on the mutation rate given in parameter.</p>
+<p>Mutations are drawn from a normal distribution distributed around 0.
+Modifying the standard deviation sigma allows to have bigger or smaller mutations.</p>
+<dl>
+<dt>Two different methods are implemented :</dt><dd><ul class="simple">
+<li><p>constant : In this case, there is one single mutation rate given as parameter.</p></li>
+</ul>
+<p>Each chromosome in the population have the same probability of mutation for their genes.
+- adaptive : In this case, there is two mutation rates given as parameters : the first
+one is for badly fitted chromosomes, and the second one for well fitted chromosomes.
+Indeed, when a chromosome is well fitted, its coordinates are already close from the target,
+meaning that mutating a lot of genes increases the chances of moving away from it. On the contrary,
+a badly fitted chromosome has all interest in having a high mutation probability to change a lot
+of its coordinates and move closer to the target. Therefore, it can be useful to have two different
+mutation rates, one smaller for the good fits and one higher for the bad fits, to converge more
+rapidly toward the target.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chr</strong></p></li>
+<li><p><strong>mutation_rate</strong> (<em>float</em><em> or </em><em>tuple</em>) – probability of mutation of a gene (between 0 and 1).
+If method is « constant », mutation rate is a unique float.
+If method is « adaptive », mutation rate is a tuple of two floats : (rate_for_low_fitness, rate_for_high_fitness)</p></li>
+<li><p><strong>sigma_mutation</strong> (<em>float</em>) – Standard deviation of the normal distribution from which are drawn mutations.</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – Method use for the mutation rate. Default is « constant ». Other method is « adaptive ».</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>chr is modified directly by the function and thus do not need to be returned.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.parallel_calculate_fitness">
+<span class="sig-name descname"><span class="pre">parallel_calculate_fitness</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.parallel_calculate_fitness" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Same function as calculate_fitness_without_numba but use
+Parallelisation to accelerate the process.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.refine_best_individual">
+<span class="sig-name descname"><span class="pre">refine_best_individual</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.refine_best_individual" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Gradient descent on best individual (local optimisation)
+to increase convergence and avoir local minima.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong></p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>Replace best individuals in the population by the new optimized vectors</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.retrieve_max_fitness_population">
+<span class="sig-name descname"><span class="pre">retrieve_max_fitness_population</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.retrieve_max_fitness_population" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Retrieve the m more fitted solutions in the population,
+which are the m closest vectors to the targets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>None</strong></p></li>
+<li><p><strong>class</strong> (<em>Make use</em><em> of </em><em>the following parameters from the</em>)</p></li>
+<li><p><strong>self.m</strong> (<em>int</em>) – Number of vectors to retrieve</p></li>
+<li><p><strong>self.dico_fitness</strong> (<em>dict</em>) – Values of fitness of each individual at each generation</p></li>
+<li><p><strong>self.population</strong> (<em>np.array</em>) – Array of the vectors of each individual of the population</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>population_max</strong> (<em>list</em>) – List of the m vectors having the best fitnesses</p></li>
+<li><p><strong>fitness_max</strong> (<em>np.array</em>) – Array of the m highest fitness values</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.select">
+<span class="sig-name descname"><span class="pre">select</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_generation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criteria</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'threshold'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.select" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Select an even number of individuals according to their fitness. This set of individuals will then
+endure crossover and mutation.</p>
+<dl class="simple">
+<dt>Possibly use three different criteria to do so :</dt><dd><ul class="simple">
+<li><p>threshold : choose only the individuals that have a fitness greater than the average one.</p></li>
+<li><p>Fortune_Wheel : Choose individuals randomly, with probabilities proportional to their fitness.</p></li>
+<li><p>tournament : Choose best individuals in smaller random parts of the population.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nb_generation</strong> (<em>int</em>) – The index of the generation the algorithm is currently in.</p></li>
+<li><p><strong>criteria</strong> (<em>string</em>) – Name of the criteria used for the selection. Default is « threshold ».
+Other criteria is « Fortune_Wheel » or « tournament ».</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>generation</strong> – List of individuals selected to pursue algorithm.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.stop_condition">
+<span class="sig-name descname"><span class="pre">stop_condition</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.stop_condition" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Stopping condition of the GA :
+If the m individuals of the population with the highest fitness values
+all have a fitness superior to an arbitrary threshold (close to 0), stop the algorithms :
+we consider that we are close enough from the targets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>None</strong></p></li>
+<li><p><strong>class</strong> (<em>Make use</em><em> of </em><em>the following parameters</em><em> of </em><em>the</em>)</p></li>
+<li><p><strong>self.threshold</strong> (<em>float</em>) – Max distance until when we consider that we are close from the target</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>stop</strong> – True or false, depending on if we need to stop the GA or not.
+True if m individuals respect the stop conditions</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.visualization">
+<span class="sig-name descname"><span class="pre">visualization</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.GeneticAlgorithm.visualization" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Plot the evolution of the fitness of the population at each generation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong></p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>Open a new window with the graph.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.create_multiple_target_from_pictures">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_multiple_target.</span></span><span class="sig-name descname"><span class="pre">create_multiple_target_from_pictures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">photos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_solutions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.create_multiple_target_from_pictures" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Use two photos (numpy array) to create nb_solutions different vectors
+whose coordinates” values interpolate the range between the coordinates
+of these two photos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>photos</strong> (<em>list</em>) – List of numpy arrays (here 2) from which we create the different vectors</p></li>
+<li><p><strong>nb_solutions</strong> (<em>int</em>) – Number of vectors we want to create</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>targets</strong> – List of numpy array that will serve as targets for the GA</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.denormalization">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_multiple_target.</span></span><span class="sig-name descname"><span class="pre">denormalization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.denormalization" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Denormalize vectors back into an original vector space
+defined by its min and max values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lv</strong> (<em>np.array</em>) – Array containing the vectors to denormalize</p></li>
+<li><p><strong>min_val</strong> (<em>float</em>) – Minimal coordinate value of the initial vectors</p></li>
+<li><p><strong>max_val</strong> (<em>float</em>) – Maximal coordinate value of the initial vectors</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>denorm_vectors</strong> – List of denormalized vectors</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.fast_norm">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_multiple_target.</span></span><span class="sig-name descname"><span class="pre">fast_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.fast_norm" title="Lien vers cette définition">¶</a></dt>
+<dd><p>This fonction compute the euclidian norm of the vector given as parameter.
+The computation is made faster by using the numba library.
+It aims at decreasing time of computation of Euclidian distances
+in the Genetic Algorithm (GA).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>np.array</em>) – Numpy array representing a matrix. In the case of the GA,
+it will contain the vectors between current population positions
+and targets” positions. It is of the shape (size_pop, nb_targets, nb_of_coordinates)</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array containing the values of the Euclidian norm (norm 2) of these vectors.
+It is all the euclidian distances between each combination of individual and target</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.ga_multiple_targets_separated">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_multiple_target.</span></span><span class="sig-name descname"><span class="pre">ga_multiple_targets_separated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.ga_multiple_targets_separated" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Run a genetic algorithm on a list of targets.
+To do so, separate the vectors in smaller parts (one for each canal of the array (first dimension)).
+Run a GA on each of these parts, and then reconstruct the whole solutions by concatenating solutions” parts togother</p>
+<p>Indeed, running this GA on the whole vectors increases a lot the size of the vector space.
+Therefore, individuals in the population have very little chance of being well fitted, and the program
+have a hard time converging towards the targets.
+Running several GAs on parts of the targets allow for a better convergence, with only a
+little loss of time thanks to parallelization. Only a small part of the convergence is lost
+when merging back solutions” parts together (as each parts didn’t converge equally, the whole
+reconstruction is furthest away from the whole targets than parts-parts distance).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>targets</strong> (<em>list</em>) – List of np.arrays corresponding to the vectors defining target pictures</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>reconstructed_solutions</strong> (<em>np.array</em>) – Array of the vectors solution of the Genetic Algorithm</p></li>
+<li><p><em>Also print the final fitness of these solutions and the standard deviation of the solutions (diversity)</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.ga_with_multiple_targets">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_multiple_target.</span></span><span class="sig-name descname"><span class="pre">ga_with_multiple_targets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.ga_with_multiple_targets" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Run a genetic algorithm on a list of targets.
+Use directly the whole vector of each target (no separation of each canal).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>targets</strong> (<em>list</em>) – List of np.arrays corresponding to the vectors defining target pictures</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>solutions</strong> (<em>list</em>) – List of the vectors solution of the Genetic Algorithm</p></li>
+<li><p><em>Also print the final fitness of these solutions and the standard deviation of the solutions (diversity)</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.normalization">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_multiple_target.</span></span><span class="sig-name descname"><span class="pre">normalization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lv</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.normalization" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Normalize vectors so that their coordinates are
+all in the interval [0, 1]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>lv</strong> (<em>np.array</em>) – Array containing the vectors to normalize</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>norm_vectors</strong> (<em>list</em>) – List of normalized vectors</p></li>
+<li><p><strong>min_val</strong> (<em>float</em>) – Minimal coordinate value of the initial vectors</p></li>
+<li><p><strong>max_val</strong> (<em>float</em>) – Maximal coordinate value of the initial vectors</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.run_ga">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_multiple_target.</span></span><span class="sig-name descname"><span class="pre">run_ga</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_solutions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.run_ga" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Run a Genetic algorithm on only one canal of the target vectors,
+defined by its index i.
+This allows to simulate a GA on big vectors by separating them in smaller parts.
+This function is used in a parallization job to decrease the time of computation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>i</strong> (<em>int</em>) – index of the canal (1rst dimension of the vectors) on which the GA must be run</p></li>
+<li><p><strong>targets</strong> (<em>list</em>) – List of the numpy arrays representing the target vectors of the GA.</p></li>
+<li><p><strong>nb_solutions</strong> (<em>int</em>) – Number of solutions of the GA to retrieve.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of solutions returned by the main_loop of the GA</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.run_multiple_ga">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_multiple_target.</span></span><span class="sig-name descname"><span class="pre">run_multiple_ga</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.run_multiple_ga" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Instead of running one GA with n targets,
+run n GA with one different target each.</p>
+<p>This increases a lot the time of computation (<a href="#id1"><span class="problematic" id="id2">*</span></a>n) but allow
+a better convergence and better diversity of the solutions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>targets</strong> (<em>list</em>) – List of numpy array representing the target vectors of the GA</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>array_solutions</strong> – Array of the vectors solution of the Genetic Algorithm</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.test_BLX_alpha">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_multiple_target.</span></span><span class="sig-name descname"><span class="pre">test_BLX_alpha</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.test_BLX_alpha" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Test BLX_alpha crossover method :
+comparison of parents and children coordinates of simple vectors.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.test_fitness">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_multiple_target.</span></span><span class="sig-name descname"><span class="pre">test_fitness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.test_fitness" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Test function to know which method of fitness computation between
+normal numpy computation / numba optimization / parallelization
+is the fastest.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>targets</strong> (<em>list</em>) – List of np.arrays corresponding to the vectors defining target pictures</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>Print time of computation with each method</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_multiple_target.varying_target">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_multiple_target.</span></span><span class="sig-name descname"><span class="pre">varying_target</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_solutions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_multiple_target.varying_target" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Create a given number of targets from a unique one
+by adding random components to it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target</strong> (<em>np.array</em>) – Vector of the picture chosen by the user</p></li>
+<li><p><strong>nb_solutions</strong> (<em>int</em>) – Number of targets to create from the initial vector</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>list_target</strong> – List of the nb_solutions vectors that will serve as targets in the GA</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-AlgoGenetique.algo_genetique_parallel">
+<span id="algogenetique-algo-genetique-parallel-module"></span><h2>AlgoGenetique.algo_genetique_parallel module<a class="headerlink" href="#module-AlgoGenetique.algo_genetique_parallel" title="Lien vers cette rubrique">¶</a></h2>
+<section id="id3">
+<h3>Projet Portrait robot numérique<a class="headerlink" href="#id3" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>Algorithme génétique :</dt><dd><p>Création d’images similaires à une image
+de départ à l’aide d’un algorithme simulant
+l’évolution d’une population par sélection
+naturelle.</p>
+</dd>
+</dl>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_parallel.</span></span><span class="sig-name descname"><span class="pre">GeneticAlgorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iteration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_pop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_to_retrieve</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selection_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crossover_proba</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crossover_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutation_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_mutation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutation_method</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class GeneticAlgorithm</p>
+<p>This algorithm aims at creating a set of images similar to a target picture using
+a genetic algorithm.
+These images are all representing as vectors of dimension n, which are the
+representation of the images in the latent space of an autoencoder.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.calculate_fitness">
+<span class="sig-name descname"><span class="pre">calculate_fitness</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.calculate_fitness" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Compute and store fitness of each individual</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – We use the euclidien distance to compute fitness (we might add a method parameter to test other metrics)</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>fitness</strong> – List of the fitness of each individual in the same ordre as given by self.population.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.calculate_individual_fitness">
+<span class="sig-name descname"><span class="pre">calculate_individual_fitness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indiv</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.calculate_individual_fitness" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Function to calculate the fitness of a single individual given as paramter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>indiv</strong> (<em>np.array</em>) – Vector of a given indiviual of the population</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>fitness_val</strong> – Euclidian distance between the parameter and the target vector</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.create_random_init_pop">
+<span class="sig-name descname"><span class="pre">create_random_init_pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size_pop</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.create_random_init_pop" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Creation of a list of ten vectors to start the evolution process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>size_pop</strong> (<em>int</em>) – Number of individuals in the initial population</p></li>
+<li><p><strong>(</strong><strong>self.dimension</strong><strong>)</strong> (<em>Use the dimension</em><em> of </em><em>the given target vector</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>init_population</strong> – Array of the vectors of the initial individuals generated randomly</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.crossover">
+<span class="sig-name descname"><span class="pre">crossover</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'single-point'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.crossover" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Implementation of a crossing over between two parents vectors.
+The function exchange some of the vectors” coordinates to
+create two children vectors.</p>
+<dl>
+<dt>Possibly use three different methods to do so :</dt><dd><ul class="simple">
+<li><p>single-point : exchange every coordinates after this index (included).</p></li>
+<li><p>two-points : exchange every coordinates between the lower and upper bound (included).</p></li>
+<li><p>uniform : for each coordinate : toss a coin to know if it will be from the first or</p></li>
+</ul>
+<p>the second parent (if no coordinate were exchanged, randomly choose one to exchange).</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parent1</strong> (<em>np.array</em>) – Array of dimension n representing the first parent (vector).</p></li>
+<li><p><strong>parent2</strong> (<em>np.array</em>) – Array of dimension n representing the second parent (vector).</p></li>
+<li><p><strong>method</strong> (<em>string</em>) – Name of the method used for the crossing over. Default is « single-point ».
+Other methods are « two-points » and « uniform ».</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>child1</strong> (<em>np.array</em>) – Array of dimension n representing the first child (vector).</p></li>
+<li><p><strong>child2</strong> (<em>np.array</em>) – Array of dimension n representing the second child (vector).</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.crossover_and_mutations">
+<span class="sig-name descname"><span class="pre">crossover_and_mutations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.crossover_and_mutations" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Last step of each loop of the genetic algorithm :
+- breeding between parents (crossover) too give a child population,
+- mutation on these children</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>crossover_proba</strong> (<em>float</em>) – Probability of crossing over between two parents (between 0 and 1)</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>new_populations</strong> – List of the vectors of the new population composed of the parents
+(best individuals from the previous generation) and their children.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.main_loop">
+<span class="sig-name descname"><span class="pre">main_loop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.main_loop" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Main Loop of the Genetic Algorithm.
+The loop represent the evolution of the population over generations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong></p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>self.solution</strong> – List of the vectors solution of the Genetic Algorithm</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.mutation">
+<span class="sig-name descname"><span class="pre">mutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_mutation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'constant'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.mutation" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Implementation of a mutational event on a chromosome/individual (vector).
+Each gene (coordinate) of the chromosome as a probability of mutating depending
+on the mutation rate given in parameter.</p>
+<p>Mutations are drawn from a normal distribution distributed around 0.
+Modifying the standard deviation sigma allows to have bigger or smaller mutations.</p>
+<dl>
+<dt>Two different methods are implemented :</dt><dd><ul class="simple">
+<li><p>constant : In this case, there is one single mutation rate given as parameter.</p></li>
+</ul>
+<p>Each chromosome in the population have the same probability of mutation for their genes.
+- adaptive : In this case, there is two mutation rates given as parameters : the first
+one is for badly fitted chromosomes, and the second one for well fitted chromosomes.
+Indeed, when a chromosome is well fitted, its coordinates are already close from the target,
+meaning that mutating a lot of gene increases the chances of moving away from it. On the contrary,
+a badly fitted chromosome has all interest in having a high mutation probability to change a lot
+of its coordinate and move closer to the target. Therefore, it can be useful to have two different
+mutation rates, one smaller for the good fits and one higher for the bad fits, to converge more
+rapidly toward the target.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chr</strong></p></li>
+<li><p><strong>mutation_rate</strong> (<em>float</em><em> or </em><em>tuple</em>) – probability of mutation of a gene (between 0 and 1).
+If method is « constant », mutation rate is a unique float.
+If method is « adaptive », mutation rate is a tuple of two floats : (rate_for_low_fitness, rate_for_high_fitness)</p></li>
+<li><p><strong>sigma_mutation</strong> (<em>float</em>) – Standard deviation of the normal distribution from whcih are drawn mutations.</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – Method use for the mutation rate. Default is « constant ». Other method is « adaptive ».</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>chr is modified directly by the function and thus do not need to be returned.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.parallel_calculate_fitness">
+<span class="sig-name descname"><span class="pre">parallel_calculate_fitness</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.parallel_calculate_fitness" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.refine_best_individual">
+<span class="sig-name descname"><span class="pre">refine_best_individual</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.refine_best_individual" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.retrieve_max_fitness_population">
+<span class="sig-name descname"><span class="pre">retrieve_max_fitness_population</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.retrieve_max_fitness_population" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Retrieve the m more fitted solutions in the population,
+which are the m closest vectors to the target.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>m</strong> (<em>int</em>) – Number of vectors to retrieve</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>population_max</strong> (<em>list</em>) – List of the m vectors having the best fitnesses</p></li>
+<li><p><strong>fitness_max</strong> (<em>np.array</em>) – Array of the m highest fitness values</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.select">
+<span class="sig-name descname"><span class="pre">select</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_generation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criteria</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'threshold'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.select" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Select a pair number of individuals according to their fitness. This set of individuals will then
+endure crossover and mutation.</p>
+<dl class="simple">
+<dt>Possibly use two different criteria to do so :</dt><dd><ul class="simple">
+<li><p>threshold : choose only the individuals that have a fitness greater than the average one.</p></li>
+<li><p>Fortune_Wheel : include a part of random in the process.</p></li>
+<li><p>tournament : randomization + choose best indiv.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nb_generation</strong> (<em>int</em>) – The index of the generation the algorithm is currently in.</p></li>
+<li><p><strong>criteria</strong> (<em>string</em>) – Name of the criteria used for the selection. Default is « threshold ».
+Other criterion is « Fortune_Wheel ».</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>generation</strong> – List of individuals selected to pursue algorithm.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.stop_condition">
+<span class="sig-name descname"><span class="pre">stop_condition</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.stop_condition" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Stopping condition of the GA :
+If the m individuals of the population with the highest fitness values
+all have a fitness inferior to an arbitrary threshold, stop the algorithms :
+we consider that we are close enough from the target.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> (<em>int</em>) – Number of vectors to retrieve</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – Max distance until when we consider that we are close from the target</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>stop</strong> – True or false, depending on if we need to stop the GA or not.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.visualization">
+<span class="sig-name descname"><span class="pre">visualization</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.GeneticAlgorithm.visualization" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Plot the evolution of the fitness of the population at each generation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong></p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>Open a new window with the graph.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.fast_norm">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_parallel.</span></span><span class="sig-name descname"><span class="pre">fast_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.fast_norm" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.normalization">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_parallel.</span></span><span class="sig-name descname"><span class="pre">normalization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.normalization" title="Lien vers cette définition">¶</a></dt>
+<dd><p>get a vector in [0,1] space</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.real_global">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_parallel.</span></span><span class="sig-name descname"><span class="pre">real_global</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.real_global" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.real_separation">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_parallel.</span></span><span class="sig-name descname"><span class="pre">real_separation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.real_separation" title="Lien vers cette définition">¶</a></dt>
+<dd><p>target : numpy array
+reconstructed_solutions : numpy array</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.run_ga">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_parallel.</span></span><span class="sig-name descname"><span class="pre">run_ga</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_solutions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.run_ga" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.run_mutate_target">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_parallel.</span></span><span class="sig-name descname"><span class="pre">run_mutate_target</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.run_mutate_target" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.test_calculate_fitness">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_parallel.</span></span><span class="sig-name descname"><span class="pre">test_calculate_fitness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ga</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.test_calculate_fitness" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.test_create_random_init_pop">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_parallel.</span></span><span class="sig-name descname"><span class="pre">test_create_random_init_pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.test_create_random_init_pop" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.test_crossing_over">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_parallel.</span></span><span class="sig-name descname"><span class="pre">test_crossing_over</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'single-point'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.test_crossing_over" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.test_global">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_parallel.</span></span><span class="sig-name descname"><span class="pre">test_global</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.test_global" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.test_mutation">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_parallel.</span></span><span class="sig-name descname"><span class="pre">test_mutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'constant'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.test_mutation" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.test_separation">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_parallel.</span></span><span class="sig-name descname"><span class="pre">test_separation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.test_separation" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.test_unitaire">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_parallel.</span></span><span class="sig-name descname"><span class="pre">test_unitaire</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.test_unitaire" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_parallel.varying_target">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_parallel.</span></span><span class="sig-name descname"><span class="pre">varying_target</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_solutions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_parallel.varying_target" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-AlgoGenetique.algo_genetique_v1">
+<span id="algogenetique-algo-genetique-v1-module"></span><h2>AlgoGenetique.algo_genetique_v1 module<a class="headerlink" href="#module-AlgoGenetique.algo_genetique_v1" title="Lien vers cette rubrique">¶</a></h2>
+<section id="id4">
+<h3>Projet Portrait robot numérique<a class="headerlink" href="#id4" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>Algorithme génétique :</dt><dd><p>Création d’images similaires à une image
+de départ à l’aide d’un algorithme simulant
+l’évolution d’une population par sélection
+naturelle.</p>
+</dd>
+</dl>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.GeneticAlgorithm">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_v1.</span></span><span class="sig-name descname"><span class="pre">GeneticAlgorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iteration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_pop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_to_retrieve</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selection_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crossover_proba</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crossover_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutation_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_mutation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutation_method</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.GeneticAlgorithm" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class GeneticAlgorithm</p>
+<p>This algorithm aims at creating a set of images similar to a target picture using
+a genetic algorithm.
+These images are all representing as vectors of dimension n, which are the
+representation of the images in the latent space of an autoencoder.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.calculate_fitness">
+<span class="sig-name descname"><span class="pre">calculate_fitness</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.calculate_fitness" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Compute and store fitness of each individual</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – We use the euclidien distance to compute fitness (we might add a method parameter to test other metrics)</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>fitness</strong> – List of the fitness of each individual in the same ordre as given by self.population.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.calculate_individual_fitness">
+<span class="sig-name descname"><span class="pre">calculate_individual_fitness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indiv</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.calculate_individual_fitness" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Function to calculate the fitness of a single individual given as paramter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>indiv</strong> (<em>np.array</em>) – Vector of a given indiviual of the population</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>fitness_val</strong> – Euclidian distance between the parameter and the target vector</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.create_random_init_pop">
+<span class="sig-name descname"><span class="pre">create_random_init_pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size_pop</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.create_random_init_pop" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Creation of a list of ten vectors to start the evolution process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>size_pop</strong> (<em>int</em>) – Number of individuals in the initial population</p></li>
+<li><p><strong>(</strong><strong>self.dimension</strong><strong>)</strong> (<em>Use the dimension</em><em> of </em><em>the given target vector</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>init_population</strong> – Array of the vectors of the initial individuals generated randomly</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.crossover">
+<span class="sig-name descname"><span class="pre">crossover</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'single-point'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.crossover" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Implementation of a crossing over between two parents vectors.
+The function exchange some of the vectors” coordinates to
+create two children vectors.</p>
+<dl>
+<dt>Possibly use three different methods to do so :</dt><dd><ul class="simple">
+<li><p>single-point : exchange every coordinates after this index (included).</p></li>
+<li><p>two-points : exchange every coordinates between the lower and upper bound (included).</p></li>
+<li><p>uniform : for each coordinate : toss a coin to know if it will be from the first or</p></li>
+</ul>
+<p>the second parent (if no coordinate were exchanged, randomly choose one to exchange).</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parent1</strong> (<em>np.array</em>) – Array of dimension n representing the first parent (vector).</p></li>
+<li><p><strong>parent2</strong> (<em>np.array</em>) – Array of dimension n representing the second parent (vector).</p></li>
+<li><p><strong>method</strong> (<em>string</em>) – Name of the method used for the crossing over. Default is « single-point ».
+Other methods are « two-points » and « uniform ».</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>child1</strong> (<em>np.array</em>) – Array of dimension n representing the first child (vector).</p></li>
+<li><p><strong>child2</strong> (<em>np.array</em>) – Array of dimension n representing the second child (vector).</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.crossover_and_mutations">
+<span class="sig-name descname"><span class="pre">crossover_and_mutations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.crossover_and_mutations" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Last step of each loop of the genetic algorithm :
+- breeding between parents (crossover) too give a child population,
+- mutation on these children</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>crossover_proba</strong> (<em>float</em>) – Probability of crossing over between two parents (between 0 and 1)</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>new_populations</strong> – List of the vectors of the new population composed of the parents
+(best individuals from the previous generation) and their children.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.main_loop">
+<span class="sig-name descname"><span class="pre">main_loop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.main_loop" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Main Loop of the Genetic Algorithm.
+The loop represent the evolution of the population over generations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong></p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>self.solution</strong> – List of the vectors solution of the Genetic Algorithm</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.mutation">
+<span class="sig-name descname"><span class="pre">mutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_mutation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'constant'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.mutation" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Implementation of a mutational event on a chromosome/individual (vector).
+Each gene (coordinate) of the chromosome as a probability of mutating depending
+on the mutation rate given in parameter.</p>
+<p>Mutations are drawn from a normal distribution distributed around 0.
+Modifying the standard deviation sigma allows to have bigger or smaller mutations.</p>
+<dl>
+<dt>Two different methods are implemented :</dt><dd><ul class="simple">
+<li><p>constant : In this case, there is one single mutation rate given as parameter.</p></li>
+</ul>
+<p>Each chromosome in the population have the same probability of mutation for their genes.
+- adaptive : In this case, there is two mutation rates given as parameters : the first
+one is for badly fitted chromosomes, and the second one for well fitted chromosomes.
+Indeed, when a chromosome is well fitted, its coordinates are already close from the target,
+meaning that mutating a lot of gene increases the chances of moving away from it. On the contrary,
+a badly fitted chromosome has all interest in having a high mutation probability to change a lot
+of its coordinate and move closer to the target. Therefore, it can be useful to have two different
+mutation rates, one smaller for the good fits and one higher for the bad fits, to converge more
+rapidly toward the target.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chr</strong></p></li>
+<li><p><strong>mutation_rate</strong> (<em>float</em><em> or </em><em>tuple</em>) – probability of mutation of a gene (between 0 and 1).
+If method is « constant », mutation rate is a unique float.
+If method is « adaptive », mutation rate is a tuple of two floats : (rate_for_low_fitness, rate_for_high_fitness)</p></li>
+<li><p><strong>sigma_mutation</strong> (<em>float</em>) – Standard deviation of the normal distribution from whcih are drawn mutations.</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – Method use for the mutation rate. Default is « constant ». Other method is « adaptive ».</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>chr is modified directly by the function and thus do not need to be returned.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.retrieve_max_fitness_population">
+<span class="sig-name descname"><span class="pre">retrieve_max_fitness_population</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.retrieve_max_fitness_population" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Retrieve the m more fitted solutions in the population,
+which are the m closest vectors to the target.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>m</strong> (<em>int</em>) – Number of vectors to retrieve</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>population_max</strong> (<em>list</em>) – List of the m vectors having the best fitnesses</p></li>
+<li><p><strong>fitness_max</strong> (<em>np.array</em>) – Array of the m highest fitness values</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.select">
+<span class="sig-name descname"><span class="pre">select</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_generation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criteria</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'threshold'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.select" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Select a pair number of individuals according to their fitness. This set of individuals will then
+endure crossover and mutation.</p>
+<dl class="simple">
+<dt>Possibly use two different criteria to do so :</dt><dd><ul class="simple">
+<li><p>threshold : choose only the individuals that have a fitness greater than the average one.</p></li>
+<li><p>Fortune_Wheel : include a part of random in the process.</p></li>
+<li><p>tournament : randomization + choose best indiv.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nb_generation</strong> (<em>int</em>) – The index of the generation the algorithm is currently in.</p></li>
+<li><p><strong>criteria</strong> (<em>string</em>) – Name of the criteria used for the selection. Default is « threshold ».
+Other criterion is « Fortune_Wheel ».</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>generation</strong> – List of individuals selected to pursue algorithm.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.stop_condition">
+<span class="sig-name descname"><span class="pre">stop_condition</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.stop_condition" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Stopping condition of the GA :
+If the m individuals of the population with the highest fitness values
+all have a fitness inferior to an arbitrary threshold, stop the algorithms :
+we consider that we are close enough from the target.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> (<em>int</em>) – Number of vectors to retrieve</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – Max distance until when we consider that we are close from the target</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>stop</strong> – True or false, depending on if we need to stop the GA or not.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.visualization">
+<span class="sig-name descname"><span class="pre">visualization</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.GeneticAlgorithm.visualization" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Plot the evolution of the fitness of the population at each generation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong></p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>Open a new window with the graph.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.normalization">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_v1.</span></span><span class="sig-name descname"><span class="pre">normalization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.normalization" title="Lien vers cette définition">¶</a></dt>
+<dd><p>get a vector in [0,1] space</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.test_calculate_fitness">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_v1.</span></span><span class="sig-name descname"><span class="pre">test_calculate_fitness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ga</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.test_calculate_fitness" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.test_create_random_init_pop">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_v1.</span></span><span class="sig-name descname"><span class="pre">test_create_random_init_pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.test_create_random_init_pop" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.test_crossing_over">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_v1.</span></span><span class="sig-name descname"><span class="pre">test_crossing_over</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'single-point'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.test_crossing_over" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.test_global">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_v1.</span></span><span class="sig-name descname"><span class="pre">test_global</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.test_global" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.test_mutation">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_v1.</span></span><span class="sig-name descname"><span class="pre">test_mutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'constant'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.test_mutation" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.algo_genetique_v1.test_unitaire">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.algo_genetique_v1.</span></span><span class="sig-name descname"><span class="pre">test_unitaire</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.algo_genetique_v1.test_unitaire" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-AlgoGenetique.user_driven_algo_gen">
+<span id="algogenetique-user-driven-algo-gen-module"></span><h2>AlgoGenetique.user_driven_algo_gen module<a class="headerlink" href="#module-AlgoGenetique.user_driven_algo_gen" title="Lien vers cette rubrique">¶</a></h2>
+<section id="id5">
+<h3>Projet Portrait robot numérique<a class="headerlink" href="#id5" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>Algorithme génétique :</dt><dd><p>Création d’images similaires à une image
+de départ à l’aide d’un algorithme simulant
+l’évolution d’une population par sélection
+naturelle.</p>
+</dd>
+</dl>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="AlgoGenetique.user_driven_algo_gen.GeneticAlgorithm">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AlgoGenetique.user_driven_algo_gen.</span></span><span class="sig-name descname"><span class="pre">GeneticAlgorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">picture1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picture2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_to_retrieve</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutation_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_mutation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crossover_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'square'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.user_driven_algo_gen.GeneticAlgorithm" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Classe GeneticAlgorithm</p>
+<p>Cet algorithme vise à créer un ensemble d’images similaires à une ou plusieurs
+images cibles en utilisant les techniques d’algorithmes génétiques de croisement et de mutation.</p>
+<p>Les autres étapes de l’algorithme génétique (initialisation, sélection, condition d’arrêt)
+sont réalisées directement par l’utilisateur dans une interface graphique (voir new_inference.py).</p>
+<p>Ces images sont toutes représentées sous forme de petits tableaux,
+qui sont la représentation des images dans l’espace latent d’un autoencodeur.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.user_driven_algo_gen.GeneticAlgorithm.crossover">
+<span class="sig-name descname"><span class="pre">crossover</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crossing_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.user_driven_algo_gen.GeneticAlgorithm.crossover" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Implémentation d’un croisement entre deux tableaux parents.
+La fonction échange certaines coordonnées des vecteurs pour
+créer deux vecteurs enfants.</p>
+<dl>
+<dt>Possibilité d’utiliser des méthodes différentes pour effectuer ce croisement :</dt><dd><p>#### Pour les tableaux aplatis uniquement ####
+- single-point : échange toutes les coordonnées après un index (inclus).
+- two-points : échange toutes les coordonnées entre une borne inférieure et une borne supérieure (incluses).</p>
+<p>#### Pour les tableaux 3D uniquement ####
+- single-canal : échange toutes les coordonnées dans un canal particulier des tableaux.
+- single-line : échange toutes les coordonnées dans une ligne particulière des tableaux.
+- single-column : échange toutes les coordonnées dans une colonne particulière des tableaux.
+- square : échange toutes les coordonnées dans un carré particulier (même carré dans chaque canal) des tableaux.</p>
+<p>#### Pour les deux types ####
+- uniform : pour chaque coordonnée : lancer une pièce pour déterminer si elle proviendra du premier ou du second parent
+(si, à la fin de la méthode, aucune coordonnée n’a été échangée, choisir aléatoirement une coordonnée à échanger).
+- BLX-alpha : Étendre la plage de valeurs que les enfants peuvent prendre en dehors de la plage des parents,
+en utilisant un facteur alpha (ici noté w pour éviter la redondance avec le paramètre de blending).
+Cela permet plus de diversité dans les descendants pour éviter une convergence prématurée
+de l’algorithme génétique.
+- blending : mélange des coordonnées des deux parents (combinaison linéaire) en utilisant un facteur
+alpha définissant le pourcentage de chaque parent conservé (ex : enfant1 = 0.7parent1 + 0.3parent2).</p>
+</dd>
+</dl>
+<section id="parametres">
+<h3>Paramètres<a class="headerlink" href="#parametres" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>parent1<span class="classifier">np.array</span></dt><dd><p>Tableau de dimension n représentant le premier parent.</p>
+</dd>
+<dt>parent2<span class="classifier">np.array</span></dt><dd><p>Tableau de dimension n représentant le second parent.</p>
+</dd>
+</dl>
+</section>
+<section id="retours">
+<h3>Retours<a class="headerlink" href="#retours" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>child1<span class="classifier">np.array</span></dt><dd><p>Tableau de dimension n représentant le premier enfant.</p>
+</dd>
+<dt>child2<span class="classifier">np.array</span></dt><dd><p>Tableau de dimension n représentant le second enfant.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.user_driven_algo_gen.GeneticAlgorithm.crossover_and_mutations">
+<span class="sig-name descname"><span class="pre">crossover_and_mutations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_to_retrieve</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.user_driven_algo_gen.GeneticAlgorithm.crossover_and_mutations" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Dernière étape de chaque boucle d’un algorithme génétique :
+- reproduction entre les parents (croisement) pour donner une population d’enfants,
+- mutation sur ces enfants.</p>
+<section id="id6">
+<h3>Paramètres<a class="headerlink" href="#id6" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>nb_to_retrieve<span class="classifier">int</span></dt><dd><p>Nombre de solutions à créer en croisant et mutant les images initiales.</p>
+</dd>
+</dl>
+<p>Utilise :
+self.p1, self.p2, self.dimension
+self.crossover_method, self.square_size</p>
+</section>
+<section id="id7">
+<h3>Retours<a class="headerlink" href="#id7" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>arr_child<span class="classifier">np.array</span></dt><dd><p>Tableau de tableaux représentant la nouvelle population composée des images enfants
+créées en croisant les coordonnées des parents puis en ajoutant des mutations aléatoires.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.user_driven_algo_gen.GeneticAlgorithm.modified_mutation">
+<span class="sig-name descname"><span class="pre">modified_mutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.user_driven_algo_gen.GeneticAlgorithm.modified_mutation" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Implémentation d’un événement de mutation sur un chromosome/individu (tableau).
+Chaque gène (coordonnée) du chromosome a une probabilité de muter en fonction
+du taux de mutation donné en paramètre de la classe.
+Dans cette version de la méthode de mutation, le même vecteur de mutation est ajouté
+à chaque canal de l’image (première dimension).
+Les vecteurs 1D n’ayant qu’une seule dimension, ils ne sont pas affectés par cette méthode
+et appel forcément la méthode self.mutation d’origine.</p>
+<p>Les mutations sont tirées d’une distribution normale centrée sur 0S
+et d’écart type donnée en paramètre de la classe.
+Modifier l’écart type sigma permet d’avoir des mutations plus grandes ou plus petites.</p>
+<section id="id8">
+<h3>Paramètres<a class="headerlink" href="#id8" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>chr<span class="classifier">np.array</span></dt><dd><p>Tableau représentant une image encodée.</p>
+</dd>
+</dl>
+<p>Utilise :
+self.dimension, self.mutation_rate et self.sigma_mutation</p>
+</section>
+<section id="id9">
+<h3>Retours<a class="headerlink" href="#id9" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>None</dt><dd><p>chr est modifié directement par la fonction et n’a donc pas besoin d’être retourné.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AlgoGenetique.user_driven_algo_gen.GeneticAlgorithm.mutation">
+<span class="sig-name descname"><span class="pre">mutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.user_driven_algo_gen.GeneticAlgorithm.mutation" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Implémentation d’un événement de mutation sur un chromosome/individu (tableau).
+Chaque gène (coordonnée) du chromosome a une probabilité de muter en fonction
+du taux de mutation donné en paramètre de la classe.
+Dans cette version de la méthode de mutation, différents vecteurs de mutation
+sont ajoutés à chaque canal (première dimension).
+Les vecteurs 1D utilisent forcément cette méthode (une seule dimension).</p>
+<p>Les mutations sont tirées d’une distribution normale centrée sur 0
+et d’écart type donnée en paramètre de la classe.
+Modifier l’écart type sigma permet d’avoir des mutations plus grandes ou plus petites.</p>
+<section id="id10">
+<h3>Paramètres<a class="headerlink" href="#id10" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>chr<span class="classifier">np.array</span></dt><dd><p>Tableau représentant une image encodée.</p>
+</dd>
+</dl>
+<p>Utilise :
+self.dimension, self.mutation_rate et self.sigma_mutation</p>
+</section>
+<section id="id11">
+<h3>Retours<a class="headerlink" href="#id11" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>None</dt><dd><p>chr est modifié directement par la fonction et n’a donc pas besoin d’être retourné.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.user_driven_algo_gen.print_solutions_coordinates">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.user_driven_algo_gen.</span></span><span class="sig-name descname"><span class="pre">print_solutions_coordinates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list_target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solutions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.user_driven_algo_gen.print_solutions_coordinates" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Fonction d’affichage des coordonnées des parents et des enfants.
+Cette fonction affiche les coordonnées des parents et des enfants après croisement et mutation.</p>
+<section id="id12">
+<h3>Paramètres<a class="headerlink" href="#id12" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>list_target<span class="classifier">list</span></dt><dd><p>Liste des vecteurs des images encodées données en entrée de l’Algorithme Génétique</p>
+</dd>
+<dt>solutions<span class="classifier">np.array</span></dt><dd><p>Tableau des solutions du GA.</p>
+</dd>
+</dl>
+</section>
+<section id="id13">
+<h3>Retours<a class="headerlink" href="#id13" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>None</dt><dd><p>Affiche les coordonnées des parents et des enfants.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.user_driven_algo_gen.run_ga">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.user_driven_algo_gen.</span></span><span class="sig-name descname"><span class="pre">run_ga</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_solutions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crossover_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutation_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_mutation</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.user_driven_algo_gen.run_ga" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Fonction permettant de lancer l’algorithme génétique sur deux images cibles.
+Cette fonction crée une instance de la classe GeneticAlgorithm,
+puis récupère les solutions (enfants) de l’algorithme génétique.
+Ces images sont toutes représentées sous forme de tableaux.</p>
+<section id="id14">
+<h3>Paramètres<a class="headerlink" href="#id14" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>targets<span class="classifier">list</span></dt><dd><p>Liste des tableaux des parents à donner à l’algorithme génétique.</p>
+</dd>
+<dt>nb_solutions<span class="classifier">int</span></dt><dd><p>Nombre d’enfants à créer en utilisant le croisement et la mutation dans l’algorithme génétique.</p>
+</dd>
+<dt>crossover_method<span class="classifier">string</span></dt><dd><p>Méthode de croisement à utiliser pour mélanger les coordonnées des parents et obtenir de nouveaux enfants.</p>
+</dd>
+<dt>mutation_rate<span class="classifier">float</span></dt><dd><p>Probabilité de mutation de chaque coordonnée d’un tableau.</p>
+</dd>
+<dt>sigma_mutation<span class="classifier">float</span></dt><dd><p>Écart type de la distribution normale utilisée pour créer des vecteurs de mutation aléatoires.</p>
+</dd>
+</dl>
+</section>
+<section id="id15">
+<h3>Retours<a class="headerlink" href="#id15" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>solutions<span class="classifier">np.array</span></dt><dd><p>Tableau de tableaux représentant les solutions de l’algorithme génétique.</p>
+</dd>
+</dl>
+</section>
+<section id="exemples">
+<h3>Exemples<a class="headerlink" href="#exemples" title="Lien vers cette rubrique">¶</a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list_target</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s2">&quot;C&quot;</span><span class="p">),</span> <span class="n">b</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s2">&quot;C&quot;</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solutions</span> <span class="o">=</span> <span class="n">run_ga</span><span class="p">(</span><span class="n">list_target</span><span class="p">,</span> <span class="n">nb_solutions</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">crossover_method</span><span class="o">=</span><span class="s2">&quot;blending&quot;</span><span class="p">,</span> <span class="n">mutation_rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">sigma_mutation</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_solutions_coordinates</span><span class="p">(</span><span class="n">list_target</span><span class="p">,</span> <span class="n">solutions</span><span class="p">)</span>
+<span class="go">---- Parents ----</span>
+<span class="go">[3.74540119 9.50714306 7.31993942 5.98658484 1.5601864  1.5599452</span>
+<span class="go">0.58083612 8.66176146]</span>
+<span class="go">[6.01115012 7.08072578 0.20584494 9.69909852 8.32442641 2.12339111</span>
+<span class="go">1.81824967 1.8340451 ]</span>
+<span class="go">---- Children ----</span>
+<span class="go">[7.25022399 7.32336751 0.9847826  7.90309897 7.64800241 2.17796911</span>
+<span class="go">0.54351474 2.89251475]</span>
+<span class="go">[ 3.95847886  9.26450134  6.60852997  6.35783621  2.445474   -0.34338033</span>
+<span class="go">0.70457748  8.17585106]</span>
+<span class="go">[5.38806916 7.74799053 2.16222092 8.67815726 6.46426041 1.96844348</span>
+<span class="go">1.82157924 1.94862694]</span>
+<span class="go">[5.39948167 8.83987831 4.52434591 7.0075261  3.42035241 2.69043795</span>
+<span class="go">0.44195061 6.78413946]</span>
+<span class="go">[5.3529587  9.71065012 3.40718746 8.02846737 5.28051841 2.69174295</span>
+<span class="go">1.34846064 4.90651746]</span>
+<span class="go">[3.9564946  8.41525529 4.1185969  7.98596711 4.0743342  1.81349586</span>
+<span class="go">1.23474977 6.55793409]</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.user_driven_algo_gen.test_crossover">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.user_driven_algo_gen.</span></span><span class="sig-name descname"><span class="pre">test_crossover</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">picture1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picture2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_of_crossover</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.user_driven_algo_gen.test_crossover" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Fonction de test des crossover de l’algorithme génétique.
+Cette fonction crée une instance de la classe GeneticAlgorithm,
+Elle applique ensuite une méthode de crossover sur les deux vecteurs d’origines.</p>
+<section id="id16">
+<h3>Paramètres<a class="headerlink" href="#id16" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>picture1<span class="classifier">np.array</span></dt><dd><p>Tableau de dimension n représentant le premier parent.</p>
+</dd>
+<dt>picture2<span class="classifier">np.array</span></dt><dd><p>Tableau de dimension n représentant le premier parent.</p>
+</dd>
+<dt>point_of_crossover<span class="classifier">int ou tuple</span></dt><dd><p>index de croisement pour les méthodes « single-point », « single-coordinate »,
+« single-canal », « single-line », « single-column » (int) ou
+coordonnées de croisement pour les méthodes « two-points », « square » (tuple).</p>
+</dd>
+<dt>w<span class="classifier">float</span></dt><dd><p>Paramètre d’exploration pour la méthode « BLX-alpha ».</p>
+</dd>
+<dt>alpha<span class="classifier">float</span></dt><dd><p>Paramètre de mélange pour la méthode « blending ».</p>
+</dd>
+<dt>method<span class="classifier">str</span></dt><dd><p>Méthode de crossover à utiliser pour croiser les parents.</p>
+</dd>
+</dl>
+</section>
+<section id="id17">
+<h3>Retours<a class="headerlink" href="#id17" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>None</dt><dd><p>Affiche les coordonnées des parents et des enfants après crossover.</p>
+</dd>
+</dl>
+</section>
+<section id="id18">
+<h3>Exemples<a class="headerlink" href="#id18" title="Lien vers cette rubrique">¶</a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_crossover</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="s2">&quot;single-point&quot;</span><span class="p">)</span>
+<span class="go">---- Parents ----</span>
+<span class="go">[3.74540119 9.50714306 7.31993942 5.98658484 1.5601864  1.5599452</span>
+<span class="go">0.58083612 8.66176146]</span>
+<span class="go">[6.01115012 7.08072578 0.20584494 9.69909852 8.32442641 2.12339111</span>
+<span class="go">1.81824967 1.8340451 ]</span>
+<span class="go">---- Children ----</span>
+<span class="go">[3.74540119 7.08072578 0.20584494 9.69909852 8.32442641 2.12339111</span>
+<span class="go">1.81824967 1.8340451 ]</span>
+<span class="go">[6.01115012 9.50714306 7.31993942 5.98658484 1.5601864  1.5599452</span>
+<span class="go">0.58083612 8.66176146]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">test_crossover</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="s2">&quot;blending&quot;</span><span class="p">)</span>
+<span class="go">---- Parents ----</span>
+<span class="go">[3.74540119 9.50714306 7.31993942 5.98658484 1.5601864  1.5599452</span>
+<span class="go">0.58083612 8.66176146]</span>
+<span class="go">[6.01115012 7.08072578 0.20584494 9.69909852 8.32442641 2.12339111</span>
+<span class="go">1.81824967 1.8340451 ]</span>
+<span class="go">---- Children ----</span>
+<span class="go">[5.33142544 7.80865096 2.34007329 8.58534442 6.29515441 1.95435734</span>
+<span class="go">1.44702561 3.88236001]</span>
+<span class="go">[4.42512587 8.77921788 5.18571108 7.10033895 3.58945841 1.72897897</span>
+<span class="go">0.95206019 6.61344655]</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AlgoGenetique.user_driven_algo_gen.test_mutation">
+<span class="sig-prename descclassname"><span class="pre">AlgoGenetique.user_driven_algo_gen.</span></span><span class="sig-name descname"><span class="pre">test_mutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">picture1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">picture2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_mut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_mut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'unflat'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AlgoGenetique.user_driven_algo_gen.test_mutation" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Fonction de test des mutations de l’algorithme génétique.
+Cette fonction crée une instance de la classe GeneticAlgorithm,
+puis un vecteur aléatoire de même taille que les images d’entrées du GA.
+Elle applique ensuite la méthode de mutation sur ce vecteur aléatoire.</p>
+<section id="id19">
+<h3>Paramètres<a class="headerlink" href="#id19" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>picture1<span class="classifier">np.array</span></dt><dd><p>Tableau de dimension n représentant le premier parent.</p>
+</dd>
+<dt>picture2<span class="classifier">np.array</span></dt><dd><p>Tableau de dimension n représentant le second parent.</p>
+</dd>
+<dt>p_mut<span class="classifier">float</span></dt><dd><p>Probabilités de mutation de chaque coordonnée d’un tableau.</p>
+</dd>
+<dt>s_mut<span class="classifier">float</span></dt><dd><p>écart type de la loi normal définissant les vecteurs de mutation.</p>
+</dd>
+<dt>shape<span class="classifier">str</span></dt><dd><p>Indique si les tableaux d’entrées sont aplatis ou non.
+La valeur par défault est « unflat ». Peut aussi être « flat ».
+Pour tout autre valeur, la fonction lève une erreur.</p>
+</dd>
+</dl>
+</section>
+<section id="id20">
+<h3>Retours<a class="headerlink" href="#id20" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>None</dt><dd><p>Affiche les tableaux avant et après mutation.</p>
+</dd>
+</dl>
+</section>
+<section id="id21">
+<h3>Exemples<a class="headerlink" href="#id21" title="Lien vers cette rubrique">¶</a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_mutation</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="s2">&quot;flat&quot;</span><span class="p">)</span>
+<span class="go">Before mutation:</span>
+<span class="go">[8.07440155 8.960913   3.18003475 1.10051925 2.27935163 4.27107789</span>
+<span class="go">8.18014766 8.60730583]</span>
+<span class="go">After mutation:</span>
+<span class="go">[ 9.96058745  8.960913    3.43758514  1.02607333  0.36058041  4.24456401</span>
+<span class="go">8.18014766 11.07054795]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">test_mutation</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="s2">&quot;unflat&quot;</span><span class="p">)</span>
+<span class="go">Before mutation:</span>
+<span class="go">[[[0.74550644 9.86886937]</span>
+<span class="go">  [7.72244769 1.98715682]]</span>
+</pre></div>
+</div>
+<blockquote>
+<div><dl class="simple">
+<dt>[[0.05522117 8.15461428]</dt><dd><p>[7.06857344 7.29007168]]]</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>After mutation:
+[[[ 0.74550644 10.84441449]</p>
+<blockquote>
+<div><blockquote>
+<div><p>[ 7.24327346  1.80149784]]</p>
+</div></blockquote>
+<dl class="simple">
+<dt>[[ 0.05522117  9.13015941]</dt><dd><p>[ 6.5893992   7.1044127 ]]]</p>
+</dd>
+</dl>
+</div></blockquote>
+</section>
+</dd></dl>
+
+</section>
+<section id="module-AlgoGenetique">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-AlgoGenetique" title="Lien vers cette rubrique">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">PeaceKeeper</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="modules.html">projet-4bim</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">AlgoGenetique package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-AlgoGenetique.algo_genetique_multiple_target">AlgoGenetique.algo_genetique_multiple_target module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-AlgoGenetique.algo_genetique_parallel">AlgoGenetique.algo_genetique_parallel module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-AlgoGenetique.algo_genetique_v1">AlgoGenetique.algo_genetique_v1 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-AlgoGenetique.user_driven_algo_gen">AlgoGenetique.user_driven_algo_gen module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-AlgoGenetique">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Autoencodeur.html">Autoencodeur package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">projet-4bim</a><ul>
+      <li>Previous: <a href="modules.html" title="Chapitre précédent">projet-4bim</a></li>
+      <li>Next: <a href="Autoencodeur.html" title="Chapitre suivant">Autoencodeur package</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Amrou Anibou, Morad Bel Melih, Matthieu Deleglise, Julie Durand, Philippine Fremaux.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/AlgoGenetique.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

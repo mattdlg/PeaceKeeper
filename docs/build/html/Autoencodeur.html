@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+
+<html lang="fr" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Autoencodeur package &#8212; Documentation PeaceKeeper 0</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=0552abf8"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/translations.js?v=e6b791cb"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+    <link rel="prev" title="AlgoGenetique package" href="AlgoGenetique.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="autoencodeur-package">
+<h1>Autoencodeur package<a class="headerlink" href="#autoencodeur-package" title="Lien vers cette rubrique">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Lien vers cette rubrique">¶</a></h2>
+</section>
+<section id="module-Autoencodeur.Autoencodeur">
+<span id="autoencodeur-autoencodeur-module"></span><h2>Autoencodeur.Autoencodeur module<a class="headerlink" href="#module-Autoencodeur.Autoencodeur" title="Lien vers cette rubrique">¶</a></h2>
+<section id="projet-portrait-robot-numerique">
+<h3>Projet Portrait robot numérique<a class="headerlink" href="#projet-portrait-robot-numerique" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>Auto-encodeur :</dt><dd><p>Création d’un autoencodeur.
+Celui-ci compresse des images en vecteurs lantents.
+Ensuite, les vecteurs sont décodés en images.</p>
+</dd>
+</dl>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="Autoencodeur.Autoencodeur.CelebADataset">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Autoencodeur.Autoencodeur.</span></span><span class="sig-name descname"><span class="pre">CelebADataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_images</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.Autoencodeur.CelebADataset" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+<p>Class CelebADataset</p>
+<dl>
+<dt>Définit une classe de dataset personnalisé pour charger et prétraiter les images de CelebA en vue de leur</dt><dd><p>utilisation dans l’autoencodeur.</p>
+</dd>
+<dt>Cette classe hérite de torch.utils.data.Dataset (Dataset est un parent de CelebADataset)</dt><dd><p>Or, Dataset vient de torch.utils.data, donc CelebADataset hérite indirectement de torch.utils.data.Dataset)</p>
+</dd>
+<dt>Comme la classe CelebADataset hérite de Dataset, qui est une classe abstraite,</dt><dd><p>elle doit redéfinir __len__ et __getitem__.
+Dans PyTorch, un dataset personnalisé doit obligatoirement implémenter ces deux méthodes</p>
+<blockquote>
+<div><p>pour être utilisé correctement par un DataLoader</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="Autoencodeur.Autoencodeur.ConvAutoencoder">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Autoencodeur.Autoencodeur.</span></span><span class="sig-name descname"><span class="pre">ConvAutoencoder</span></span><a class="headerlink" href="#Autoencodeur.Autoencodeur.ConvAutoencoder" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Autoencodeur convolutionnel classique pour la reconstruction d’images</p>
+<p>L’autoencodeur a deux parties principales :</p>
+<p>Encodage : Réduction de la Dimensionnalité
+Décodage : Reconstruction de l’Image</p>
+<dl class="simple">
+<dt>Les deux sont des séquences de couches convolutives (nn.Sequential).</dt><dd><p>L’avantage des séquences est de ne avoir besoin de les définir individuellement dans la fonction forward</p>
+</dd>
+</dl>
+<p>ConvAutoencoder hérite de nn.Module et bénéficie de toutes ses fonctionnalités.
+La classe nn.Module est la classe de base pour tous les modèles de réseaux de neurones PyTorch</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Autoencodeur.Autoencodeur.ConvAutoencoder.encoder">
+<span class="sig-name descname"><span class="pre">encoder</span></span><a class="headerlink" href="#Autoencodeur.Autoencodeur.ConvAutoencoder.encoder" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Sequence of convolutional layers encoding the input image into a latent space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Sequential</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Autoencodeur.Autoencodeur.ConvAutoencoder.decoder">
+<span class="sig-name descname"><span class="pre">decoder</span></span><a class="headerlink" href="#Autoencodeur.Autoencodeur.ConvAutoencoder.decoder" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Sequence of transposed convolution layers reconstructing the image from the latent space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Sequential</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.Autoencodeur.ConvAutoencoder.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_latent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.Autoencodeur.ConvAutoencoder.forward" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Applies the encoder and decoder to reconstruct an image.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.Autoencodeur.ConvAutoencoder.encode">
+<span class="sig-name descname"><span class="pre">encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.Autoencodeur.ConvAutoencoder.encode" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Extracts the latent vector from an input image.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.Autoencodeur.ConvAutoencoder.decode">
+<span class="sig-name descname"><span class="pre">decode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.Autoencodeur.ConvAutoencoder.decode" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Reconstructs an image from a latent vector.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">decode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id0" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Reconstructs an image from a latent vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>z</strong> (<em>torch.Tensor</em>) – Latent vector of shape [batch_size, 128, 8, 8].</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>Reconstructed image of shape [batch_size, 3, 128, 128]</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id1" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Extracts the latent vector from an image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor representing an image of shape [batch_size, 3, 128, 128]</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>Latent vector of shape [batch_size, 128, 8, 8]</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_latent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id2" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Cette méthode définit comment les données passent à travers l’autoencodeur</p>
+<p>L’image passe à travers l’encodeur jusqu’à obtenir une représentation latente.</p>
+<dl class="simple">
+<dt>Si return_latent=True, la fonction s’arrête ici et renvoie directement la représentation latente,</dt><dd><p>utile si on veut ajouter l’algo génétique</p>
+</dd>
+<dt>Si return_latent=False, on continue :</dt><dd><p>La représentation latente latent passe dans le décodeur.
+L’image reconstruite est renvoyée, ayant la même forme que l’image d’entrée</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Un tenseur d’entrée représentant une image de la taille [batch_size, 3, 128, 128] (images RGB 128x128)</p></li>
+<li><p><strong>return_latent</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>par défaut False</em>) – If True: permet de récupérer uniquement la représentation latente au lieu de reconstruire l’image</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>Reconstructed image of the same shape as the input.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="autoencodeur-inference-module">
+<h2>Autoencodeur.Inference module<a class="headerlink" href="#autoencodeur-inference-module" title="Lien vers cette rubrique">¶</a></h2>
+</section>
+<section id="module-Autoencodeur.explore_latent">
+<span id="autoencodeur-explore-latent-module"></span><h2>Autoencodeur.explore_latent module<a class="headerlink" href="#module-Autoencodeur.explore_latent" title="Lien vers cette rubrique">¶</a></h2>
+<section id="id3">
+<h3>Projet Portrait robot numérique<a class="headerlink" href="#id3" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>Exploration :</dt><dd><p>Création de vecteurs appartenant à l’espace latent
+d’un autoencodeur et affichage des images décodées.
+Cette algorithme vise à explorer les coordonnées de
+l’espace latent afin de mieux comprendre sa structure.</p>
+</dd>
+</dl>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py" id="Autoencodeur.explore_latent.create_black_and_white_vectors">
+<span class="sig-prename descclassname"><span class="pre">Autoencodeur.explore_latent.</span></span><span class="sig-name descname"><span class="pre">create_black_and_white_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_to_create</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.explore_latent.create_black_and_white_vectors" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Créé un tableau contenant un nombre donné de vecteurs 1D
+ayant tous la même taille et dont les coordonnées sont
+uniquement 0 ou 1.</p>
+<section id="parametres">
+<h3>Paramètres<a class="headerlink" href="#parametres" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>size<span class="classifier">int</span></dt><dd><p>Taille des vecteurs</p>
+</dd>
+<dt>nb_to_create<span class="classifier">int</span></dt><dd><p>Nombre de vecteurs à générer</p>
+</dd>
+</dl>
+</section>
+<section id="retours">
+<h3>Retours<a class="headerlink" href="#retours" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>vectors<span class="classifier">np.array</span></dt><dd><p>Tableau contenant les vecteurs « noir et blanc » générés.
+Chaque ligne correspond à un vecteur.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">create_black_and_white_vectors</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">[[0 1 0 0 0 1 0 0 0 1]</span>
+<span class="go"> [0 0 0 0 1 0 1 1 1 0]</span>
+<span class="go"> [1 0 1 1 1 1 1 1 1 1]]</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Autoencodeur.explore_latent.create_random_vectors">
+<span class="sig-prename descclassname"><span class="pre">Autoencodeur.explore_latent.</span></span><span class="sig-name descname"><span class="pre">create_random_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_to_create</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.explore_latent.create_random_vectors" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Créé un array contenant un nombre donné de vecteurs 1D
+tous de la même taille, dont les coordonnées sont tous
+dans l’intervalle [0, 1].</p>
+<section id="id4">
+<h3>Paramètres<a class="headerlink" href="#id4" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>size<span class="classifier">int</span></dt><dd><p>Taille des vecteurs</p>
+</dd>
+<dt>nb_to_create<span class="classifier">int</span></dt><dd><p>Nombre de vecteurs à générer</p>
+</dd>
+</dl>
+</section>
+<section id="id5">
+<h3>Retours<a class="headerlink" href="#id5" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>vectors<span class="classifier">np.array</span></dt><dd><p>Tableau contenant les vecteurs 1D générés.
+Chaque ligne correspond à un vecteur.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">create_random_vectors</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="go">[[0.37454012 0.95071431 0.73199394 0.59865848]</span>
+<span class="go"> [0.15601864 0.15599452 0.05808361 0.86617615]</span>
+<span class="go"> [0.60111501 0.70807258 0.02058449 0.96990985]]</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Autoencodeur.explore_latent.explore_one_coord">
+<span class="sig-prename descclassname"><span class="pre">Autoencodeur.explore_latent.</span></span><span class="sig-name descname"><span class="pre">explore_one_coord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coord_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">increment</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_to_create</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.explore_latent.explore_one_coord" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Créer un tableau contenant un nombre donné de vecteurs 1D,
+tous de même taille et dont les coordonnées sont toutes nulles,
+sauf celles dont l’index est donné en paramètre, augmentées
+d’une valeur arbitraire dans chaque vecteur du tableau par rapport au précédent.</p>
+<p>Cette fonction à pour but de repérer ce qu’un petit groupe de coordonnées
+de l’espace latent encode dans l’image d’origine.</p>
+<section id="id6">
+<h3>Paramètres<a class="headerlink" href="#id6" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>coord_index<span class="classifier">int ou list</span></dt><dd><p>Index des coordonnées à modifier dans chaque vecteur.
+Chaque index doit appartenir à [0, size[.</p>
+</dd>
+<dt>increment<span class="classifier">float</span></dt><dd><p>Valeur pour incrémenter les coordonnées à modifier.</p>
+</dd>
+<dt>size<span class="classifier">int</span></dt><dd><p>Taille des vectors.</p>
+</dd>
+<dt>nb_to_create<span class="classifier">int</span></dt><dd><p>Nombre de vecteurs à générer.</p>
+</dd>
+</dl>
+</section>
+<section id="id7">
+<h3>Retours<a class="headerlink" href="#id7" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>vectors<span class="classifier">np.array</span></dt><dd><p>Tableau contenant les vecteurs 1D générés.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">explore_one_coord</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">[[0.   0.   0.   0.   0.   0.   0.   0.   0.   0.  ]</span>
+<span class="go"> [0.   0.   0.   0.   0.   0.25 0.   0.   0.   0.  ]</span>
+<span class="go"> [0.   0.   0.   0.   0.   0.5  0.   0.   0.   0.  ]]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">explore_one_coord</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">8</span><span class="p">],</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">[[0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]</span>
+<span class="go"> [0. 0. 1. 0. 0. 1. 0. 0. 1. 0.]</span>
+<span class="go"> [0. 0. 2. 0. 0. 2. 0. 0. 2. 0.]]</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Autoencodeur.explore_latent.interpolate_vectors">
+<span class="sig-prename descclassname"><span class="pre">Autoencodeur.explore_latent.</span></span><span class="sig-name descname"><span class="pre">interpolate_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_vector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_vector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_to_create</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.explore_latent.interpolate_vectors" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Interpolation linéaire de certains vecteurs entre
+les deux vecteurs en entrées.</p>
+<p>Cette fonction à pour but de générer une succession d’image
+qui font la transition entre les deux images dont les vecteurs
+dans l’espace latent sont donnés en entrée.</p>
+<section id="id8">
+<h3>Paramètres<a class="headerlink" href="#id8" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>start_vector<span class="classifier">np.array</span></dt><dd><p>Vecteur limite basse de l’interval d’interpolation linéaire</p>
+</dd>
+<dt>end_vector<span class="classifier">np.array</span></dt><dd><p>Vecteur limite haute de l’interval d’interpolation linéaire</p>
+</dd>
+<dt>nb_to_create<span class="classifier">int</span></dt><dd><p>Nombre de vecteurs à générer</p>
+</dd>
+</dl>
+</section>
+<section id="id9">
+<h3>Retours<a class="headerlink" href="#id9" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>vectors<span class="classifier">np.array</span></dt><dd><p>Tableau contenant les vecteurs interpolés.
+Chaque ligne correspond à un vecteur.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fst</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">snd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interpolate_vectors</span><span class="p">(</span><span class="n">fst</span><span class="p">,</span> <span class="n">snd</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="go">[[4.   4.   1.   3.   1.   4.   3.   2.   5.   2.  ]</span>
+<span class="go"> [3.25 3.25 1.5  3.25 1.   4.25 3.5  2.75 4.75 2.25]</span>
+<span class="go"> [2.5  2.5  2.   3.5  1.   4.5  4.   3.5  4.5  2.5 ]</span>
+<span class="go"> [1.75 1.75 2.5  3.75 1.   4.75 4.5  4.25 4.25 2.75]</span>
+<span class="go"> [1.   1.   3.   4.   1.   5.   5.   5.   4.   3.  ]]</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Autoencodeur.explore_latent.single_point_change">
+<span class="sig-prename descclassname"><span class="pre">Autoencodeur.explore_latent.</span></span><span class="sig-name descname"><span class="pre">single_point_change</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_vector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_vector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_to_create</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.explore_latent.single_point_change" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Générations de vecteurs 1D par échange de coordonnées entre deux vecteurs.
+Les coordonnées sont échangées entre les deux vecteurs à partir d’un index.</p>
+<p>Cette fonction à pour but de générer une succession d’image
+qui font la transition entre les deux images dont les vecteurs
+dans l’espace latent sont donnés en entrée.</p>
+<section id="id10">
+<h3>Paramètres<a class="headerlink" href="#id10" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>start_vector<span class="classifier">np.array</span></dt><dd><p>Premier vecteur (coordonnées gardées avant l’index)</p>
+</dd>
+<dt>end_vector<span class="classifier">np.array</span></dt><dd><p>Second vecteur (coordonnées gardées après l’index)</p>
+</dd>
+<dt>nb_to_create<span class="classifier">int</span></dt><dd><p>Nombre de vecteurs à générer</p>
+</dd>
+</dl>
+</section>
+<section id="id11">
+<h3>Retours<a class="headerlink" href="#id11" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>vectors<span class="classifier">np.array</span></dt><dd><p>Tableau contenant les vecteurs générés.
+Chaque ligne correspond à un vecteur.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fst</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">snd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">single_point_change</span><span class="p">(</span><span class="n">fst</span><span class="p">,</span> <span class="n">snd</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="go">[[4. 4. 1. 3. 1. 4. 3. 2. 5. 2.]</span>
+<span class="go"> [4. 4. 1. 3. 1. 4. 3. 5. 4. 3.]</span>
+<span class="go"> [4. 4. 1. 3. 1. 5. 5. 5. 4. 3.]</span>
+<span class="go"> [4. 4. 3. 4. 1. 5. 5. 5. 4. 3.]</span>
+<span class="go"> [1. 1. 3. 4. 1. 5. 5. 5. 4. 3.]]</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+</section>
+<section id="autoencodeur-finder-hyperparameters-module">
+<h2>Autoencodeur.finder_hyperparameters module<a class="headerlink" href="#autoencodeur-finder-hyperparameters-module" title="Lien vers cette rubrique">¶</a></h2>
+</section>
+<section id="module-Autoencodeur.new_inference">
+<span id="autoencodeur-new-inference-module"></span><h2>Autoencodeur.new_inference module<a class="headerlink" href="#module-Autoencodeur.new_inference" title="Lien vers cette rubrique">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.AppStyler">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Autoencodeur.new_inference.</span></span><span class="sig-name descname"><span class="pre">AppStyler</span></span><a class="headerlink" href="#Autoencodeur.new_inference.AppStyler" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Gestionnaire des styles globaux de l’application</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.AppStyler.setup_style">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setup_style</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.AppStyler.setup_style" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Configure le style visuel global de l’application.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>app</strong> (<em>QApplication</em>) – Instance de l’application Qt</p></li>
+<li><p><strong>Applique</strong></p></li>
+<li><p><strong>Fusion</strong> (<em>- Le style</em>)</p></li>
+<li><p><strong>sombre</strong> (<em>- Une palette de couleurs</em>)</p></li>
+<li><p><strong>noires</strong> (<em>- Les couleurs de base</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.BackgroundVideoWidget">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Autoencodeur.new_inference.</span></span><span class="sig-name descname"><span class="pre">BackgroundVideoWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.BackgroundVideoWidget" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">QGraphicsView</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.BackgroundVideoWidget.resizeEvent">
+<span class="sig-name descname"><span class="pre">resizeEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.BackgroundVideoWidget.resizeEvent" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Ajuste la vidéo à la taille du widget</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.CursorManager">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Autoencodeur.new_inference.</span></span><span class="sig-name descname"><span class="pre">CursorManager</span></span><a class="headerlink" href="#Autoencodeur.new_inference.CursorManager" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Gestion centralisée des curseurs personnalisés</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.CursorManager.apply_global_style">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">apply_global_style</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pointer_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.CursorManager.apply_global_style" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Applique les styles de curseur globaux.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>app</strong> (<em>QApplication</em>) – Instance de l’application Qt</p></li>
+<li><p><strong>default_path</strong> (<em>str</em>) – Chemin vers l’image du curseur par défaut</p></li>
+<li><p><strong>pointer_path</strong> (<em>str</em>) – Chemin vers l’image du curseur de type pointeur</p></li>
+<li><p><strong>Configure</strong></p></li>
+<li><p><strong>l'application</strong> (<em>- Le curseur par défaut pour toute</em>)</p></li>
+<li><p><strong>boutons</strong> (<em>- Le curseur spécial pour les</em>)</p></li>
+<li><p><strong>CSS</strong> (<em>- Gère automatiquement la conversion des chemins pour</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.CursorManager.apply_to_hierarchy">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">apply_to_hierarchy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">widget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cursor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.CursorManager.apply_to_hierarchy" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Applique un curseur à un widget et toute sa hiérarchie.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>widget</strong> (<em>QWidget</em>) – Widget racine à partir duquel appliquer</p></li>
+<li><p><strong>cursor</strong> (<em>QCursor</em>) – Curseur à appliquer</p></li>
+<li><p><strong>widgets</strong> (<em>Parcourt récursivement toute l'arborescence des</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.CursorManager.create">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hotspot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">QCursor</span></span></span><a class="headerlink" href="#Autoencodeur.new_inference.CursorManager.create" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Crée un curseur personnalisé avec gestion d’erreur améliorée.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img_path</strong> – Chemin vers l’image du curseur</p></li>
+<li><p><strong>hotspot</strong> – Position du point de clic (x,y)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>Curseur personnalisé ou curseur par défaut si erreur</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>QCursor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.CursorManager.get_cursor_paths">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_cursor_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">relative_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#Autoencodeur.new_inference.CursorManager.get_cursor_paths" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Charge les chemins absolus des curseurs depuis la racine du projet.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>relative_path</strong> – Chemin relatif personnalisé (optionnel)</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>(chemin_cursor_resized, chemin_pointer_resized)</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple</p>
+</dd>
+<dt class="field-even">Lève<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>FileNotFoundError</strong> – Si le dossier des curseurs est introuvable</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.GenerationDialog">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Autoencodeur.new_inference.</span></span><span class="sig-name descname"><span class="pre">GenerationDialog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.GenerationDialog" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">QDialog</span></code></p>
+<p>Class GenerationDialog</p>
+<p>Cette classe permet d’afficher des images, de laisser l’utilisateur en sélectionner,
+et de lancer la reconstruction avec l’algorithme génétique lorsque l’utilisateur
+clique sur “Génération”.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.GenerationDialog.display_buttons">
+<span class="sig-name descname"><span class="pre">display_buttons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.GenerationDialog.display_buttons" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Affiche une liste d’images sous forme de boutons cliquables dans le layout spécifié.</p>
+<p>Gère à la fois les chemins de fichiers image pour une première visualisation (en tant que chaînes de caractères,
+les images invalides étant remplacées par un espace réservé gris), et les tableaux NumPy (pour les images reconstruites).
+Pour chaque image, un QPushButton est créé avec l’image comme icône. Ces boutons sont ensuite organisés
+dans le layout spécifié selon une grille avec un nombre de colonnes défini. Chaque bouton est relié
+à une fonction de rappel permettant la sélection d’image, et est stocké dans le dictionnaire “button_image_map”
+afin de conserver l’image associée à chaque bouton.</p>
+<section id="id12">
+<h3>Paramètres<a class="headerlink" href="#id12" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>layout<span class="classifier">QGridLayout</span></dt><dd><p>Layout dans lequel les boutons des images seront ajoutés.</p>
+</dd>
+<dt>data_img<span class="classifier">list</span></dt><dd><p>Liste d’images à afficher. Chaque élément peut être un chemin de fichier ou un tableau NumPy.</p>
+</dd>
+<dt>nb_col<span class="classifier">int</span></dt><dd><p>Nombre de colonnes à utiliser pour organiser les boutons dans le layout.</p>
+</dd>
+<dt>target_size<span class="classifier">int</span></dt><dd><p>Taille cible des images dans le layout.</p>
+</dd>
+</dl>
+</section>
+<section id="utilise">
+<h3>Utilise<a class="headerlink" href="#utilise" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>self.button_image_map<span class="classifier">dict</span></dt><dd><p>Associe chaque bouton à son image correspondante.</p>
+</dd>
+<dt>self.select_image_from_generated<span class="classifier">méthode</span></dt><dd><p>Méthode utilisée pour mettre à jour les images sélectionnées par l’utilisateur.</p>
+</dd>
+</dl>
+</section>
+<section id="retourne">
+<h3>Retourne<a class="headerlink" href="#retourne" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>None</dt><dd><p>Cette méthode modifie directement le layout.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.GenerationDialog.display_definitive_portrait">
+<span class="sig-name descname"><span class="pre">display_definitive_portrait</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.GenerationDialog.display_definitive_portrait" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Affiche le portrait définitif basé sur l’image sélectionnée.</p>
+<p>Cette méthode vérifie d’abord si une seule image a été sélectionnée. Si ce n’est pas le cas,
+elle affiche une boîte de message d’avertissement demandant à l’utilisateur de sélectionner une seule image.
+Si une image est bien sélectionnée, elle nettoie le layout principal
+(en supprimant les boutons inutiles) et met à jour le layout de reconstruction final
+pour afficher le portrait définitif.</p>
+<section id="id13">
+<h3>Paramètres<a class="headerlink" href="#id13" title="Lien vers cette rubrique">¶</a></h3>
+<p>None</p>
+</section>
+<section id="id14">
+<h3>Utilise<a class="headerlink" href="#id14" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>self.selected_images<span class="classifier">list</span></dt><dd><p>Contient les références des instances de QPushButton cliquées.
+La liste doit contenir exactement un élément ici.</p>
+</dd>
+<dt>self.selected_buttons<span class="classifier">list</span></dt><dd><p>Liste des boutons sélectionnés, réinitialisée au début de la méthode.</p>
+</dd>
+<dt>self.button_layout<span class="classifier">QHBoxLayout</span></dt><dd><p>Layout contenant les boutons d’action.</p>
+</dd>
+<dt>self.main_layout<span class="classifier">QVBoxLayout</span></dt><dd><p>Layout vertical principal de la fenêtre de dialogue.</p>
+</dd>
+<dt>self.final_reconstruction_layout<span class="classifier">QVBoxLayout</span></dt><dd><p>Layout utilisé pour afficher le portrait final.</p>
+</dd>
+<dt>self.display_images<span class="classifier">méthode</span></dt><dd><p>Affiche les images dans le layout avec une taille spécifiée.</p>
+</dd>
+<dt>self.save_definitive_portrait<span class="classifier">méthode</span></dt><dd><p>Sauvegarde l’image du portrait définitif sélectionné par l’utilisateur dans le dossier spécifié.</p>
+</dd>
+</dl>
+</section>
+<section id="id15">
+<h3>Retourne<a class="headerlink" href="#id15" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>None</dt><dd><p>La méthode modifie directement le layout de reconstruction final et l’interface utilisateur.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.GenerationDialog.display_generated_images">
+<span class="sig-name descname"><span class="pre">display_generated_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generated_images</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.GenerationDialog.display_generated_images" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Cette méthode est appelée après l’exécution de l’algorithme génétique pour générer
+de nouvelles variations d’images. Elle commence par supprimer les anciens QPushButtons d’images affichées.
+Ensuite, elle affiche les nouvelles images à l’aide de la méthode “display_buttons” dans un layout en grille à 3 colonnes.</p>
+<section id="id16">
+<h3>Paramètres<a class="headerlink" href="#id16" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>generated_images<span class="classifier">list</span></dt><dd><p>Liste d’images représentant des variations à partir des images sélectionnées.</p>
+</dd>
+</dl>
+</section>
+<section id="id17">
+<h3>Utilise<a class="headerlink" href="#id17" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>self.reconstructed_layout<span class="classifier">QGridLayout</span></dt><dd><p>Layout où les nouvelles images générées seront affichées.</p>
+</dd>
+<dt>self.validate_btn<span class="classifier">QPushButton</span></dt><dd><p>Bouton de validation permettant de soumettre le choix de l’utilisateur.</p>
+</dd>
+<dt>self.display_buttons<span class="classifier">méthode</span></dt><dd><p>Méthode utilisée pour ajouter les images sous forme de boutons dans le layout reconstruit.</p>
+</dd>
+</dl>
+</section>
+<section id="id18">
+<h3>Retourne<a class="headerlink" href="#id18" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>None</dt><dd><p>La méthode modifie le layout reconstruit.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.GenerationDialog.display_images">
+<span class="sig-name descname"><span class="pre">display_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.GenerationDialog.display_images" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Affiche les images sélectionnées dans le layout spécifié.
+Cette méthode parcourt “self.selected_images”, qui peut contenir soit
+des chemins de fichiers (str), soit des tableaux NumPy représentant des images.</p>
+<section id="id19">
+<h3>Paramètres<a class="headerlink" href="#id19" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>layout<span class="classifier">QGridLayout</span></dt><dd><p>Layout dans lequel les images seront affichées.</p>
+</dd>
+<dt>img_size<span class="classifier">int</span></dt><dd><p>Taille cible (img_size = largeur = hauteur) pour les images affichées.</p>
+</dd>
+</dl>
+</section>
+<section id="id20">
+<h3>Utilise<a class="headerlink" href="#id20" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>self.selected_images<span class="classifier">list</span></dt><dd><p>Contient les chemins des images sélectionnées par l’utilisateur.</p>
+</dd>
+</dl>
+</section>
+<section id="id21">
+<h3>Retourne<a class="headerlink" href="#id21" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>None</dt><dd><p>La méthode modifie le layout donné en y ajoutant les images.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.GenerationDialog.display_new_randoms_images">
+<span class="sig-name descname"><span class="pre">display_new_randoms_images</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.GenerationDialog.display_new_randoms_images" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Affiche 3 images randoms encore jamais vu par l’utilisateur.</p>
+<p>Nettoie le contenu actuel du layout (uniquement les précédentest images).
+Ces images sont des boutons cliquables.
+Le layout est mis à jour avec 3 images organisées en format colonne,
+en utilisant la méthode “display_buttons”.</p>
+<section id="id22">
+<h3>Paramètres<a class="headerlink" href="#id22" title="Lien vers cette rubrique">¶</a></h3>
+<p>None</p>
+</section>
+<section id="id23">
+<h3>Utilise<a class="headerlink" href="#id23" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>self.random_img_grid_layout<span class="classifier">list</span></dt><dd><p>Layout dans lequel les boutons d’images sont ajoutés.</p>
+</dd>
+<dt>self.display_buttons<span class="classifier">méthode</span></dt><dd><p>Méthode utilisée pour ajouter les images sous forme de boutons dans un layout donné.</p>
+</dd>
+<dt>self.all_image_paths<span class="classifier">list</span></dt><dd><p>Liste contenant les chemins d’accès des fichiers présents dans le dossier Images.</p>
+</dd>
+<dt>self.visualized_images<span class="classifier">set</span></dt><dd><p>Ensemble des images déjà affichées à l’utilisateur.</p>
+</dd>
+</dl>
+</section>
+<section id="id24">
+<h3>Retourne<a class="headerlink" href="#id24" title="Lien vers cette rubrique">¶</a></h3>
+<p>None</p>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.GenerationDialog.display_original_images">
+<span class="sig-name descname"><span class="pre">display_original_images</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.GenerationDialog.display_original_images" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Affiche les 2 images sélectionnées dans le layout.</p>
+<p>Efface le contenu actuel du layout utilisé pour afficher les images précédemment sélectionnées
+(seulement les images, pas le label « Images sélectionnées »),
+puis affiche les nouvelles images sélectionnées par l’utilisateur. Le layout est ensuite mis à jour
+avec ces images, organisées en deux colonnes à l’aide de la méthode “display_buttons”.</p>
+<section id="id25">
+<h3>Paramètres<a class="headerlink" href="#id25" title="Lien vers cette rubrique">¶</a></h3>
+<p>None</p>
+</section>
+<section id="id26">
+<h3>Utilise<a class="headerlink" href="#id26" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>self.selected_images<span class="classifier">list</span></dt><dd><p>Contient les références des instances de QPushButton cliquées.</p>
+</dd>
+<dt>self.images_layout<span class="classifier">QtWidgets.QGridLayout</span></dt><dd><p>Layout dans lequel les boutons des images sont ajoutés.</p>
+</dd>
+<dt>self.display_buttons<span class="classifier">méthode</span></dt><dd><p>Méthode utilisée pour ajouter les images sous forme de boutons dans un layout donné.</p>
+</dd>
+</dl>
+</section>
+<section id="id27">
+<h3>Retourne<a class="headerlink" href="#id27" title="Lien vers cette rubrique">¶</a></h3>
+<p>None</p>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.GenerationDialog.generate_new_images">
+<span class="sig-name descname"><span class="pre">generate_new_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selected_images</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.GenerationDialog.generate_new_images" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Génère 6 nouvelles images à partir des deux images sélectionnées en utilisant un algorithme génétique.</p>
+<p>Cette méthode traite les images sélectionnées en les encodant d’abord en vecteurs latents
+à l’aide d’un modèle d’autoencodeur. Ensuite, elle applique un algorithme génétique pour créer
+6 nouvelles images à partir de ces vecteurs encodés. Enfin, les nouvelles images sont décodées (reconstruites)
+et affichées grâce à la méthode “display_generated_images”.</p>
+<section id="id28">
+<h3>Paramètres<a class="headerlink" href="#id28" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>selected_images<span class="classifier">list</span></dt><dd><p>Liste contenant les chemins des images sélectionnées (sous forme de chaînes de caractères)
+ou des tableaux NumPy représentant les images sélectionnées. Ces images seront utilisées pour générer les nouvelles.</p>
+</dd>
+</dl>
+</section>
+<section id="id29">
+<h3>Utilise<a class="headerlink" href="#id29" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>self.transforms<span class="classifier">torchvision.transforms.Compose</span></dt><dd><p>Une composition de transformations de prétraitement appliquées aux images avant
+de les passer dans le modèle. Comprend redimensionnement, recadrage centré et normalisation
+au format tensor.</p>
+</dd>
+<dt>self.device<span class="classifier">torch.device</span></dt><dd><p>Spécifie l’appareil sur lequel les tenseurs et le modèle d’autoencodeur seront alloués.
+Sélectionne automatiquement “cuda” si un GPU est disponible, sinon utilise “cpu”.</p>
+</dd>
+<dt>self.model<span class="classifier">Autoencoder</span></dt><dd><p>Le modèle d’autoencodeur convolutionnel utilisé pour encoder et décoder les images.
+Il est initialisé avec les meilleurs hyperparamètres.</p>
+</dd>
+<dt>self.selected_images<span class="classifier">list</span></dt><dd><p>Contient les références des instances de QPushButton cliquées
+(utilisées comme entrée pour l’algorithme génétique).</p>
+</dd>
+<dt>self.button_layout<span class="classifier">QHBoxLayout</span></dt><dd><p>Layout contenant les boutons d’action.</p>
+</dd>
+<dt>self.final_btn<span class="classifier">QPushButton</span></dt><dd><p>Le bouton « Portrait définitif », affiché une fois les nouvelles images générées,
+permettant de choisir l’image finale.</p>
+</dd>
+<dt>self.display_original_images<span class="classifier">méthode</span></dt><dd><p>Affiche les images sélectionnées par l’utilisateur.</p>
+</dd>
+<dt>self.display_generated_images<span class="classifier">méthode</span></dt><dd><p>Affiche les nouvelles images générées par l’algorithme génétique.</p>
+</dd>
+</dl>
+</section>
+<section id="id30">
+<h3>Retourne<a class="headerlink" href="#id30" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>None</dt><dd><p>La méthode modifie l’interface utilisateur en affichant à la fois les images sélectionnées
+et les images générées.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.GenerationDialog.get_output_directory">
+<span class="sig-name descname"><span class="pre">get_output_directory</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.GenerationDialog.get_output_directory" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Détermine dynamiquement le dossier dans lequel sauvegarder le portrait définitif.</p>
+<section id="id31">
+<h3>Retourne<a class="headerlink" href="#id31" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>dir_path :</dt><dd><p>Le chemin du dossier ConfirmedSuspects, existant ou nouvellement créé.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.GenerationDialog.load_images">
+<span class="sig-name descname"><span class="pre">load_images</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.GenerationDialog.load_images" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Sélectionne jusqu’à 10 images qui n’ont pas encore été visualisées depuis le dossier spécifié.
+Chaque image est affichée sous forme de bouton grâce à la méthode “display_buttons”.
+Une fois une image chargée, elle est marquée comme visualisée.
+Si aucune image non visualisée ne reste, une boîte de message d’avertissement est affichée à l’utilisateur.</p>
+<p>Les images sont redimensionnées pour assurer une cohérence visuelle et les boutons sont ajoutés à une grille 5x2.
+Chaque bouton permet à l’utilisateur de sélectionner des images pour des interactions ultérieures.</p>
+<section id="id32">
+<h3>Paramètres<a class="headerlink" href="#id32" title="Lien vers cette rubrique">¶</a></h3>
+<p>None</p>
+</section>
+<section id="id33">
+<h3>Utilise<a class="headerlink" href="#id33" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>self.selected_buttons<span class="classifier">list</span></dt><dd><p>Contient les références des instances de QPushButton cliquées.</p>
+</dd>
+<dt>self.image_folder<span class="classifier">str</span></dt><dd><p>Chemin vers le dossier contenant les images.</p>
+</dd>
+<dt>self.visualized_images<span class="classifier">set</span></dt><dd><p>Ensemble des images déjà affichées à l’utilisateur.</p>
+</dd>
+<dt>self.initial_layout<span class="classifier">QtWidgets.QGridLayout</span></dt><dd><p>Layout dans lequel les boutons des images sont ajoutés.</p>
+</dd>
+<dt>self.display_buttons<span class="classifier">méthode</span></dt><dd><p>Méthode utilisée pour ajouter les images sous forme de boutons dans un layout donné.</p>
+</dd>
+<dt>self.reset_selected_buttons<span class="classifier">méthode</span></dt><dd><p>Réinitialise la liste des images sélectionnées et retire l’effet d’ombre sur ces images.</p>
+</dd>
+</dl>
+</section>
+<section id="id34">
+<h3>Retourne<a class="headerlink" href="#id34" title="Lien vers cette rubrique">¶</a></h3>
+<p>None</p>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.GenerationDialog.load_model">
+<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.GenerationDialog.load_model" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Tente de charger le modèle depuis plusieurs emplacements possibles
+en suivant un ordre de priorité défini. Si aucun fichier valide n’est trouvé,
+lève une exception FileNotFoundError avec la liste des chemins testés.</p>
+<p>Ordre de recherche :
+1. Chemin relatif direct (pour compatibilité avec les anciennes versions)
+2. Dossier contenant le script appelant
+3. Sous-dossier Autoencodeur dans le parent du script</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+<dt class="field-even">Lève<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> – Si aucun fichier valide n’est trouvé dans les emplacements testés</p></li>
+<li><p><strong>RuntimeError</strong> – Si le chargement échoue pour des raisons de compatibilité des poids</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Les messages de debug sont affichés dans la console lors des tentatives</p></li>
+<li><p>Le map_location est automatiquement géré en fonction de self.device</p></li>
+<li><p>Format de fichier attendu : .pth (format PyTorch)</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.GenerationDialog.remove_layout">
+<span class="sig-name descname"><span class="pre">remove_layout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layout_parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.GenerationDialog.remove_layout" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Supprime un layout ainsi que tous ses widgets du layout parent donné.</p>
+<section id="id35">
+<h3>Paramètres<a class="headerlink" href="#id35" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>layout_parent<span class="classifier">QLayout</span></dt><dd><p>Le layout parent duquel le layout cible sera supprimé.</p>
+</dd>
+<dt>layout<span class="classifier">QLayout</span></dt><dd><p>Le layout à supprimer.</p>
+</dd>
+</dl>
+</section>
+<section id="id36">
+<h3>Retourne<a class="headerlink" href="#id36" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>Aucun</dt><dd><p>La méthode modifie directement la structure du layout en supprimant le layout spécifié
+ainsi que ses widgets.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.GenerationDialog.reset_selected_buttons">
+<span class="sig-name descname"><span class="pre">reset_selected_buttons</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.GenerationDialog.reset_selected_buttons" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Réinitialise la liste des boutons et images sélctionnés et retire l’effet
+d’ombrage de ces images pour prévenir qu’elles sont déselctionnées.
+Cette fonction est appelée si des images ont été sélectionnées et que l’utilisateur
+décide ensuite de  générer 10 nouvelles images.</p>
+<section id="makes-use-of">
+<h3>Makes use of<a class="headerlink" href="#makes-use-of" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>selected_images<span class="classifier">list</span></dt><dd><p>Contient le chemin des images sélectionnées par l’utilisateur.</p>
+</dd>
+<dt>selected_buttons<span class="classifier">list</span></dt><dd><p>Contient les références aux QPushButton cliqués (associés aux images).</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">rtype<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.GenerationDialog.save_definitive_portrait">
+<span class="sig-name descname"><span class="pre">save_definitive_portrait</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.GenerationDialog.save_definitive_portrait" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Sauvegarde l’image du portrait définitif sélectionné par l’utilisateur dans le dossier spécifié.</p>
+<p>Cette méthode vérifie d’abord si le dossier “ConfirmedSuspects” existe. Si le dossier n’est pas trouvé,
+l’image ne sera pas sauvegardée.
+Si le dossier existe, l’image est sauvegardée avec un nom de fichier généré à partir de la date et l’heure actuelles.
+La méthode prend en compte les types d’images suivantes : chemin str ou tableau NumPy.</p>
+<p>Un message de succès est affiché après un délai de 2 secondes pour informer l’utilisateur du succès de l’opération.</p>
+<section id="id37">
+<h3>Utilise<a class="headerlink" href="#id37" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>self.selected_images<span class="classifier">list</span></dt><dd><p>Une liste qui contient les chemins des images sélectionnées.
+Ici il n’y a qu’une image.</p>
+</dd>
+<dt>self.get_output_directory<span class="classifier">method</span></dt><dd><p>Méthode qui retourne le dossier dans lequel sauvegarder le portrait définitif.</p>
+</dd>
+<dt>self.show_success_message<span class="classifier">method</span></dt><dd><p>Affiche le message de succès de la sauvegarde.</p>
+</dd>
+</dl>
+</section>
+<section id="id38">
+<h3>Retourne<a class="headerlink" href="#id38" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>None</dt><dd><p>Cette méthode modifie directement l’interface utilisateur en affichant un message de succès.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.GenerationDialog.select_image_from_generated">
+<span class="sig-name descname"><span class="pre">select_image_from_generated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">button</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.GenerationDialog.select_image_from_generated" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Sélectionne un bouton (représentant une image générée par l’algorithme génétique) parmi ceux affichés
+et le met en surbrillance avec un effet d’ombre.</p>
+<p>Cette méthode associe une image générée par l’algorithme génétique à son bouton correspondant et
+met en surbrillance le bouton lorsqu’il est sélectionné en appliquant un effet d’ombre. Si le
+bouton est déjà sélectionné, la sélection est supprimée et le bouton est dé-sélectionné.</p>
+<section id="id39">
+<h3>Paramètres<a class="headerlink" href="#id39" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>button<span class="classifier">QPushButton</span></dt><dd><p>Le bouton représentant l’image générée.</p>
+</dd>
+</dl>
+</section>
+<section id="id40">
+<h3>Utilise<a class="headerlink" href="#id40" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>self.selected_buttons<span class="classifier">list</span></dt><dd><p>Liste des boutons sélectionnés.</p>
+</dd>
+<dt>self.selected_images<span class="classifier">list</span></dt><dd><p>Liste qui stocke les chemins d’accès des images sélectionnées. Cette liste est mise à jour
+lorsqu’une image est sélectionnée ou désélectionnée.</p>
+</dd>
+<dt>self.button_image_map<span class="classifier">dict</span></dt><dd><p>Associe chaque bouton à son image correspondante.</p>
+</dd>
+</dl>
+</section>
+<section id="id41">
+<h3>Retourne<a class="headerlink" href="#id41" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>None</dt><dd><p>La méthode met directement à jour la liste des images sélectionnées.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>L’utilisation de selected_buttons est nécessaire car il est impossible de rechercher une correspondance exacte
+dans une liste de np.ndarray (l’image elle-même).</p>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.GenerationDialog.show_success_message">
+<span class="sig-name descname"><span class="pre">show_success_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.GenerationDialog.show_success_message" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Affiche le message de succès de la sauvegarde.</p>
+<section id="id42">
+<h3>Paramètres<a class="headerlink" href="#id42" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>filename<span class="classifier">str</span></dt><dd><p>Nom du fichier image</p>
+</dd>
+<dt>output_dir<span class="classifier">str</span></dt><dd><p>Nom du dossier de la sauvegarde</p>
+</dd>
+</dl>
+</section>
+<section id="id43">
+<h3>Retours<a class="headerlink" href="#id43" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>None</dt><dd><p>La boîte de dialogue est affichée directement par la fonction et n’a donc pas besoin d’être retourné.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.GenerationDialog.validate_selection">
+<span class="sig-name descname"><span class="pre">validate_selection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.GenerationDialog.validate_selection" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Valide la sélection de deux images et affiche l’image reconstruite de la première image sélectionnée.</p>
+<p>Cette méthode s’assure que exactement deux images ont été sélectionnées par l’utilisateur.
+Une fois la sélection validée, le layout principal est mis à jour en supprimant
+le layout initial avec 10 images et en affichant la version reconstruite
+avec un layout contenant les images sélectionnées et les images générées par l’algorithme génétique (GA).
+La méthode “generate_new_images” est appelée.</p>
+<section id="id44">
+<h3>Paramètres<a class="headerlink" href="#id44" title="Lien vers cette rubrique">¶</a></h3>
+<p>None</p>
+</section>
+<section id="id45">
+<h3>Utilise<a class="headerlink" href="#id45" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>self.selected_images<span class="classifier">list</span></dt><dd><p>Contient les références des instances de QPushButton cliquées.
+La liste doit contenir exactement deux éléments ici.</p>
+</dd>
+<dt>self.main_layout<span class="classifier">QVBoxLayout</span></dt><dd><p>Le layout principal de la fenêtre.</p>
+</dd>
+<dt>self.reconstructed_section_layout<span class="classifier">QVBoxLayout</span></dt><dd><p>Layout utilisé pour afficher 6 nouveaux portraits avec des variations.</p>
+</dd>
+<dt>self.button_layout<span class="classifier">QHBoxLayout</span></dt><dd><p>Layout des boutons d’action, qui est mis à jour lors du processus de validation.</p>
+</dd>
+<dt>self.load_new_img<span class="classifier">QPushButton</span></dt><dd><p>Un bouton pour générer 10 nouveaux portraits.
+Il est supprimé s’il était présent.</p>
+</dd>
+<dt>self.original_layout<span class="classifier">QVBoxLayout</span></dt><dd><p>Layout utilisé pour afficher les deux boutons des images sélectionnées.</p>
+</dd>
+<dt>self.generate_new_images<span class="classifier">méthode</span></dt><dd><p>Méthode utilisée pour générer et afficher les images grâce à l’algorithme génétique à partir des images sélectionnées.</p>
+</dd>
+</dl>
+</section>
+<section id="id46">
+<h3>Retourne<a class="headerlink" href="#id46" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>None</dt><dd><p>La méthode modifie l’interface utilisateur en affichant les images sélectionnées reconstruites.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.HomePage">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Autoencodeur.new_inference.</span></span><span class="sig-name descname"><span class="pre">HomePage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.HomePage" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.HomePage.initUI">
+<span class="sig-name descname"><span class="pre">initUI</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.HomePage.initUI" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.HomePage.show_quit_confirmation">
+<span class="sig-name descname"><span class="pre">show_quit_confirmation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.HomePage.show_quit_confirmation" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.MainWindow">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Autoencodeur.new_inference.</span></span><span class="sig-name descname"><span class="pre">MainWindow</span></span><a class="headerlink" href="#Autoencodeur.new_inference.MainWindow" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">QMainWindow</span></code></p>
+<p>Fenêtre principale gérant la navigation entre pages.</p>
+<p>Points clés :
+Architecture des couches :</p>
+<blockquote>
+<div><p>Utilisation de QStackedLayout avec mode StackAll
+Fond défilant en arrière-plan
+Éléments d’interface en superposition</p>
+</div></blockquote>
+<dl class="simple">
+<dt>Menu latéral :</dt><dd><p>Largeur fixe de 220px
+Fond semi-transparent (rgba)
+Boutons stylisés avec effets hover</p>
+</dd>
+<dt>Titre central :</dt><dd><p>Police [] 60pt en gras
+Ombre portée pour meilleure lisibilité
+Positionnement flexible avec stretches</p>
+</dd>
+<dt>Gestion des espaces :</dt><dd><p>Marges et espacements précis
+Utilisation de stretch pour centrer
+Suppression des marges inutiles</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.MainWindow.go_home">
+<span class="sig-name descname"><span class="pre">go_home</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.MainWindow.go_home" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.MainWindow.open_generation">
+<span class="sig-name descname"><span class="pre">open_generation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.MainWindow.open_generation" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.MainWindow.open_tutoriel">
+<span class="sig-name descname"><span class="pre">open_tutoriel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.MainWindow.open_tutoriel" title="Lien vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.QuitConfirmationDialog">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Autoencodeur.new_inference.</span></span><span class="sig-name descname"><span class="pre">QuitConfirmationDialog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.QuitConfirmationDialog" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">QDialog</span></code></p>
+<p>Boîte de dialogue de confirmation pour quitter l’application</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.SplashPage">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Autoencodeur.new_inference.</span></span><span class="sig-name descname"><span class="pre">SplashPage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.SplashPage" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code></p>
+<p>Page de splash avec effets de fondu entrant/sortant
+Points clés:
+Système d’animation :</p>
+<blockquote>
+<div><p>Deux animations PropertyAnimation pour les fades
+Courbe InOutQuad pour un effet smooth
+Timer pour la transition automatique</p>
+</div></blockquote>
+<dl class="simple">
+<dt>Rendu du texte :</dt><dd><p>Positionnement mathématiquement centré
+Utilisation de FontMetrics pour précision
+Effet « texte creux » avec contour+remplissage</p>
+</dd>
+<dt>Signalisation :</dt><dd><p>Émission du signal à la fin du fade out
+Permet de chaîner des événements</p>
+</dd>
+<dt>Valeurs remarquables :</dt><dd><p>Durées (1500ms, 3000ms)
+Taille police (72pt)
+Épaisseur contour (5px)</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.SplashPage.fade_out_done">
+<span class="sig-name descname"><span class="pre">fade_out_done</span></span><a class="headerlink" href="#Autoencodeur.new_inference.SplashPage.fade_out_done" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Signal émis quand l’animation de disparition est terminée</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.SplashPage.paintEvent">
+<span class="sig-name descname"><span class="pre">paintEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.SplashPage.paintEvent" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Dessine le contenu du splash (texte avec effets).</p>
+<p>Techniques :
+- Texte vectoriel (QPainterPath)
+- Contour noir épais (5px)
+- Remplissage blanc
+- Antialiasing pour lissage
+- Positionnement centré précis</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.SplashPage.start_fade_out">
+<span class="sig-name descname"><span class="pre">start_fade_out</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.SplashPage.start_fade_out" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Lance l’animation de disparition (fade out).</p>
+<p>Configuration :
+- Durée : 1.5 seconde
+- De opaque (1) à transparent (0)
+- Même courbe de progression que le fade in
+- Émet le signal fade_out_done à la fin</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.TutorielDialog">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Autoencodeur.new_inference.</span></span><span class="sig-name descname"><span class="pre">TutorielDialog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sentences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.TutorielDialog" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">QDialog</span></code></p>
+<p>Fenêtre de tutoriel avec affichage progressif du texte</p>
+<p>Points clés :
+L’intervalle du timer (40ms)
+Les touches clavier spécifiques (Espace/A/Entrée)
+Le système d’indexation du texte</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.TutorielDialog.keyPressEvent">
+<span class="sig-name descname"><span class="pre">keyPressEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.TutorielDialog.keyPressEvent" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Gère les interactions clavier.</p>
+<p>Comportements :
+- Espace/A :</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Passe à la phrase suivante si l’affichage est terminé</p></li>
+<li><p>Affiche instantanément la phrase en cours sinon</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p>Entrée : Permet la navigation entre éléments focusables</p></li>
+<li><p>Autres touches : Ignorées</p></li>
+</ul>
+<p>Cas particuliers :
+- Gère la fin du tutoriel après la dernière phrase
+- Empêche les interactions non désirées</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.TutorielDialog.start_sentence">
+<span class="sig-name descname"><span class="pre">start_sentence</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.TutorielDialog.start_sentence" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Démarre l’affichage d’une nouvelle phrase.</p>
+<p>Actions :
+1. Charge la phrase courante
+2. Réinitialise l’index de caractère
+3. Lance le timer pour l’effet d’écriture
+4. Ferme le dialogue si aucune phrase disponible</p>
+<p>Gère le cas où :
+- Il n’y a plus de phrases à afficher</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.TutorielDialog.update_text">
+<span class="sig-name descname"><span class="pre">update_text</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.TutorielDialog.update_text" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Met à jour l’affichage du texte caractère par caractère.</p>
+<p>Fonctionnement :
+- Ajoute un caractère à chaque appel du timer
+- S’arrête quand toute la phrase est affichée
+- Intervalle du timer : 40ms (configurable)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.dezip_images">
+<span class="sig-prename descclassname"><span class="pre">Autoencodeur.new_inference.</span></span><span class="sig-name descname"><span class="pre">dezip_images</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.dezip_images" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Vérifie si le dossier “selected_images” contient des fichiers, sinon extrait l’archive zip correspondante.</p>
+<p>Cette fonction s’assure que :
+- Si le dossier “selected_images” est vide ou inexistant, il est créé.
+- Si une archive “selected_images.zip” est présente, elle est extraite dans le répertoire parent.
+- Si l’archive zip est absente et que le dossier est vide/inexistant, une exception est levée.</p>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Le dossier des images est situé dans :
+<code class="docutils literal notranslate"><span class="pre">Data</span> <span class="pre">Bases/Celeb</span> <span class="pre">A/Images/selected_images</span></code></p></li>
+<li><p>L’archive zip est située dans :
+<code class="docutils literal notranslate"><span class="pre">Data</span> <span class="pre">Bases/Celeb</span> <span class="pre">A/Images/selected_images.zip</span></code></p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Lève<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>FileNotFoundError</strong> – Si l’archive zip est absente et que le dossier des images est inexistant ou vide.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.load_hyperparameters">
+<span class="sig-prename descclassname"><span class="pre">Autoencodeur.new_inference.</span></span><span class="sig-name descname"><span class="pre">load_hyperparameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'best_hyperparameters.pth'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#Autoencodeur.new_inference.load_hyperparameters" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Charge les hyperparamètres du modèle avec gestion automatique des chemins</p>
+<p>Essaie plusieurs emplacements possibles dans cet ordre :
+1. Chemin relatif direct (compatibilité historique)
+2. Dans le dossier du script appelant
+3. Dans le sous-dossier Autoencodeur</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Nom du fichier contenant les hyperparamètres (par défaut: « best_hyperparameters.pth »)</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionnaire des hyperparamètres chargés s’ils sont trouvés, erreur sinon</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Autoencodeur.new_inference.main">
+<span class="sig-prename descclassname"><span class="pre">Autoencodeur.new_inference.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.new_inference.main" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Point d’entrée principal de l’application.</p>
+</dd></dl>
+
+</section>
+<section id="autoencodeur-plot-module">
+<h2>Autoencodeur.plot module<a class="headerlink" href="#autoencodeur-plot-module" title="Lien vers cette rubrique">¶</a></h2>
+</section>
+<section id="autoencodeur-split-latent-module">
+<h2>Autoencodeur.split_latent module<a class="headerlink" href="#autoencodeur-split-latent-module" title="Lien vers cette rubrique">¶</a></h2>
+</section>
+<section id="autoencodeur-train-autoencoder-module">
+<h2>Autoencodeur.train_autoencoder module<a class="headerlink" href="#autoencodeur-train-autoencoder-module" title="Lien vers cette rubrique">¶</a></h2>
+</section>
+<section id="module-Autoencodeur.utils_autoencoder">
+<span id="autoencodeur-utils-autoencoder-module"></span><h2>Autoencodeur.utils_autoencoder module<a class="headerlink" href="#module-Autoencodeur.utils_autoencoder" title="Lien vers cette rubrique">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="Autoencodeur.utils_autoencoder.Autoencoder">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Autoencodeur.utils_autoencoder.</span></span><span class="sig-name descname"><span class="pre">Autoencoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_layers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.utils_autoencoder.Autoencoder" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Autoencodeur convolutionnel dynamique pour la reconstruction d’images. Le nombre de couches s’adapte aux paramètres envoyés par Optuna.</p>
+<p>L’autoencodeur a 3 grandes parties principales :</p>
+<p>Encodage : Réduction de la Dimensionnalité
+Un bottleneck (couche dense)
+Décodage : Reconstruction de l’Image</p>
+<p>Les deux sont des séquences de couches convolutives (nn.Sequential).
+L’avantage des séquences est de ne avoir besoin de les définir individuellement dans la fonction forward</p>
+<p>ConvAutoencoder hérite de nn.Module et bénéficie de toutes ses fonctionnalités.
+La classe nn.Module est la classe de base pour tous les modèles de réseaux de neurones PyTorch</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.utils_autoencoder.Autoencoder.build_layers">
+<span class="sig-name descname"><span class="pre">build_layers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transpose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.utils_autoencoder.Autoencoder.build_layers" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Construit une séquence de couches selon l’architecture.</p>
+<p>Itère sur chaque paire successive de canaux dans la liste <cite>channels</cite>
+et ajoute chaque couche une par une.
+Chaque couche est suivie d’une activation ReLU sauf à la fin du décodeur où on applique un Sigmoid.</p>
+<p>kernel_size, stride et padding permettent de diviser par 2 la taille spatiale à chaque couche de l’encodeur</p>
+<section id="id47">
+<h3>Paramètres<a class="headerlink" href="#id47" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>channels<span class="classifier">list[int]</span></dt><dd><p>Liste ordonnée des dimensions de canaux à travers les couches.</p>
+</dd>
+<dt>transpose<span class="classifier">bool, par défaut False</span></dt><dd><p>Si True, construit un décodeur (ConvTranspose2d).
+Sinon, construit un encodeur (Conv2d).</p>
+</dd>
+</dl>
+</section>
+<section id="retour">
+<h3>Retour<a class="headerlink" href="#retour" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>nn.Sequential</dt><dd><p>Module PyTorch contient la séquence des couches avec activations.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.utils_autoencoder.Autoencoder.decode">
+<span class="sig-name descname"><span class="pre">decode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.utils_autoencoder.Autoencoder.decode" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Reconstruit l’image à partir du vecteur latent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>z</strong> (<em>torch.Tensor</em>) – Vecteur latent de dimension [batch_size, 128, 8, 8].</p>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>Reconstruit l’image de dimension [batch_size, 3, 128, 128]</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.utils_autoencoder.Autoencoder.encode">
+<span class="sig-name descname"><span class="pre">encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.utils_autoencoder.Autoencoder.encode" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Extrait le vecteur latent d’une image.</p>
+<section id="id48">
+<h3>Paramètres<a class="headerlink" href="#id48" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>x<span class="classifier">torch.Tensor</span></dt><dd><p>tenseur qui représente une image [batch_size, 3, 128, 128]</p>
+</dd>
+</dl>
+</section>
+<section id="id49">
+<h3>Retour<a class="headerlink" href="#id49" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>torch.Tensor</dt><dd><p>Vecteur latent de taille [batch_size, 128, 8, 8]</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.utils_autoencoder.Autoencoder.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_latent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.utils_autoencoder.Autoencoder.forward" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Cette méthode définit comment les données passent à travers l’autoencodeur</p>
+<p>L’image passe à travers l’encodeur jusqu’à obtenir une représentation latente.</p>
+<dl class="simple">
+<dt>Si return_latent=True, la fonction s’arrête ici et renvoie directement la représentation latente,</dt><dd><p>utile si on veut ajouter l’algo génétique</p>
+</dd>
+<dt>Si return_latent=False, on continue :</dt><dd><p>La représentation latente latent passe dans le décodeur.
+L’image reconstruite est renvoyée, ayant la même forme que l’image d’entrée</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Un tenseur d’entrée représentant une image de la taille [batch_size, 3, 128, 128] (images RGB 128x128)</p></li>
+<li><p><strong>return_latent</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>par défaut False</em>) – If True: permet de récupérer uniquement la représentation latente au lieu de reconstruire l’image</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>Image reconstruite à la même taille que l’input.</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.utils_autoencoder.Autoencoder.latent_dim_size">
+<span class="sig-name descname"><span class="pre">latent_dim_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.utils_autoencoder.Autoencoder.latent_dim_size" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Retourne la taille du vecteur latent (après la couche dense d’encodage).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.utils_autoencoder.Autoencoder.latent_size">
+<span class="sig-name descname"><span class="pre">latent_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_layers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_channels</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.utils_autoencoder.Autoencoder.latent_size" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Calcule la taille de l’espace latent après nb_layers couches de convolutions
+avec stride=2, padding=1, kernel_size=3.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Autoencodeur.utils_autoencoder.Autoencoder.output_channels">
+<span class="sig-name descname"><span class="pre">output_channels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_layers</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.utils_autoencoder.Autoencoder.output_channels" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Calcule dynamiquement le nombre de canaux à utiliser dans les couches.</p>
+<p>Construit une liste de canaux allant de 3 (RGB) à <cite>nb_channels</cite>. Elle répartit équitablement
+l’augmentation des canaux sur <cite>nb_layers</cite> couches.</p>
+<p>On utilise une progression géométrique de raison common_ratio pour interpoler les valeurs intermédiaires.
+La 1ère couche passe de 3 → 16 (fixé). Puis la dernière couche atteint <cite>nb_channels</cite>, optimisé par Optuna.</p>
+<dl class="simple">
+<dt>Le common_ratio ratio est calculé de façon à ce que :</dt><dd><p>16 × ratio^(nb_layers - 1) = nb_channels. nb_layers-1 car la première couche est fixé et ne suit pas ce facteur multiplicatif.</p>
+</dd>
+</dl>
+<p>Evite les sauts brutaux entre les couches.</p>
+<section id="id50">
+<h3>Paramètres<a class="headerlink" href="#id50" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>nb_channels<span class="classifier">int</span></dt><dd><p>Nombre de canaux de sortie à la dernière couche de l’encodeur.</p>
+</dd>
+<dt>nb_layers<span class="classifier">int</span></dt><dd><p>Nombre total de couches dans l’encodeur.</p>
+</dd>
+</dl>
+</section>
+<section id="id51">
+<h3>Retour<a class="headerlink" href="#id51" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>channels<span class="classifier">list[int]</span></dt><dd><p>Liste des dimensions de canaux de chaque couche, de l’entrée (3 canaux) à la sortie (<cite>nb_channels</cite>).</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="Autoencodeur.utils_autoencoder.CelebADataset">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Autoencodeur.utils_autoencoder.</span></span><span class="sig-name descname"><span class="pre">CelebADataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_images</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.utils_autoencoder.CelebADataset" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+<p>Class CelebADataset</p>
+<dl>
+<dt>Définit une classe de dataset personnalisé pour charger et prétraiter les images de CelebA en vue de leur</dt><dd><p>utilisation dans l’autoencodeur.</p>
+</dd>
+<dt>Cette classe hérite de torch.utils.data.Dataset (Dataset est un parent de CelebADataset)</dt><dd><p>Or, Dataset vient de torch.utils.data, donc CelebADataset hérite indirectement de torch.utils.data.Dataset)</p>
+</dd>
+<dt>Comme la classe CelebADataset hérite de Dataset, qui est une classe abstraite,</dt><dd><p>elle doit redéfinir __len__ et __getitem__.
+Dans PyTorch, un dataset personnalisé doit obligatoirement implémenter ces deux méthodes</p>
+<blockquote>
+<div><p>pour être utilisé correctement par un DataLoader</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Autoencodeur.utils_autoencoder.latent_size">
+<span class="sig-prename descclassname"><span class="pre">Autoencodeur.utils_autoencoder.</span></span><span class="sig-name descname"><span class="pre">latent_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_layers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_channels</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.utils_autoencoder.latent_size" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Calcule la taille de l’espace latent après nb_layers de convolutions
+avec stride=2, padding=1, kernel_size=3.</p>
+<dl class="simple">
+<dt>Paramètres:</dt><dd><p>input_size (int or tuple): taille d’entrée (H, W) ou un seul int
+nb_layers (int): nombre de couches convolutionnelles
+nb_channels (int): nombre de canaux de sortie de la dernière couche</p>
+</dd>
+<dt>Retour:</dt><dd><p>latent_shape (tuple): (nb_channels, H_out, W_out)
+latent_size (int): nombre total d’éléments dans l’espace latent</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Autoencodeur.utils_autoencoder.load_best_hyperparameters">
+<span class="sig-prename descclassname"><span class="pre">Autoencodeur.utils_autoencoder.</span></span><span class="sig-name descname"><span class="pre">load_best_hyperparameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.utils_autoencoder.load_best_hyperparameters" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Charge les meilleurs hyperparamètres à partir du fichier sauvegardé à la fin de l’optimisation Optuna.
+Dictionnaire avec les meilleurs hyperparamètres optimaux testés automatiquement (lr, batch_size, nb_channels, nb_layers…).</p>
+<section id="id52">
+<h3>Paramètres<a class="headerlink" href="#id52" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>path<span class="classifier">str</span></dt><dd><p>Chemin vers le fichier <cite>.pth</cite> contenant les hyperparamètres.</p>
+</dd>
+</dl>
+</section>
+<section id="id53">
+<h3>Retour<a class="headerlink" href="#id53" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>dict :</dt><dd><p>Dictionnaire contenant les hyperparamètres optimaux.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Autoencodeur.utils_autoencoder.search_file">
+<span class="sig-prename descclassname"><span class="pre">Autoencodeur.utils_autoencoder.</span></span><span class="sig-name descname"><span class="pre">search_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.pth'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ask_reuse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.utils_autoencoder.search_file" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Gère la création ou la réutilisation d’un fichier existant avec incrémentation automatique.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base_name</strong> (<em>str</em>) – Nom de base du fichier (ex: “conv_autoencoder” ou “face_autoencoder”)</p></li>
+<li><p><strong>extension</strong> (<em>str</em><em>, </em><em>optional</em>) – Extension du fichier (ex: “.pth”, “.db”), par default “.pth”</p></li>
+<li><p><strong>prompt_label</strong> (<em>str</em><em>, </em><em>optional</em>) – Nom affiché à l’utilisateur dans la question (ex: « modèle », « base de données »)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>) – Nom du fichier à utiliser</p></li>
+<li><p><strong>reuse</strong> (<em>bool</em>) – True si on réutilise un fichier existant, False si on crée un nouveau</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Autoencodeur.utils_autoencoder.split_data">
+<span class="sig-prename descclassname"><span class="pre">Autoencodeur.utils_autoencoder.</span></span><span class="sig-name descname"><span class="pre">split_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.utils_autoencoder.split_data" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Split un dataset en train/test selon le ratio donné en argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<em>torch.utils.data.Dataset</em>) – Le dataset complet.</p></li>
+<li><p><strong>train_ratio</strong> (<em>float</em>) – Proportion de données pour l’entraînement (par défaut 0.9).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie<span class="colon">:</span></dt>
+<dd class="field-even"><p>(train_set, test_set, train_size, test_size)</p>
+</dd>
+<dt class="field-odd">Type renvoyé<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Autoencodeur.utils_autoencoder.train_model">
+<span class="sig-prename descclassname"><span class="pre">Autoencodeur.utils_autoencoder.</span></span><span class="sig-name descname"><span class="pre">train_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optuna_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Autoencodeur.utils_autoencoder.train_model" title="Lien vers cette définition">¶</a></dt>
+<dd><p>Entraîne le modèle d’autoencodeur sur un ensemble de données, avec ou sans intégration à Optuna pour l’optimisation
+des hyperparamètres. Intègre aussi un early stopping pour gagner en temps d’entrainement.</p>
+<p>Effectue une boucle d’entraînement pendant un nombre d’epochs défini dans data_model.
+La boucle suit l’évolution des loss d’entrainement et de validation à chaque epoch.</p>
+<p>Si <cite>optuna_args</cite>, chaque epoch est reportée au système d’optimisation d’Optuna qui peut
+abandonner automatiquement le trial si les performances sont pas bonnes.</p>
+<p>Sinon la fonction renvoie les pertes d’entraînement et de test finales.</p>
+<section id="id54">
+<h3>Paramètres<a class="headerlink" href="#id54" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>data_model<span class="classifier">dict</span></dt><dd><p>Un dictionnaire qui contient
+“model”,  le modèle à entraîner
+“criterion”, la fonction de perte
+“optimizer”, l’optimiseur (ex: RMSProp, Adam)
+“train_loader”, DataLoader pour l’entraînement
+“test_loader”, DataLoader pour l’évaluation
+“num_epochs”, nombre d’epochs à exécuter</p>
+</dd>
+<dt>optuna_args<span class="classifier">dict, optionnel</span></dt><dd><p>Contient les arguments liés à Optuna si appelé
+“trial”, objet Trial d’Optuna
+“trial_id”, nb du trial
+“show_progress”, booléen pour afficher la barre de progression par la librairie tqdm</p>
+</dd>
+</dl>
+</section>
+<section id="id55">
+<h3>Retour<a class="headerlink" href="#id55" title="Lien vers cette rubrique">¶</a></h3>
+<dl class="simple">
+<dt>Si Optuna est utilisé :</dt><dd><p>float : la loss finale de test, transmise à Optuna</p>
+</dd>
+<dt>Sinon :</dt><dd><dl class="simple">
+<dt>tuple(float, float) :</dt><dd><ul class="simple">
+<li><p>epoch_loss : perte moyenne sur l’ensemble d’entraînement à la fin</p></li>
+<li><p>test_loss : perte moyenne sur l’ensemble de test</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+<section id="module-Autoencodeur">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-Autoencodeur" title="Lien vers cette rubrique">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">PeaceKeeper</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="modules.html">projet-4bim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AlgoGenetique.html">AlgoGenetique package</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Autoencodeur package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-Autoencodeur.Autoencodeur">Autoencodeur.Autoencodeur module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#autoencodeur-inference-module">Autoencodeur.Inference module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-Autoencodeur.explore_latent">Autoencodeur.explore_latent module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#autoencodeur-finder-hyperparameters-module">Autoencodeur.finder_hyperparameters module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-Autoencodeur.new_inference">Autoencodeur.new_inference module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#autoencodeur-plot-module">Autoencodeur.plot module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#autoencodeur-split-latent-module">Autoencodeur.split_latent module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#autoencodeur-train-autoencoder-module">Autoencodeur.train_autoencoder module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-Autoencodeur.utils_autoencoder">Autoencodeur.utils_autoencoder module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-Autoencodeur">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">projet-4bim</a><ul>
+      <li>Previous: <a href="AlgoGenetique.html" title="Chapitre précédent">AlgoGenetique package</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Amrou Anibou, Morad Bel Melih, Matthieu Deleglise, Julie Durand, Philippine Fremaux.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/Autoencodeur.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

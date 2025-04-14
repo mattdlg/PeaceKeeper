@@ -1,0 +1,7 @@
+test\_filter module
+===================
+
+.. automodule:: test_filter
+   :members:
+   :show-inheritance:
+   :undoc-members:
