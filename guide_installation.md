@@ -21,15 +21,19 @@ Sur windows, la commande pour aciver l'environnement virtuel est :
 env1\Scripts\activate
 ```
 
-3. Installez l'application avec la commande : 
+3. Mettez à jour wheel : 
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps example-package-YOUR-USERNAME-HERE
+pip install --upgrade pip setuptools wheel
 ```
 
-Remplacez YOUR-USERNAME-HERE par votre identifiant utilisateur PyPI.
+4. Installez l'application avec la commande : 
 
-4. Vous devriez obtenir un output de la forme : 
+```bash
+python3 -m pip install --index-url https://test.pypi.org/simple/ projet_4bim_test_1_agnc
+```
+
+5. Vous devriez obtenir un output de la forme : 
 
 ```bash
 Collecting example-package-YOUR-USERNAME-HERE
