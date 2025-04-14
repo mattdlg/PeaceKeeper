@@ -42,3 +42,4 @@ Ce dossier se remplit au fur et à mesure de l'utilisation du logiciel PeaceKeep
 - plot.py : affichage des graphiques permettant de visualiser l'adéquation du modèle entrainer (fonction de perte).
 - utils_autoencoder.py : reprend les fonctions de train et finder pour être utilisé lors l'encodage/décodage des images pendant l'utilisation de l'outils.
 - conv_autoencoder.pth : fichier permettant l'utilisation du modèle entrainé.
+- losses.pt: fichier contenant les valeurs des pertes enregistrées pendant l'entrainement pour recharger l'historique et les plots pour l'analyse.
