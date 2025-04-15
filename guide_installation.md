@@ -30,7 +30,7 @@ pip install --upgrade pip setuptools wheel
 4. Installez l'application avec la commande : 
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ projet_4bim_test_1_agnc
+python3 -m pip install --index-url https://test.pypi.org/simple --extra-index-url https://pypi.org/simple projet-4bim-test-1-agnc==0.1.3
 ```
 
 5. Vous devriez obtenir un output de la forme : 
