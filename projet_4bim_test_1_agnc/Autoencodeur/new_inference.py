@@ -222,8 +222,6 @@ class TutorielDialog(QtWidgets.QDialog):
             # Permettre la navigation avec Entrée
             self.focusNextChild()
             event.accept()
-        elif key == QtCore.Qt.Key_Escape:
-            self.accept()
         else:
             event.ignore()
 
