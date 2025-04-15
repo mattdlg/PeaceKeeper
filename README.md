@@ -30,7 +30,7 @@ Ce référer au fichier guide_installation.py pour avoir le détail des étapes 
 Utilisez le package manager [pip](https://pip.pypa.io/en/stable/) pour installer new_inference.
 
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ projet_4bim_test_1_agnc
+python3 -m pip install --index-url https://test.pypi.org/simple --extra-index-url https://pypi.org/simple projet-4bim-test-1-agnc==0.1.3
 ```
 
 ## Utilisation
