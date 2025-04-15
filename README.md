@@ -65,6 +65,9 @@ user_driven_algo_gen.run_ga(targets, nb_solutions, crossover_method, mutation_ra
 Ceci lance un algorithme génétique et croise les coordonnées des deux images données dans "targets", puis les fais muter. Le programme renvoie la liste des "nb_solutions" vecteurs générés par cet algorithme.
 Le croisement se fait selon la méthode donnée dans "crossover_method", et les mutations dépendent de "mutation_rate" et "sigma_mutation". Voir la doc de user_driven_algo_gen.py pour plus de détails.
 
+Pour entrainer l'Autoencodeur, il vous faudra télécharger l'ensemble de la base de données CelebA (https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html), et la placer à l'emplacement suivant : 
+/Data Bases/Celeb A/Images/img_align_celeba
+
 ## Support
 Contactez matthieu.deleglise@insa-lyon.fr pour toute question sur l'algorithme génétique.
 
