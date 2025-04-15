@@ -41,3 +41,13 @@ Collecting example-package-YOUR-USERNAME-HERE
 Installing collected packages: example_package_YOUR_USERNAME_HERE
 Successfully installed example_package_YOUR_USERNAME_HERE-0.0.1
 ```
+
+6. En cas d'erreur 
+
+Dans le cas où il y a des problèmes de dépendances (problèmes d'installation des packages python requis), vous pouvez utiliser le script install_packages.py pour installer tous les packages requis au bon fonctionnement de l'appli :
+
+```bash
+python3 install_packages.py
+```
+
+Vous pouvez alors directement utiliser le repository Git pour lancer l'application
