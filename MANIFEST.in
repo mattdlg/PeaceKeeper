@@ -1,0 +1,1 @@
+recursive-include projet_4bim_test_1_agnc *.pth *.pt *.db *.mp4 *.zip *.png
